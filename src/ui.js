@@ -1,5 +1,5 @@
 /*
-  Screens: title -> office -> (job board) -> hire -> shoot -> wrap -> office.
+  Screens: title -> office -> (job board) -> hire -> shoot -> take review -> wrap -> office.
   All game rules live in sim.js and all drawing in art.js. This file builds screens, saves progress and forwards taps.
 */
 (function () {
@@ -11,13 +11,19 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const money = S.fmtMoney;
+  const MIN_PER_SEC = (LEVEL.dayHours || 10) * 60 / LEVEL.timeLimit;
 
-  const PERKS = {
-    quickRoll: 'Rolls in 3s, not 5',
+  const SPEC = {
+    quickRoll: 'One-take: rolls in 3s, not 5',
     spareBulb: 'Spare bulb: fixes dead lights fast',
-    foodWhisperer: 'Food stays fresh 60% longer',
+    foodWhisperer: 'Food whisperer: food stays fresh longer',
+    macro: 'Macro specialist: +8 quality on close-ups',
+    rigging: 'Rigger: rig work 40% faster',
+    cheese: 'Cheese wrangler: melts 40% faster',
   };
   const SHOT_COLOR = { hero: '#E7B84F', cheese: '#D86B56', sauce: '#7D9E91' };
+  const KEY_AIM = { hero: [6, 20], cheese: [20, 32], sauce: [32, 14] };
+  const CAM_SHIFT = { hero: [0, 0], cheese: [-30, 6], sauce: [-16, -8] };
   const CLIENT_LINES = ['Can it pop more?', 'Is that the hero burger?', 'Love it. One tiny note...', 'More cheese?', 'Legal wants the bun moved.', 'Can we see it bigger?'];
 
   /* ================= Save (this device only) ================= */
@@ -45,15 +51,17 @@
   let modal = null;
   let lastCapture = null;
   let banked = false;
+  let logSeen = 0;
   let clientLine = { text: '', until: 0, next: 0, i: 0 };
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {} });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, cam: '' });
   }
 
   /* ================= Helpers ================= */
 
+  const allCands = () => LEVEL.hiring.flatMap(r => r.candidates.map(c => Object.assign({ role: r.role, dept: r.dept }, c)));
   function candidate(dept, id) {
     const role = LEVEL.hiring.find(r => r.dept === dept);
     const c = role.candidates.find(x => x.id === id);
@@ -64,6 +72,7 @@
     for (const d in picks) if (picks[d]) m[d] = candidate(d, picks[d]);
     return m;
   }
+  const mods = () => S.companyMods(CO.rooms, save.owned);
   function show(name) {
     screen = name;
     for (const n of ['title', 'office', 'hire', 'shoot']) $('screen-' + n).hidden = n !== name;
@@ -78,6 +87,7 @@
   const pct = id => { const t = st.tasks[id]; return !t ? 0 : t.done ? 1 : t.progress / t.need; };
   const isDone = id => !!(st.tasks[id] && st.tasks[id].done);
   const starsRow = n => [0, 1, 2].map(i => A.starSVG(i < n)).join('');
+  const gameMinutes = secs => Math.round(secs * MIN_PER_SEC);
 
   /* ================= Title ================= */
 
@@ -91,7 +101,7 @@
       <p class="tagline">Build the crew. Run the shoot. Get the shot.</p>
       <svg class="title-art" viewBox="0 0 200 84" aria-hidden="true">${lineup}</svg>
       <button class="btn go" type="button" data-go="office">${save.runs ? 'Back to the office' : 'Open your production company'}</button>
-      <p class="hint">Prototype build with placeholder art. Progress saves on this device.</p>`;
+      <p class="hint">Prototype 0.2 with placeholder art. Progress saves on this device.</p>`;
   }
 
   /* ================= Office ================= */
@@ -127,7 +137,7 @@
       return `<button class="job" type="button" ${j.playable ? `data-book="${j.id}"` : 'disabled'}>
         <span class="jpic">${j.id === 'burger-job' ? A.propSVG('hero') : A.deptIcon('camera', 28)}</span>
         <b>${esc(j.title)}</b>
-        <span>${esc(j.client)} · ${esc(j.kind)}${j.playable ? ` · ${money(LEVEL.budget)}` : ''}</span>
+        <span>${esc(j.client)} · ${esc(j.kind)}${j.playable ? ` · pays ${money(LEVEL.budget)}` : ''}</span>
         <span>${j.playable ? `<span class="jstars">${starsRow(best)}</span>` : esc(j.note)}</span>
       </button>`;
     }).join('');
@@ -137,10 +147,10 @@
   function showBrief() {
     openModal('brief', `
       <div class="chaos-h" style="background:var(--mustard); color:var(--ink)"><b>${esc(LEVEL.title)}</b></div>
-      <span class="eyebrow">${esc(LEVEL.client)} · tabletop</span>
+      <span class="eyebrow">${esc(LEVEL.client)} · tabletop · one shoot day</span>
       <p>${esc(LEVEL.brief)}</p>
-      <div class="facts"><span>3 shots</span><span>Budget ${money(LEVEL.budget)}</span><span>Wrap by ${S.fmtTime(LEVEL.timeLimit)}</span><span>Overtime ${money(LEVEL.overtimeRate)}/s</span></div>
-      <p class="note">The budget pays your crew, rentals and overtime. Whatever's left is profit for the bank.</p>
+      <div class="facts"><span>3 shots</span><span>Client pays ${money(LEVEL.budget)}</span><span>Call 8:00 AM</span><span>Wrap 6:00 PM</span><span>Overtime 1.5x after 10 hrs</span></div>
+      <p class="note">Crew day rates, the gear package and food prep come out of what the client pays. Rentals and overtime too. Whatever's left is profit for the bank.</p>
       <button class="btn go" type="button" data-hire-screen>Book the crew</button>
       <button class="btn" type="button" data-close>Not yet</button>`);
   }
@@ -156,27 +166,42 @@
 
   /* ================= Hire ================= */
 
-  function speedWord(v) { return v >= 1.25 ? 'very fast' : v >= 1.05 ? 'quick' : v >= 0.95 ? 'steady' : v >= 0.8 ? 'a bit slow' : 'slow'; }
-  function relWord(v) { return v >= 0.95 ? 'rock solid' : v >= 0.88 ? 'dependable' : v >= 0.8 ? 'mostly fine' : 'messy'; }
+  function word(kind, v) {
+    if (kind === 'speed') return v >= 1.2 ? 'very fast' : v >= 1.05 ? 'quick' : v >= 0.95 ? 'steady' : v >= 0.8 ? 'a bit slow' : 'slow';
+    if (kind === 'rel') return v >= 0.95 ? 'rock solid' : v >= 0.88 ? 'dependable' : v >= 0.8 ? 'mostly fine' : 'messy';
+    if (kind === 'skill') return v >= 0.9 ? 'top notch' : v >= 0.78 ? 'good eye' : v >= 0.65 ? 'learning' : 'green';
+    return v >= 0.85 ? 'very organized' : v >= 0.7 ? 'organized' : v >= 0.55 ? 'loose' : 'scattered';
+  }
 
-  function statRow(label, v, word) {
+  function statRow(label, v, w) {
     return v != null
       ? `<span class="stat"><span>${label}</span><b style="--v:${Math.min(1, v).toFixed(2)}"></b></span>`
-      : `<span class="stat"><span>${label}</span><em>${esc(word)}</em></span>`;
+      : `<span class="stat"><span>${label}</span><em>${esc(w)}</em></span>`;
+  }
+
+  function chemLines(c) {
+    const names = Object.fromEntries(allCands().map(x => [x.id, x.name]));
+    return (LEVEL.chemistry || []).filter(p => p.a === c.id || p.b === c.id).map(p => {
+      const other = p.a === c.id ? p.b : p.a;
+      return `<span class="chem ${p.kind}" data-chem="${other}">${p.kind === 'good' ? 'Works well with' : 'Clashes with'} ${esc(names[other])}</span>`;
+    }).join('');
   }
 
   function candCard(r, c) {
     const net = c.network;
     const known = net === 'yours';
-    const sp = known ? statRow('Speed', c.speed / 1.4) : net === 'fof' ? statRow('Speed', null, `"${speedWord(c.speed)}"`) : statRow('Speed', null, '?');
-    const rel = known ? statRow('Reliable', c.reliability) : net === 'fof' ? statRow('Reliable', null, `"${relWord(c.reliability)}"`) : statRow('Reliable', null, '?');
-    const perk = (c.perks || []).length && net !== 'board' ? `<span class="perk">${esc(PERKS[c.perks[0]])}</span>` : '';
+    const fuzzy = net === 'fof';
+    const row = (label, val, kind) => known ? statRow(label, val) : fuzzy ? statRow(label, null, `"${word(kind, val)}"`) : statRow(label, null, '?');
+    const stats = row('Skill', c.skill, 'skill') + row('Speed', c.speed / 1.3, 'speed') + row('Organized', c.org, 'org') + row('Reliable', c.reliability, 'rel') +
+      (r.dept === 'camera' ? row('Leads', c.leadership, 'org') : '');
+    const spec = c.specialty && net !== 'board' ? `<span class="perk">${esc(SPEC[c.specialty])}</span>` : '';
     const tag = net === 'fof' ? ` via ${esc(c.via)}` : net === 'board' ? ' · crew board' : '';
     return `<button class="cand" type="button" data-hire="${r.dept}:${c.id}" aria-pressed="${picks[r.dept] === c.id}" ${c.booked ? 'disabled' : ''}>
       ${A.faceSVG({ dept: r.dept, look: c.look }, 'face')}
       <span class="cand-name">${esc(c.name)}<span class="rate">${money(c.rate)}</span></span>
       <span class="tier ${c.tier}">${c.tier}${tag}</span>
-      ${sp}${rel}${perk}
+      ${stats}${spec}
+      ${net !== 'board' ? chemLines(c) : ''}
       <span class="blurb">${esc(c.blurb)}</span>
       ${c.booked ? '<span class="stamp">BOOKED</span>' : ''}
       <span class="cta">${c.booked ? 'On another job' : picks[r.dept] === c.id ? 'Hired' : 'Hire'}</span>
@@ -185,21 +210,21 @@
 
   function renderHire() {
     let html = `<div class="hire-h"><span class="label">Assemble crew</span><h2>Who's on the call sheet?</h2>
-      <p class="note">Better people work faster and botch less, but cost more. What's left of ${money(LEVEL.budget)} covers surprises and overtime. The rest is profit.</p></div>`;
+      <p class="note">Skill sets shot quality. Organized people lose less time between tasks. A DP who leads well speeds up every handoff and catches mistakes. People who've worked together hand off instantly.</p></div>`;
     for (const r of LEVEL.hiring) {
       const rev = revealed[r.dept] || {};
       const dry = r.candidates.filter(c => c.network === 'yours').every(c => c.booked);
       const list = r.candidates.filter(c => c.network === 'yours' || rev[c.network]);
       html += `<section class="role"><div class="role-h"><span class="tab" style="background:${A.DEPT_COLOR[r.dept]}"></span><h3>${esc(r.role)}</h3><span class="picked" data-picked="${r.dept}"></span></div>`;
       if (dry) {
-        const btns = (!rev.fof ? `<button class="btn small" type="button" data-net="${r.dept}:fof">Ask a friend of a friend</button>` : '') +
+        const btns = (!rev.fof ? `<button class="btn small" type="button" data-net="${r.dept}:fof">Ask your crew for a referral</button>` : '') +
           (!rev.board ? `<button class="btn small" type="button" data-net="${r.dept}:board">Post on the crew board</button>` : '');
-        html += `<div class="dry"><b>${esc(r.dryNote)}</b><span>Friends of friends come vouched for. The crew board is cheaper, but you won't know what you got until the shoot.</span>${btns ? `<div class="dry-actions">${btns}</div>` : ''}</div>`;
+        html += `<div class="dry"><b>${esc(r.dryNote)}</b><span>Referrals come vouched for by people you trust. The crew board is cheaper, but you won't know what you got until the shoot.</span>${btns ? `<div class="dry-actions">${btns}</div>` : ''}</div>`;
       }
       html += `<div class="cands" data-cands="${r.dept}">${list.map(c => candCard(r, c)).join('')}</div></section>`;
     }
     html += `<div class="hire-foot">
-      <div class="money"><span>Budget<b>${money(LEVEL.budget)}</b></span><span>Crew<b id="mCrew">$0</b></span><span>Left<b id="mLeft">$0</b></span></div>
+      <div class="money"><span>Client pays<b>${money(LEVEL.budget)}</b></span><span>Costs<b id="mCrew">$0</b></span><span>Margin<b id="mLeft">$0</b></span></div>
       <div class="mbar" id="mBar"><i></i></div>
       <div class="foot-note" id="mNote"></div>
       <button class="btn go" type="button" id="startBtn">Start the shoot</button>
@@ -212,29 +237,33 @@
   }
 
   function updateHire() {
+    const hiredIds = Object.values(picks).filter(Boolean);
     document.querySelectorAll('[data-hire]').forEach(b => {
       const [dept, id] = b.dataset.hire.split(':');
       const on = picks[dept] === id;
       b.setAttribute('aria-pressed', String(on));
       if (!b.disabled) b.querySelector('.cta').textContent = on ? 'Hired' : 'Hire';
     });
+    document.querySelectorAll('[data-chem]').forEach(el => el.classList.toggle('on', hiredIds.includes(el.dataset.chem)));
     document.querySelectorAll('[data-picked]').forEach(el => {
       const c = picks[el.dataset.picked] && candidate(el.dataset.picked, picks[el.dataset.picked]);
       el.textContent = c ? `${c.name} · ${money(c.rate)}` : 'nobody yet';
     });
-    const chk = S.hireCheck(LEVEL, chosenMap());
-    $('mCrew').textContent = money(chk.cost);
-    $('mLeft').textContent = money(chk.left);
-    $('mLeft').classList.toggle('neg', chk.left < 0);
-    $('mBar').classList.toggle('over', chk.left < 0);
-    $('mBar').firstElementChild.style.width = Math.min(100, chk.cost / LEVEL.budget * 100) + '%';
+    const est = S.estimate(LEVEL, chosenMap(), mods());
+    $('mCrew').textContent = money(est.total);
+    $('mLeft').textContent = money(est.margin);
+    $('mLeft').classList.toggle('neg', est.margin < 0);
+    $('mBar').classList.toggle('over', est.margin < 0);
+    $('mBar').firstElementChild.style.width = Math.min(100, est.total / LEVEL.budget * 100) + '%';
+    const pairs = S.chemistryFor(LEVEL, hiredIds);
+    const names = Object.fromEntries(allCands().map(x => [x.id, x.name]));
+    const chem = pairs.map(p => `${p.kind === 'good' ? 'Chemistry' : 'Clash'}: ${names[p.a]} and ${names[p.b]}`).join('. ');
     let note;
-    if (chk.missing.length) note = `Still need: ${chk.missing.join(', ')}`;
-    else if (chk.left < 0) note = `Over budget by ${money(-chk.left)}. Swap someone cheaper.`;
-    else if (chk.left < 800) note = `Only ${money(chk.left)} left for surprises and overtime. Tight.`;
-    else note = `${money(chk.left)} left for surprises, overtime and profit.`;
+    if (est.missing.length) note = `Still need: ${est.missing.join(', ')}.`;
+    else note = `Crew ${money(est.crew)} · gear ${money(est.gear)} · prep ${money(est.prep)}. Overtime runs ${money(est.overtimePerHour)} an hour.`;
+    if (chem) note += ` ${chem}.`;
     $('mNote').textContent = note;
-    $('startBtn').disabled = !chk.ok;
+    $('startBtn').disabled = !est.ok;
   }
 
   /* ================= Shoot: build ================= */
@@ -242,8 +271,8 @@
   function startShoot() {
     const map = chosenMap();
     const crew = LEVEL.hiring.map(r => map[r.dept]);
-    st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: S.companyMods(CO.rooms, save.owned) });
-    selected = null; lastCapture = null; toast = null; banked = false;
+    st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: mods() });
+    selected = null; lastCapture = null; toast = null; banked = false; logSeen = 0;
     clientLine = { text: '', until: 0, next: performance.now() + 9000, i: Math.floor(Math.random() * CLIENT_LINES.length) };
     tipUntil = performance.now() + 7000;
     buildShoot();
@@ -256,15 +285,16 @@
     const perks = save.owned.map(id => CO.rooms.find(r => r.id === id).name);
     $('screen-shoot').innerHTML = `
       <div class="topbar">
-        <div class="pill paper grow"><b class="hand">${esc(LEVEL.title)}</b><span><span id="shotCount">0/3 SHOTS</span> · <span class="clock" id="clock">0:00</span></span></div>
-        <div class="pill paper"><span>CASH LEFT</span><b id="budget">$0</b></div>
+        <div class="pill paper grow"><b class="hand">${esc(LEVEL.title)}</b><span><span id="shotCount">0/3 SHOTS</span> · <span class="clock" id="clock">8:00 AM</span></span></div>
+        <div class="pill paper"><span>MARGIN</span><b id="budget">$0</b></div>
         <button class="sq" type="button" id="pauseBtn" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
       </div>
-      <div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>
-      <div class="set-wrap">
+      <div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP 6 PM</span></span></div>
+      <div class="set-wrap" id="setWrap">
         ${A.setMarkup()}
         <div class="onstage"><small>ON STAGE</small><span id="onstage"></span></div>
         <button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>
+        <div class="cut" id="cutStamp" hidden>CUT!</div>
         <div class="flash" id="flash"></div>
       </div>
       <div class="ribbon" id="ribbon"><span id="ribbonText"></span><button class="btn small" type="button" id="autoBtn" hidden>Back to auto</button></div>
@@ -282,12 +312,12 @@
       g.style.transform = `translate(${idle.x}px, ${idle.y}px)`;
       g.innerHTML =
         `<ellipse class="selring" cx="0" cy="0" rx="19" ry="6" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="3 2"/>` +
-        `<g class="flip"><g transform="scale(1.25)" filter="url(#shadow)">${A.puppet(c)}</g></g>` +
+        `<g class="flip"><g transform="scale(1.25)" filter="url(#shadow)">${A.puppet(c)}<g class="held"></g></g></g>` +
         `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>` +
-        `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
+        `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-22" y="-10" width="44" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
         `<rect x="-18" y="-66" width="36" height="72" fill="transparent"/>`;
       layer.appendChild(g);
-      view.pups[c.id] = { g, flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
+      view.pups[c.id] = { g, flip: g.querySelector('.flip'), held: g.querySelector('.held'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt'), heldKey: '' };
       view.pos[c.id] = { x: idle.x, y: idle.y };
 
       const b = document.createElement('button');
@@ -301,13 +331,6 @@
   }
 
   /* ================= Shoot: input ================= */
-
-  function stationOf(t) {
-    if (t.dept === 'lighting') return 'light';
-    if (t.dept === 'camera') return 'camera';
-    if (t.dept === 'art' && !t.stage) return 'cart';
-    return 'table';
-  }
 
   function selectCrew(id) {
     if (st.over || modal) return;
@@ -337,69 +360,118 @@
     if (!selected) { say('Tap a crew member first, then a spot on the set.'); return; }
     const cand = S.stageCandidate(st);
     const list = Object.values(st.tasks)
-      .filter(t => !t.done && stationOf(t) === station && !st.shots[t.shot].captured)
+      .filter(t => !t.done && S.stationOf(t) === station && !st.shots[t.shot].captured)
       .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || st.priority.indexOf(a.shot) - st.priority.indexOf(b.shot) || a.order - b.order);
     if (!list.length) { say('Nothing left to do there.', true); return; }
     const workable = list.find(t => !S.blockReason(st, t, true));
     assignTo((workable || list[0]).id);
   }
 
+  function clapAnim(text) {
+    setText($('clapText'), text);
+    const clap = $('clap');
+    clap.classList.remove('go'); void clap.getBBox(); clap.classList.add('go');
+  }
+
   function pressAction() {
     const r = S.command(st, { type: 'action' });
     if (!r.ok) { say(r.message, true); return; }
-    setText($('clapText'), `SCENE ${st.priority.indexOf(st.capture.shot) + 1} · TAKE 1`);
-    const clap = $('clap');
-    clap.classList.remove('go'); void clap.getBBox(); clap.classList.add('go');
-    const fl = $('flash');
-    setTimeout(() => { fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); }, 420);
+    clapAnim(`SCENE ${st.priority.indexOf(st.capture.shot) + 1} · TAKE 1`);
     clientLine = Object.assign(clientLine, { text: 'Ooooh.', until: performance.now() + 3000 });
     say(r.message);
+  }
+
+  function flyPolaroid(shotId) {
+    const from = $('setWrap').getBoundingClientRect();
+    const row = document.querySelector(`[data-row="${shotId}"]`);
+    if (!row) return;
+    const to = row.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'flypola';
+    el.innerHTML = `${A.propSVG(shotId)}<span>${st.shots[shotId].quality}%</span>`;
+    const w = 120;
+    el.style.left = `${from.left + from.width / 2 - w / 2}px`;
+    el.style.top = `${from.top + from.height * 0.32}px`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => {
+      const dx = to.left + to.width - 60 - (from.left + from.width / 2);
+      const dy = to.top + to.height / 2 - (from.top + from.height * 0.32 + 50);
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(.35) rotate(8deg)`;
+      el.style.opacity = '0.2';
+    });
+    setTimeout(() => el.remove(), 1100);
+    const cut = $('cutStamp');
+    cut.hidden = false;
+    setTimeout(() => { cut.hidden = true; }, 900);
   }
 
   /* ================= Shoot: render ================= */
 
   function displayShot() {
     if (st.capture) return st.capture.shot;
+    if (st.review) return st.review.shot;
     if (st.stageShot) return st.stageShot;
     return lastCapture || S.stageCandidate(st) || st.priority[0];
   }
 
+  function camShift() {
+    const disp = displayShot();
+    const s = st.shots[disp];
+    if (s && (s.captured || pct(`${disp}.frame`) > 0 || st.capture || st.review)) return CAM_SHIFT[disp] || [0, 0];
+    return CAM_SHIFT[lastCapture] || [0, 0];
+  }
+
   function renderSet(now) {
     const disp = displayShot();
-    const show = (id, on) => setAttr($(id), 'display', on ? 'inline' : 'none');
-    const captured = st.shots[disp] && st.shots[disp].captured;
+    const showEl = (id, on) => setAttr($(id), 'display', on ? 'inline' : 'none');
+    const s = st.shots[disp];
+    const captured = s && s.captured;
     const rolling = st.capture && st.capture.shot === disp;
+    const reviewing = st.review && st.review.shot === disp;
 
     const n = isDone('hero.set') ? 4 : Math.floor(pct('hero.set') * 4);
-    show('pc-legs', n >= 1); show('pc-top', n >= 2); show('pc-sweep', n >= 3); show('pc-flag', n >= 4);
+    showEl('pc-legs', n >= 1); showEl('pc-top', n >= 2); showEl('pc-sweep', n >= 3); showEl('pc-flag', n >= 4);
     setAttr($('sweep'), 'fill', SHOT_COLOR[disp] || '#E7B84F');
 
     const rigTask = disp === 'cheese' ? 'cheese.rig' : disp === 'sauce' ? 'sauce.mount' : null;
     const rn = !rigTask ? 0 : (isDone(rigTask) || captured) ? 3 : Math.floor(pct(rigTask) * 3);
-    show('rig-pole', rn >= 1); show('rig-arm', rn >= 2);
-    show('rig-fork', disp === 'cheese' && rn >= 3); show('rig-bottle', disp === 'sauce' && rn >= 3);
+    showEl('rig-pole', rn >= 1); showEl('rig-arm', rn >= 2);
+    showEl('rig-fork', disp === 'cheese' && rn >= 3); showEl('rig-bottle', disp === 'sauce' && rn >= 3);
 
+    // Key light swings to its mark as the gaffer works; fill light goes up during the hero setup
     const dead = !!st.pending || Object.values(st.blocks).includes('keylight');
-    const lp = captured ? 1 : pct(`${disp}.light`);
+    const lp = captured || rolling || reviewing ? 1 : pct(`${disp}.light`);
+    const aim = KEY_AIM[disp] || [20, 20];
+    setAttr($('keyHead'), 'transform', `rotate(${(aim[0] + (aim[1] - aim[0]) * lp).toFixed(1)} 72 76)`);
     setAttr($('beam'), 'opacity', dead ? 0 : (0.5 * lp).toFixed(2));
     setAttr($('lightFace'), 'fill', dead ? '#3A3631' : lp > 0 ? '#FFE7A3' : '#7A7468');
     setAttr($('dead'), 'opacity', dead ? 1 : 0);
+    const fillUp = isDone('hero.light') || st.shots.hero.captured || pct('hero.light') > 0.5;
+    setAttr($('fillLight'), 'opacity', fillUp ? 1 : 0);
+    setAttr($('fillBeam'), 'opacity', fillUp && !dead ? 0.35 : 0);
+    const bl = disp === 'sauce' ? (captured || rolling || reviewing ? 1 : pct('sauce.light')) : 0;
+    setAttr($('backLight'), 'opacity', bl > 0 ? (0.4 + 0.6 * bl).toFixed(2) : 0);
 
+    // Prop on the table
     let key = 'none', inner = '';
-    if (disp === 'hero' && (isDone('hero.place') || captured || rolling)) { key = 'hero'; inner = A.propInner('hero'); }
-    else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
-      const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
-      const lift = rolling ? 10 + Math.round((1 - st.capture.left / st.capture.total) * 10) : ready ? 10 : 0;
+    if (disp === 'hero' && (isDone('hero.place') || captured || rolling || reviewing)) { key = 'hero'; inner = A.propInner('hero'); }
+    else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling || reviewing)) {
+      const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling || reviewing;
+      const lift = rolling ? 10 + Math.round((1 - st.capture.left / st.capture.total) * 12) : ready ? (reviewing || captured ? 22 : 10) : 0;
       key = 'cheese' + lift; inner = ready ? A.propInner('cheese', { lift }) : A.propInner('hero');
-    } else if (disp === 'sauce' && (st.stageShot === 'sauce' || captured || rolling)) {
-      const sauced = rolling ? st.capture.left < st.capture.total * 0.6 : captured;
+    } else if (disp === 'sauce' && (st.stageShot === 'sauce' || captured || rolling || reviewing)) {
+      const sauced = rolling ? st.capture.left < st.capture.total * 0.6 : (captured || reviewing);
       key = 'sauce' + sauced; inner = sauced ? A.propInner('sauce') : A.propInner('hero');
     }
     if (key !== view.propKey) { view.propKey = key; $('prop').innerHTML = inner; }
     setAttr($('pour'), 'opacity', disp === 'sauce' && rolling ? 1 : 0);
+    setAttr($('sparkle'), 'opacity', (disp === 'hero' && (rolling || reviewing)) ? 1 : 0);
 
-    // Framing marks on set, and the live monitor at video village
-    const fp = captured ? 1 : pct(`${disp}.frame`);
+    // Camera moves on its dolly for each setup; framing marks and the live monitor
+    const cs0 = camShift();
+    const camKey = cs0.join();
+    if (camKey !== view.cam) { view.cam = camKey; $('camRig').style.transform = `translate(${cs0[0]}px, ${cs0[1]}px)`; }
+    const fp = captured || rolling || reviewing ? 1 : pct(`${disp}.frame`);
     setAttr($('frameMarks'), 'opacity', (fp * 0.95).toFixed(2));
     setAttr($('recDot'), 'fill', st.capture ? '#FF4B3A' : '#5A2A24');
     const monKey = fp > 0 ? key + ':' + (fp >= 1 ? 'f' : 'p') : 'bars';
@@ -410,6 +482,10 @@
         : `<g opacity=".7"><rect x="-4" y="-6" width="14" height="60" fill="#E6E6E6"/><rect x="10" y="-6" width="14" height="60" fill="#E7B84F"/><rect x="24" y="-6" width="14" height="60" fill="#7FB0C9"/><rect x="38" y="-6" width="14" height="60" fill="#7FB069"/><rect x="52" y="-6" width="14" height="60" fill="#C77FC0"/><rect x="66" y="-6" width="14" height="60" fill="#D86B56"/><rect x="80" y="-6" width="14" height="60" fill="#344F70"/></g>`;
     }
     setAttr($('monRec'), 'opacity', st.capture ? 1 : 0);
+
+    // Rolling: lights down, spotlight on the burger, camera pushes in
+    setAttr($('dim'), 'opacity', st.capture ? 0.55 : 0);
+    $('setWrap').classList.toggle('pushin', !!st.capture);
 
     // Art cart
     const cn = isDone('hero.place') || st.shots.hero.captured ? 0 : isDone('hero.style') ? 5 : Math.floor(pct('hero.style') * 5);
@@ -423,51 +499,58 @@
     setAttr($('bowlSauce'), 'opacity', st.shots.sauce.captured ? 0 : pct('sauce.prep').toFixed(2));
 
     // Client notes from video village
-    if (!modal && !st.over) {
-      if (now > clientLine.next && now > clientLine.until) {
-        clientLine.text = CLIENT_LINES[clientLine.i++ % CLIENT_LINES.length];
-        clientLine.until = now + 3500;
-        clientLine.next = now + 14000;
-      }
+    if (!modal && !st.over && now > clientLine.next && now > clientLine.until) {
+      clientLine.text = CLIENT_LINES[clientLine.i++ % CLIENT_LINES.length];
+      clientLine.until = now + 3500;
+      clientLine.next = now + 14000;
     }
     const talking = now < clientLine.until;
     setAttr($('clientBub'), 'opacity', talking ? 1 : 0);
     if (talking) setText($('clientText'), clientLine.text);
 
-    // Crew puppets
+    // Crew puppets: walk in game time, carry gear, hold tools while working
     const at = {};
     const targets = {};
     for (const c of st.crew) {
+      const cs = S.crewStatus(st, c);
       let p;
       if (c.task) {
-        const stn = stationOf(st.tasks[c.task]);
+        const stn = S.stationOf(st.tasks[c.task]);
         at[stn] = (at[stn] || 0) + 1;
         const base = A.STATIONS[stn];
-        p = { x: base.x - (at[stn] - 1) * 28, y: base.y + (at[stn] - 1) * 5 };
+        const shift = stn === 'camera' ? cs0 : [0, 0];
+        p = { x: base.x + shift[0] - (at[stn] - 1) * 28, y: base.y + shift[1] + (at[stn] - 1) * 5 };
+      } else if (cs.state === 'IDLE' || cs.state === 'RECOVERING') {
+        p = view.pos[c.id];
       } else p = A.IDLE[c.dept];
       targets[c.id] = p;
       const v = view.pups[c.id];
       const prev = view.pos[c.id];
       if (prev.x !== p.x || prev.y !== p.y) {
         if (p.x !== prev.x) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
+        const secs = cs.state === 'MOVING' && c.moveTotal ? c.moveTotal / S.TPS / speed : 0.9;
+        v.g.style.transitionDuration = `${Math.max(0.3, secs).toFixed(2)}s`;
         v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
         view.pos[c.id] = { x: p.x, y: p.y };
       }
-      const cs = S.crewStatus(st, c);
       v.g.classList.toggle('working', cs.state === 'WORKING');
+      v.g.classList.toggle('walking', cs.state === 'MOVING');
       v.g.classList.toggle('sel', selected === c.id);
+      const hk = cs.state === 'MOVING' ? 'carry' : cs.state === 'WORKING' ? 'tool' : '';
+      if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
       if (cs.state === 'WORKING') {
         setAttr(v.ring, 'opacity', 1);
         setAttr(v.rp, 'stroke-dasharray', `${(cs.pct * 44).toFixed(1)} 44`);
         setAttr(v.bub, 'opacity', 0);
       } else {
         setAttr(v.ring, 'opacity', 0);
-        let txt = '...', fill = '#fff', col = '#22262B';
-        let showBub = true;
+        let txt = '', fill = '#fff', col = '#22262B';
         if (cs.state === 'BLOCKED') { txt = '!'; fill = '#D86B56'; col = '#fff'; }
+        else if (cs.state === 'RECOVERING') { txt = 'oops!'; fill = '#D86B56'; col = '#fff'; }
+        else if (cs.state === 'IDLE') txt = 'call sheet?';
         else if (/ACTION/.test(cs.text)) txt = 'ACTION?';
-        else if (/^No /.test(cs.text) || cs.text === 'Wrapped' || /Rolling/.test(cs.text) || /Holding|goes first|Stage busy/.test(cs.text)) showBub = false;
-        setAttr(v.bub, 'opacity', showBub ? 1 : 0);
+        else if (cs.handoff) txt = `${cs.text.replace('Handoff from ', '')}...`;
+        setAttr(v.bub, 'opacity', txt ? 1 : 0);
         setAttr(v.bb, 'fill', fill);
         setAttr(v.bt, 'fill', col);
         setText(v.bt, txt);
@@ -476,36 +559,47 @@
     const order = st.crew.slice().sort((a, b) => targets[a.id].y - targets[b.id].y).map(c => c.id);
     const depth = order.join();
     if (depth !== view.depth) { view.depth = depth; for (const id of order) $('crewLayer').appendChild(view.pups[id].g); }
+
+    // Botches: a puff of paper over the person who slipped
+    for (; logSeen < st.log.length; logSeen++) {
+      const e = st.log[logSeen];
+      if (e.type !== 'flub') continue;
+      const p = view.pos[e.crew] || { x: 180, y: 200 };
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${p.x} ${p.y - 50})`);
+      g.innerHTML = A.puffMarkup('oops');
+      $('fxLayer').appendChild(g);
+      setTimeout(() => g.remove(), 1300);
+      say(e.text, true);
+    }
   }
 
   function renderHud(now) {
-    const t = S.seconds(st);
-    setText($('clock'), S.fmtTime(t));
-    $('clock').classList.toggle('warn', t > LEVEL.timeLimit);
+    setText($('clock'), S.clockText(st));
+    const late = S.seconds(st) > LEVEL.timeLimit;
+    $('clock').classList.toggle('warn', late);
     setText($('budget'), money(st.budget));
     $('budget').classList.toggle('neg', st.budget < 0);
     const wrapped = Object.values(st.shots).filter(s => s.captured).length;
     setText($('shotCount'), `${wrapped}/3 SHOTS`);
-    setW($('dayFill'), t / LEVEL.hardStop);
-    $('daybar').classList.toggle('ot', t > LEVEL.timeLimit);
+    setW($('dayFill'), S.seconds(st) / LEVEL.hardStop);
+    $('daybar').classList.toggle('ot', late);
 
     const cand = S.stageCandidate(st);
     setText($('onstage'), st.capture ? st.shots[st.capture.shot].name : st.stageShot ? st.shots[st.stageShot].name : (cand ? st.shots[cand].name : 'Wrapped'));
 
-    // Clapper ACTION button
     const r = cand && S.readiness(st, cand);
     const ab = $('actionBtn');
-    const ready = !!(r && r.ready && !st.capture && !st.pending);
+    const ready = !!(r && r.ready && !st.capture && !st.pending && !st.review);
     ab.classList.toggle('on', ready);
     ab.classList.toggle('rolling', !!st.capture);
     let cap;
-    if (st.capture) cap = 'ROLLING';
+    if (st.capture) cap = `ROLLING · TAKE ${st.capture.take}`;
     else if (ready) cap = `READY · ${r.quality}%`;
     else if (r) cap = `${r.missingRequired.length} to go · ${r.quality}%`;
     else cap = 'wrapped';
     setText($('actionCap'), cap);
 
-    // Crew bar
     for (const c of st.crew) {
       const v = view.cb[c.id];
       const cs = S.crewStatus(st, c);
@@ -517,7 +611,6 @@
     }
     document.body.classList.toggle('picking', !!selected);
 
-    // Ribbon
     const rb = $('ribbon');
     let text = '', bad = false;
     if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
@@ -535,7 +628,7 @@
     renderShotCard(cand);
   }
 
-  function iconKey(t) { return t.id === 'keylight.fix' ? 'fix' : t.dept; }
+  function iconKey(t) { return t.fix ? 'fix' : t.dept; }
 
   function renderShotCard(cand) {
     const rowsKey = st.priority.map(id => id + (st.shots[id].captured ? 'c' + st.shots[id].quality : '') + (st.stageShot === id ? 's' : '') + st.shots[id].taskIds.length).join() + '|' + cand;
@@ -546,12 +639,12 @@
         const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
         const cls = s.captured ? 'done' : (cand === id ? 'stage' : '');
         const right = s.captured
-          ? `<span class="stamp-q">${s.quality}%</span>`
+          ? `<span class="stamp-q">${s.quality}%${s.takes > 1 ? ` · ${s.takes} takes` : ''}</span>`
           : `<span class="icons">${s.taskIds.map(tid => {
               const t = st.tasks[tid];
               return `<button class="ti dept-${t.dept}${t.optional ? ' optl' : ''}" type="button" data-task="${tid}" aria-label="${esc(t.label)}">${A.deptIcon(iconKey(t))}<i class="bd"></i></button>`;
             }).join('')}</span>`;
-        return `<div class="srow ${cls}"><span class="sg">${s.captured ? '✓' : i + 1}</span>
+        return `<div class="srow ${cls}" data-row="${id}"><span class="sg">${s.captured ? '✓' : i + 1}</span>
           <span class="sn">${esc(s.name)}${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</span>${right}</div>`;
       }).join('');
       view.icons = {};
@@ -577,8 +670,8 @@
     const ev = LEVEL.events.find(e => e.id === st.pending);
     const opts = S.eventOptions(st, ev.id);
     const line = o => {
-      if (o.kind === 'task') return `${esc(o.who)} fixes it, about ${o.secs}s. Free.` + (o.perk ? ' <strong>Spare bulb in the truck!</strong>' : '');
-      if (o.kind === 'wait') return o.owned ? `Free from your gear cage. Up in ${o.secs}s. <strong>Owned!</strong>` : `${money(o.cost)}. Arrives in ${o.secs}s. Nobody stops working.`;
+      if (o.kind === 'task') return `${esc(o.who)} fixes it, about ${gameMinutes(o.secs)} min. Free.` + (o.perk ? ' <strong>Spare bulb in the truck!</strong>' : '');
+      if (o.kind === 'wait') return o.owned ? `Free from your gear cage. Up in ${gameMinutes(o.secs)} min. <strong>Owned!</strong>` : `${money(o.cost)}. Arrives in ${gameMinutes(o.secs)} min. Nobody stops working.`;
       return `No wait, no cost. This shot loses ${o.penalty} quality.`;
     };
     openModal('chaos', `
@@ -588,11 +681,38 @@
       ${opts.map(o => `<button class="opt" type="button" data-choose="${o.id}">${A.ICON[o.id] || ''}<b>${esc(o.label)}</b><span>${line(o)}</span></button>`).join('')}`);
   }
 
+  function showReview() {
+    const id = st.review.shot;
+    const s = st.shots[id];
+    const gain = s.exec - Math.floor(s.exec / 2);
+    const retakeMin = gameMinutes(S.actionTicks(st) / S.TPS + (LEVEL.retakeReset || 0));
+    const skipped = s.skipped.map(t => st.tasks[t].label.toLowerCase());
+    const dp = st.crew.find(c => c.dept === 'camera');
+    let verdict;
+    if (s.quality >= 95) verdict = `${dp.name}: "That's the one."`;
+    else if (s.exec > 6) verdict = `${dp.name}: "The crew was a little rough on that one. Another?"`;
+    else if (skipped.length) verdict = `${dp.name}: "It'd look better with the ${skipped.join(' and ')}, but it works."`;
+    else verdict = `${dp.name}: "Solid. Your call."`;
+    openModal('review', `
+      <div class="chaos-h" style="background:var(--ink)"><b>Take ${s.takes}: ${esc(s.name)}</b></div>
+      <div class="bigpola"><div class="pic" style="background:${SHOT_COLOR[id]}">${A.propSVG(id)}</div><span class="qs">${s.quality}%</span></div>
+      <div class="report">
+        <span></span><span>Setup${skipped.length ? ` (no ${esc(skipped.join(', '))})` : ''}</span><b>${s.setup}</b>
+        <span></span><span>Crew execution</span><b>${s.exec ? '-' + s.exec : '0'}</b>
+        ${s.bonus ? `<span></span><span>Specialty and post</span><b>+${s.bonus}</b>` : ''}
+      </div>
+      <p class="quote">${esc(verdict)}</p>
+      <div class="row2">
+        <button class="btn go" type="button" data-accept style="font-size:19px">Print it!</button>
+        <button class="btn" type="button" data-retake>One more take<br><small>${gain > 0 ? `+${gain}%` : 'safety take, +0%'} · about ${retakeMin} min</small></button>
+      </div>`);
+  }
+
   function showPause() {
     st.paused = true;
     openModal('pause', `
       <span class="label">Paused</span>
-      <p>${S.fmtTime(S.seconds(st))} on the clock. ${Object.values(st.shots).filter(s => s.captured).length} of 3 shots in the can.</p>
+      <p>${S.clockText(st)} on set. ${Object.values(st.shots).filter(s => s.captured).length} of 3 shots in the can.</p>
       <div class="seg" role="group" aria-label="Game speed">
         <button type="button" data-speed="1" aria-pressed="${speed === 1}">1x</button>
         <button type="button" data-speed="2" aria-pressed="${speed === 2}">2x</button>
@@ -621,21 +741,24 @@
     const hired = chosenMap();
     const reveals = st.crew.filter(c => hired[c.dept] && hired[c.dept].network !== 'yours').map(c => {
       const flubs = st.log.filter(e => e.type === 'flub' && e.crew === c.id).length;
-      return `<span><b>${esc(c.name)}</b> turned out ${speedWord(c.speed)} and ${relWord(c.reliability)}${flubs ? `, botched ${flubs} task${flubs > 1 ? 's' : ''}` : ''}.</span>`;
+      return `<span><b>${esc(c.name)}</b> turned out ${word('skill', c.skill)}, ${word('speed', c.speed)} and ${word('org', c.org)}${flubs ? `, botched ${flubs} task${flubs > 1 ? 's' : ''}` : ''}.</span>`;
     });
+    const chem = st.crew.flatMap(c => c.chem.filter(x => x.kind === 'good' && c.id < x.with).map(x => `${c.name} and ${x.name}`));
     const flubsAll = st.log.filter(e => e.type === 'flub').length;
     const nextRoom = CO.rooms.filter(r => !save.owned.includes(r.id)).sort((a, b) => a.cost - b.cost)[0];
     const roomNote = nextRoom ? (save.bank >= nextRoom.cost ? `You can afford the ${nextRoom.name} now.` : `${money(nextRoom.cost - save.bank)} more for the ${nextRoom.name}.`) : 'Every room is built.';
+    const otNote = sc.overtimeMinutes ? ` (${Math.floor(sc.overtimeMinutes / 60)}h ${sc.overtimeMinutes % 60}m)` : '';
     openModal('wrap', `
       <div class="chaos-h" style="background:var(--slate)"><b>${pulled ? 'Plug pulled' : 'Wrap report'}</b></div>
       <div class="stars" role="img" aria-label="${sc.stars} of 3 stars">${starsRow(sc.stars)}</div>
       <div class="report">
         ${ck(sc.allShots)}<span>Shots completed</span><b>${sc.shotsDone}/${sc.shotsTotal}</b>
-        ${ck(sc.onTime)}<span>Time (wrap by ${S.fmtTime(LEVEL.timeLimit)})</span><b>${S.fmtTime(sc.time)}</b>
+        ${ck(sc.onTime)}<span>Wrapped by 6:00 PM</span><b>${sc.wrapClock}</b>
         ${ck(sc.quality)}<span>Quality (need ${LEVEL.qualityTarget}%)</span><b>${sc.avgQuality}%</b>
         ${ck(sc.inBudget)}<span>Profit to the bank</span><b>${money(sc.profit)}</b>
       </div>
-      <p class="note">Crew ${money(sc.crewCost)} · Rentals ${money(sc.extraCost)} · Overtime ${money(sc.overtimeCost)}${flubsAll ? ` · ${flubsAll} botched task${flubsAll > 1 ? 's' : ''}` : ''}</p>
+      <p class="note">Client paid ${money(LEVEL.budget - sc.lostRevenue)}${sc.lostRevenue ? ' (half kill fee)' : ''}. Crew ${money(sc.crewCost)} · gear ${money(sc.gearCost)} · prep ${money(sc.prepCost)} · rentals ${money(sc.extraCost)} · overtime ${money(sc.overtimeCost)}${otNote}${flubsAll ? ` · ${flubsAll} botched task${flubsAll > 1 ? 's' : ''}` : ''}${sc.takes > 3 ? ` · ${sc.takes} takes` : ''}</p>
+      ${chem.length ? `<p class="note">Chemistry paid off: ${esc(chem.join(', '))}.</p>` : ''}
       ${reveals.length ? `<div class="reveal">${reveals.join('')}</div>` : ''}
       <p class="quote">${esc(quote)}</p>
       <p class="note"><b>Bank: ${money(save.bank)}.</b> ${esc(roomNote)}</p>
@@ -700,6 +823,19 @@
       say(r.message);
       return;
     }
+    if (t.closest('[data-accept]')) {
+      const id = st.review && st.review.shot;
+      const r = S.command(st, { type: 'accept' });
+      closeModal();
+      if (r.ok) { lastCapture = id; view.rowsKey = ''; renderHud(performance.now()); flyPolaroid(id); say(r.message); }
+      return;
+    }
+    if (t.closest('[data-retake]')) {
+      const r = S.command(st, { type: 'retake' });
+      closeModal();
+      if (r.ok) { clapAnim(`SCENE ${st.priority.indexOf(st.capture.shot) + 1} · TAKE ${st.capture.take}`); say(r.message); }
+      return;
+    }
     if (t.closest('[data-speed]')) {
       speed = +t.closest('[data-speed]').dataset.speed;
       document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.speed === speed)));
@@ -734,10 +870,9 @@
     last = now;
     if (screen === 'shoot' && st) {
       if (!modal) {
-        const before = st.capture && st.capture.shot;
         S.advance(st, dt * speed);
-        if (before && !st.capture) lastCapture = before;
         if (st.pending) showChaos();
+        else if (st.review) setTimeout(() => { if (st.review && !modal) showReview(); }, 0) || (modal = 'review-wait');
         else if (st.over) showWrap();
       }
       renderSet(now);

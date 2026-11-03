@@ -74,6 +74,29 @@
     return `<svg class="${cls || ''}" viewBox="-13.5 -51 27 30" aria-hidden="true">${puppet(c)}</svg>`;
   }
 
+  /* ---------- Held items (puppet coordinates, right hand near 10,-14) ---------- */
+
+  const CARRY = {
+    grip: `<ellipse cx="13" cy="-11" rx="7" ry="4" fill="#E7B84F" stroke="${INK}" stroke-width="1"/><path d="M9 -14 q4 -3 8 0" fill="none" stroke="${INK}" stroke-width="1"/>`,
+    lighting: `<g transform="rotate(-10 13 -18)"><polygon points="7,-24 19,-24 22,-14 4,-14" fill="#F4EEDF" stroke="${INK}" stroke-width="1"/><rect x="5" y="-16" width="16" height="2" fill="#FFE7A3"/></g>`,
+    camera: `<rect x="8" y="-19" width="11" height="8" rx="1.5" fill="${INK}"/><rect x="11" y="-21" width="5" height="2" fill="${INK}"/>`,
+    art: `<ellipse cx="14" cy="-15" rx="8" ry="2.2" fill="#fff" stroke="${INK}" stroke-width="1"/><path d="M9 -16 q5 -7 10 0z" fill="#E3A85A" stroke="${INK}" stroke-width=".8"/>`,
+  };
+  const TOOL = {
+    grip: `<path d="M10 -16 l8 -9" stroke="${INK}" stroke-width="2" stroke-linecap="round"/><rect x="15" y="-30" width="8" height="5" rx="1" fill="#5E5A52" stroke="${INK}" stroke-width=".8" transform="rotate(40 19 -27)"/>`,
+    lighting: `<rect x="11" y="-31" width="9" height="12" fill="#D86B56" opacity=".85" stroke="${INK}" stroke-width=".8"/>`,
+    camera: `<rect x="9" y="-24" width="9" height="6" rx="1" fill="${INK}"/><circle cx="18.5" cy="-21" r="1.6" fill="#7FB0C9"/>`,
+    art: `<path d="M10 -18 l9 -8 M11 -17 l9 -7" stroke="${INK}" stroke-width="1.1" stroke-linecap="round"/>`,
+  };
+  function heldItem(dept, kind) {
+    return (kind === 'carry' ? CARRY : kind === 'tool' ? TOOL : {})[dept] || '';
+  }
+
+  function puffMarkup(word) {
+    return `<g class="puff"><g fill="#fff" stroke="${INK}" stroke-width="1.2"><circle r="9"/><circle cx="-10" cy="4" r="7"/><circle cx="10" cy="5" r="7"/><circle cx="2" cy="-8" r="6"/></g>
+      <text y="4" text-anchor="middle" ${HAND} font-size="9" fill="#D86B56">${word}</text></g>`;
+  }
+
   /* ---------- Props (local box 0..60 x 0..40) ---------- */
 
   function burger(lift, opts) {
@@ -186,6 +209,16 @@
   </g>
 
   <polygon id="beam" points="96,78 76,94 154,136 222,136" fill="#FFE7A3" opacity="0"/>
+  <g id="fillLight" opacity="0" filter="url(#cut)">
+    <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
+    <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>
+  </g>
+  <polygon id="fillBeam" points="228,106 236,116 206,134 190,130" fill="#FFF4D6" opacity="0"/>
+  <g id="backLight" opacity="0">
+    <path d="M214 -54 V-34" ${s} stroke-width="1.6"/><rect x="204" y="-34" width="20" height="12" rx="2" fill="#F4EEDF" ${s}/>
+    <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>
+  </g>
+  <g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
   <g id="prop" transform="translate(150 94)" filter="url(#cut)"></g>
   <path id="pour" class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
   <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0">
@@ -196,7 +229,7 @@
   <g filter="url(#cut)">
     <path d="M58 200 L72 158 L86 200 M72 158 V200" fill="none" ${s} stroke-width="2"/>
     <path d="M72 158 V76" ${s} stroke-width="2.4"/>
-    <g transform="rotate(20 72 76)">
+    <g id="keyHead" transform="rotate(20 72 76)">
       <polygon points="52,58 92,58 100,92 44,92" fill="#F4EEDF" ${s}/>
       <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>
     </g>
@@ -206,14 +239,17 @@
     <circle cx="88" cy="48" r="9" fill="#D86B56" stroke="${INK}" stroke-width="1.5"/><text x="88" y="53" text-anchor="middle" ${HAND} font-size="13" fill="#fff">!</text>
   </g>
 
-  <!-- Camera on sticks -->
-  <g filter="url(#cut)">
+  <!-- Dolly track -->
+  <g filter="url(#cut)" opacity=".9"><path d="M232 214 H358 M232 222 H358" stroke="${INK}" stroke-width="2.4"/><g fill="#5E5A52">${[240, 256, 272, 288, 304, 320, 336, 352].map(x => `<rect x="${x}" y="212" width="4" height="12"/>`).join('')}</g></g>
+  <!-- Camera on a dolly -->
+  <g id="camRig" class="camrig"><g filter="url(#cut)">
     <path d="M290 204 L304 152 L318 204 M304 152 V204" fill="none" ${s} stroke-width="2"/>
     <rect x="288" y="126" width="36" height="24" rx="3" fill="#3B4048" ${s}/>
     <rect x="270" y="131" width="19" height="14" rx="2" fill="${INK}"/>
     <rect x="296" y="119" width="16" height="8" rx="2" fill="#3B4048" ${s}/>
     <circle id="recDot" cx="318" cy="132" r="2.6" fill="#5A2A24"/>
-  </g>
+    <rect x="286" y="202" width="36" height="8" rx="2" fill="#5E5A52" ${s}/>
+  </g></g>
 
   <!-- Art cart -->
   <g filter="url(#cut)">
@@ -271,6 +307,11 @@
   <rect class="station-hit" data-station="cart" x="4" y="146" width="84" height="80" rx="6"/>
 
   <g id="crewLayer"></g>
+  <g id="fxLayer"></g>
+
+  <defs><mask id="spotMask" maskUnits="userSpaceOnUse" x="0" y="-70" width="360" height="410">
+    <rect x="0" y="-70" width="360" height="410" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask></defs>
+  <rect id="dim" x="0" y="-70" width="360" height="410" fill="#0B0F18" opacity="0" mask="url(#spotMask)" pointer-events="none"/>
 
   <!-- Clapper for ACTION -->
   <g id="clap" class="clap" transform="translate(146 30)">
@@ -365,7 +406,7 @@
   <rect x="8" y="40" width="344" height="10" fill="#C4644D" ${s}/>
   <g filter="url(#cut)">
     <rect x="70" y="6" width="220" height="34" fill="#22262B" ${s}/>
-    <text x="180" y="30" text-anchor="middle" ${HAND} font-size="15" fill="#E7B84F">${name}</text>
+    <text x="180" y="29" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12.5 : 15}" fill="#E7B84F">${name}</text>
     <g fill="#FFE7A3">${Array.from({ length: 12 }, (_, i) => `<circle cx="${78 + i * 18.6}" cy="10" r="1.7"/><circle cx="${78 + i * 18.6}" cy="36" r="1.7"/>`).join('')}</g>
     <path d="M100 40 V44 M260 40 V44" ${s}/>
   </g>
@@ -442,7 +483,7 @@
 
   root.WrapArt = {
     DEPT_COLOR, STATIONS, IDLE, CLIENT, AGENCY,
-    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger,
+    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

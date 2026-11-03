@@ -5,7 +5,9 @@ const S = require('../src/sim.js');
 const { burgerJob, company } = require('../data/burger-job.js');
 
 const TPS = S.TPS;
-const fresh = () => S.createGame(burgerJob);
+// Exact-timing tests switch off walking, pauses, handoffs (physical) and take review
+const make = (opts) => S.createGame(burgerJob, Object.assign({ physical: false, review: false }, opts || {}));
+const fresh = () => make();
 const secs = n => Math.round(n * TPS);
 const runUntil = (st, pred, max = 5000) => { let i = 0; while (!pred(st) && !st.over && i++ < max) S.tick(st); return pred(st); };
 const clone = obj => JSON.parse(JSON.stringify(obj));
@@ -26,6 +28,7 @@ function autoPlay(st, onTick, choice) {
   let guard = 0;
   while (!st.over && guard++ < 10000) {
     if (st.pending) S.command(st, { type: 'choose', option: choice || 'fix' });
+    if (st.review) S.command(st, { type: 'accept' });
     S.tick(st);
     if (onTick) onTick(st);
     const c = S.stageCandidate(st);
@@ -36,7 +39,9 @@ function autoPlay(st, onTick, choice) {
 
 // Soft-lock guard: if nobody is working and nobody can pick work, the shot must be ready (or rolling, or wrapped).
 function assertNoSoftLock(st) {
-  if (st.over || st.capture || st.pending || st.waits.length) return;
+  if (st.over || st.capture || st.pending || st.review || st.waits.length) return;
+  if (st.crew.some(c => c.move > 0 || c.pause > 0 || c.recover > 0)) return;
+  if (Object.values(st.tasks).some(t => !t.done && t.readyAt > st.ticks)) return;
   if (st.crew.some(c => c.task)) return;
   if (S.anyAvailableWork(st)) return;
   const c = S.stageCandidate(st);
@@ -253,35 +258,36 @@ const pick = (...ids) => {
 };
 const pickMap = list => Object.fromEntries(list.map(c => [c.dept, c]));
 
-test('hiring check totals rates and flags missing roles and overspend', () => {
-  let r = S.hireCheck(burgerJob, pickMap(pick('mika', 'ro', 'dani')));
+test('estimate adds crew, gear and prep, and flags missing roles', () => {
+  let r = S.estimate(burgerJob, pickMap(pick('mika', 'ro', 'dani')));
   assert.deepEqual(r.missing, ['Art']);
   assert.equal(r.ok, false);
-  r = S.hireCheck(burgerJob, pickMap(pick('mika', 'ro', 'dani', 'paz')));
-  assert.equal(r.cost, 1700 + 1500 + 1300 + 1600);
-  assert.equal(r.left, burgerJob.budget - r.cost);
+  r = S.estimate(burgerJob, pickMap(pick('mika', 'ro', 'dani', 'paz')));
+  assert.equal(r.crew, 3800 + 3400 + 2900 + 3600);
+  assert.equal(r.total, r.crew + 4500 + 2000);
+  assert.equal(r.margin, 28000 - r.total);
+  assert.equal(r.overtimePerHour, Math.round(r.crew / 10 * 1.5));
   assert.ok(r.ok);
-  r = S.hireCheck(burgerJob, pickMap(pick('ines', 'ro', 'max', 'paz')));
-  assert.equal(r.cost, 7600);
-  assert.equal(r.ok, false, 'the best crew you can get costs more than the budget');
+  const owned = S.estimate(burgerJob, pickMap(pick('mika', 'ro', 'dani', 'paz')), S.companyMods(company.rooms, ['gear']));
+  assert.equal(owned.gear, 1500);
 });
 
-test('hired crew rates come out of the budget', () => {
-  const st = S.createGame(burgerJob, { crew: pick('mika', 'ro', 'dani', 'theo') });
-  assert.equal(st.budget, burgerJob.budget - (1700 + 1500 + 1300 + 1100));
+test('crew, gear and prep come out of the budget', () => {
+  const st = make({ crew: pick('mika', 'ro', 'dani', 'theo') });
+  assert.equal(st.budget, 28000 - (3800 + 3400 + 2900 + 2400) - 4500 - 2000);
 });
 
 test('faster crew finish sooner', () => {
-  const vets = autoPlay(S.createGame(burgerJob, { crew: pick('ines', 'ro', 'max', 'jules').map(c => Object.assign({}, c, { reliability: 1 })) }));
-  const newbies = autoPlay(S.createGame(burgerJob, { crew: pick('sam', 'lee', 'chuy', 'kit').map(c => Object.assign({}, c, { reliability: 1 })) }));
+  const vets = autoPlay(make({ crew: pick('ines', 'ro', 'max', 'jules').map(c => Object.assign({}, c, { reliability: 1 })) }));
+  const newbies = autoPlay(make({ crew: pick('sam', 'lee', 'chuy', 'kit').map(c => Object.assign({}, c, { reliability: 1 })) }));
   assert.ok(vets.over && newbies.over);
   assert.ok(S.seconds(vets) < S.seconds(newbies) - 20, `vets ${S.seconds(vets)}s vs newbies ${S.seconds(newbies)}s`);
 });
 
 test('an unreliable crew member botches each task at most once, and the same seed botches the same tasks', () => {
-  const crew = pick('mika', 'ro', 'dani', 'kit').map(c => c.id === 'kit' ? Object.assign({}, c, { reliability: 0 }) : Object.assign({}, c, { reliability: 1 }));
-  const a = autoPlay(S.createGame(burgerJob, { crew, seed: 7 }));
-  const b = autoPlay(S.createGame(burgerJob, { crew, seed: 7 }));
+  const crew = pick('mika', 'ro', 'dani', 'kit').map(c => c.id === 'kit' ? Object.assign({}, c, { reliability: 0 }) : Object.assign({}, c, { reliability: 1, leadership: 0 }));
+  const a = autoPlay(make({ crew, seed: 7 }));
+  const b = autoPlay(make({ crew, seed: 7 }));
   const flubs = a.log.filter(e => e.type === 'flub');
   const artTasks = Object.values(a.tasks).filter(t => t.dept === 'art');
   assert.equal(flubs.length, artTasks.length, 'every art task botched exactly once');
@@ -308,7 +314,7 @@ test('key light dies when Cheese Pull takes the stage and freezes the clock unti
 
 test('fix: the gaffer gets a repair task, and the spare bulb perk makes it short', () => {
   for (const [crew, secsExpected] of [[undefined, 12], [pick('mika', 'ro', 'dani', 'paz'), 5]]) {
-    const st = S.createGame(burgerJob, crew ? { crew: crew.map(c => Object.assign({}, c, { reliability: 1, speed: 1 })) } : {});
+    const st = make(crew ? { crew: crew.map(c => Object.assign({}, c, { reliability: 1, speed: 1 })) } : {});
     playUntil(st, s => !!s.pending);
     assert.ok(S.command(st, { type: 'choose', option: 'fix' }).ok);
     assert.equal(st.tasks['keylight.fix'].need, secs(secsExpected));
@@ -319,12 +325,12 @@ test('fix: the gaffer gets a repair task, and the spare bulb perk makes it short
   }
 });
 
-test('rent: costs $400 and unblocks when the backup arrives', () => {
+test('rent: costs $1,000 and unblocks when the backup arrives', () => {
   const st = fresh();
   playUntil(st, s => !!s.pending);
   const before = st.budget;
   S.command(st, { type: 'choose', option: 'rent' });
-  assert.equal(st.budget, before - 400);
+  assert.equal(st.budget, before - 1000);
   assert.equal(S.taskStatus(st, 'cheese.light').text, 'Backup light on the way');
   S.stepTicks(st, secs(6));
   assert.equal(st.blocks['cheese.light'], undefined);
@@ -338,16 +344,29 @@ test('bounce card: no wait, but the shot loses 20 quality', () => {
   assert.ok(st.shots.cheese.quality <= 80);
 });
 
-test('overtime costs money and the client pulls the plug at the hard stop', () => {
+test('overtime is priced on the fictional day: 1.5x day rates after 10 hours, 2x after 12', () => {
   const lv = Object.assign({}, burgerJob, { timeLimit: 10, hardStop: 30 });
-  const st = S.createGame(lv);
+  const st = S.createGame(lv, { physical: false, review: false, crew: pick('mika', 'ro', 'dani', 'paz') });
+  const rates = 3800 + 3400 + 2900 + 3600;
   const start = st.budget;
-  S.stepTicks(st, secs(20));
-  assert.equal(Math.round(start - st.budget), 10 * lv.overtimeRate);
+  S.stepTicks(st, secs(12));     // 10s day + 2s = 2 hours at 1.5x (one game second = one hour here)
+  assert.ok(Math.abs((start - st.budget) - rates / 10 * 1.5 * 2) < 1, `charged ${start - st.budget}`);
+  const mid = st.budget;
+  S.stepTicks(st, secs(2));      // past 12 hours: double time
+  assert.ok(Math.abs((mid - st.budget) - rates / 10 * 2 * 2) < 1, `charged ${mid - st.budget}`);
   S.stepTicks(st, secs(20));
   assert.ok(st.over);
   assert.equal(st.endReason, 'pulled');
   assert.equal(S.score(st).stars, 0);
+});
+
+test('the day clock runs 8:00 AM to 6:00 PM over the time limit', () => {
+  const st = fresh();
+  assert.equal(S.clockText(st), '8:00 AM');
+  S.stepTicks(st, secs(60));
+  assert.equal(S.clockText(st), '1:00 PM');
+  st.ticks = secs(120);
+  assert.equal(S.clockText(st), '6:00 PM');
 });
 
 test('stars: all shots, on time, then quality plus budget', () => {
@@ -367,17 +386,17 @@ test('office rooms combine into shoot-day modifiers', () => {
   assert.equal(m.fresh, 1.4);
   assert.equal(m.backupLight, true);
   assert.equal(m.post, 10);
-  assert.deepEqual(S.companyMods(company.rooms, []), { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 });
+  assert.deepEqual(S.companyMods(company.rooms, []), { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0, gearPackage: null });
 });
 
 test('craft services makes the whole day faster', () => {
   const base = autoPlay(fresh());
-  const craft = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['craft']) }));
+  const craft = autoPlay(make({ mods: S.companyMods(company.rooms, ['craft']) }));
   assert.ok(S.seconds(craft) < S.seconds(base));
 });
 
 test('gear cage turns renting a light into a free 2-second swap', () => {
-  const st = S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['gear']) });
+  const st = make({ mods: S.companyMods(company.rooms, ['gear']) });
   playUntil(st, s => !!s.pending);
   const rent = S.eventOptions(st, 'keylight').find(o => o.id === 'rent');
   assert.equal(rent.cost, 0);
@@ -390,11 +409,127 @@ test('gear cage turns renting a light into a free 2-second swap', () => {
 });
 
 test('edit bay adds quality, capped at 100', () => {
-  const st = S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['edit']) });
+  const st = make({ mods: S.companyMods(company.rooms, ['edit']) });
   S.stepTicks(st, secs(14) + 1);
   S.command(st, { type: 'assign', crew: 'gaffer', task: 'hero.style' });
   runUntil(st, s => S.readiness(s, 'hero').ready);
   assert.equal(S.readiness(st, 'hero').quality, 80, '100 - 30 skipped light + 10 post');
-  const full = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['edit']) }));
+  const full = autoPlay(make({ mods: S.companyMods(company.rooms, ['edit']) }));
   assert.ok(Object.values(full.shots).every(s => s.quality <= 100));
+});
+
+/* ---------- Physical shoot and crew depth ---------- */
+
+const phys = (ids, opts) => S.createGame(burgerJob, Object.assign({ review: false, crew: pick(...ids) }, opts || {}));
+const reliable = list => list.map(c => Object.assign({}, c, { reliability: 1 }));
+
+test('crew walk to a station before work starts there', () => {
+  const st = S.createGame(burgerJob, { review: false });
+  S.tick(st);
+  const grip = st.crew.find(c => c.id === 'grip');
+  assert.equal(grip.task, 'hero.set');
+  assert.ok(grip.move > 0, 'walking');
+  assert.equal(S.crewStatus(st, grip).state, 'MOVING');
+  assert.equal(st.tasks['hero.set'].progress, 0);
+  runUntil(st, s => s.tasks['hero.set'].progress > 0);
+  assert.equal(grip.move, 0);
+});
+
+test('low organization means a pause between tasks; the DP\'s leadership shortens it', () => {
+  const crew = reliable(pick('sam', 'ro', 'chuy', 'paz'));
+  const st = S.createGame(burgerJob, { review: false, crew });
+  runUntil(st, s => s.tasks['hero.set'].done);
+  const chuy = st.crew.find(c => c.id === 'grip');
+  assert.ok(chuy.pause > 0);
+  assert.equal(S.crewStatus(st, chuy).state, 'IDLE');
+  const withInes = S.createGame(burgerJob, { review: false, crew: reliable(pick('ines', 'ro', 'chuy', 'paz')) });
+  runUntil(withInes, s => s.tasks['hero.set'].done);
+  assert.ok(withInes.crew.find(c => c.id === 'grip').pause < chuy.pause);
+});
+
+test('handoffs between departments cost time; chemistry removes it and leadership shrinks it', () => {
+  // Dani (grip) hands the tabletop to Ro (gaffer): good chemistry, so no wait
+  const chem = S.createGame(burgerJob, { review: false, crew: reliable(pick('sam', 'ro', 'dani', 'paz')) });
+  runUntil(chem, s => s.tasks['hero.set'].done);
+  assert.equal(chem.tasks['hero.light'].readyAt, 0);
+  // Chuy has no chemistry with Ro: a handoff delay, shorter under a strong DP
+  const weak = S.createGame(burgerJob, { review: false, crew: reliable(pick('sam', 'ro', 'chuy', 'paz')) });
+  runUntil(weak, s => s.tasks['hero.set'].done);
+  const lagWeak = weak.tasks['hero.light'].readyAt - weak.ticks;
+  const strong = S.createGame(burgerJob, { review: false, crew: reliable(pick('ines', 'ro', 'chuy', 'paz')) });
+  runUntil(strong, s => s.tasks['hero.set'].done);
+  const lagStrong = strong.tasks['hero.light'].readyAt - strong.ticks;
+  assert.ok(lagWeak > 0);
+  assert.ok(lagStrong < lagWeak, `${lagStrong} vs ${lagWeak}`);
+  assert.match(S.taskStatus(weak, 'hero.light').text, /Handoff from Chuy/);
+});
+
+test('clashing pairs hand off slower', () => {
+  const a = S.createGame(burgerJob, { review: false, crew: reliable(pick('mika', 'lee', 'dani', 'paz')) });
+  const b = S.createGame(burgerJob, { review: false, crew: reliable(pick('mika', 'lee', 'max', 'paz')) });
+  const ha = S.handoffTicks(a, a.crew.find(c => c.id === 'grip'), a.crew.find(c => c.id === 'lighting'));
+  const hb = S.handoffTicks(b, b.crew.find(c => c.id === 'grip'), b.crew.find(c => c.id === 'lighting'));
+  assert.ok(hb > ha, `clash ${hb} vs normal ${ha}`);
+});
+
+test('a strong DP makes botches rarer across the whole crew', () => {
+  let weak = 0, strong = 0;
+  for (let seed = 1; seed <= 40; seed++) {
+    const base = pick('mika', 'lee', 'chuy', 'kit').map(c => Object.assign({}, c, { leadership: 0 }));
+    weak += autoPlay(S.createGame(burgerJob, { seed, crew: base })).log.filter(e => e.type === 'flub').length;
+    const led = base.map(c => c.dept === 'camera' ? Object.assign({}, c, { leadership: 1 }) : c);
+    strong += autoPlay(S.createGame(burgerJob, { seed, crew: led })).log.filter(e => e.type === 'flub').length;
+  }
+  assert.ok(strong < weak, `${strong} botches with a leader vs ${weak}`);
+});
+
+test('skill sets shot quality, and the macro specialty lifts the macro shots', () => {
+  const q = ids => { const st = autoPlay(phys(ids, { crew: reliable(pick(...ids)) })); return Object.values(st.shots).map(s => s.quality); };
+  const vets = q(['ines', 'ro', 'max', 'paz']);
+  const rookies = q(['sam', 'lee', 'chuy', 'kit']);
+  assert.ok(vets.every((v, i) => v > rookies[i]), `${vets} vs ${rookies}`);
+  const st = autoPlay(phys(['ines', 'ro', 'chuy', 'kit'], { crew: reliable(pick('ines', 'ro', 'chuy', 'kit')) }));
+  assert.ok(st.shots.cheese.bonus >= 8);
+  assert.equal(st.shots.hero.bonus, 0);
+});
+
+test('take review: the clock waits, a retake costs time and wins back half the skill loss', () => {
+  const crew = reliable(pick('sam', 'lee', 'chuy', 'kit'));
+  const st = S.createGame(burgerJob, { crew });
+  let guard = 0;
+  while (!st.review && guard++ < 5000) {
+    S.tick(st);
+    const c = S.stageCandidate(st);
+    if (c && !st.capture && !st.review && S.readiness(st, c).ready) S.command(st, { type: 'action' });
+  }
+  assert.ok(st.review);
+  const s = st.shots[st.review.shot];
+  const t = st.ticks;
+  S.stepTicks(st, 30);
+  assert.equal(st.ticks, t, 'frozen while reviewing');
+  const before = s.quality, exec = s.exec;
+  assert.ok(exec > 0);
+  assert.ok(S.command(st, { type: 'retake' }).ok);
+  assert.equal(s.exec, Math.floor(exec / 2));
+  assert.ok(s.quality > before);
+  assert.equal(s.takes, 2);
+  runUntil(st, x => !!x.review);
+  assert.ok(st.ticks - t >= S.actionTicks(st) + secs(3));
+  S.command(st, { type: 'accept' });
+  assert.ok(s.captured);
+});
+
+test('good chemistry makes both partners faster', () => {
+  const st = phys(['mika', 'ro', 'dani', 'paz']);
+  const mika = st.crew.find(c => c.cid === 'mika');
+  assert.ok(Math.abs(mika.speed - 1.0 * 1.08 * 1.08) < 1e-9, 'Mika has chemistry with Ro and Paz');
+  assert.equal(mika.chem.length, 2);
+});
+
+test('physical runs with any crew never soft-lock', () => {
+  const sets = [['ines', 'ro', 'max', 'paz'], ['sam', 'lee', 'chuy', 'kit'], ['mika', 'ro', 'dani', 'jules'], ['sam', 'ro', 'max', 'theo']];
+  for (const ids of sets) for (let seed = 1; seed <= 15; seed++) {
+    const st = autoPlay(S.createGame(burgerJob, { seed, crew: pick(...ids) }), assertNoSoftLock);
+    assert.ok(st.over, `${ids} seed ${seed}`);
+  }
 });
