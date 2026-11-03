@@ -1,5 +1,5 @@
 {
-  "_note": "Maps the first art delivery (unnamed image files) to manifest names and fits it to the export spec. Pivots are in the SOURCE image's pixels, offsets and joints in set units. native = px per set unit in the delivered file, target = px per set unit to export.",
+  "_note": "Maps the first art delivery (unnamed image files) to manifest names and fits it to the export spec. Pivots are in the SOURCE image's pixels, offsets and joints in set units. native = px per set unit in the delivered file, target = px per set unit to export. points = named spots on a piece (source px), e.g. the platform's contact point where the hero prop sits.",
   "pieces": {
     "grip.platform": {
       "native": 15.295,
@@ -10,6 +10,12 @@
       ],
       "files": {
         "default": "531e427a-image.png"
+      },
+      "points": {
+        "contact": [
+          816,
+          275
+        ]
       }
     },
     "elec.keylight-head": {

@@ -171,6 +171,21 @@
   }
   const CART_SCALE = 0.42;
 
+  /*
+    Hero spot: where the hero prop's base sits. With the code-drawn platform that is HERO_BASE. When the delivered
+    platform names a "contact" point on its lid (grip.platform.json, "points"), the prop sits there instead, and
+    everything aimed at the prop (frame marks, sparkle, sauce pour, the rig's fork and bottle, the light beams)
+    moves with it. dx/dy is the shift from the placeholder layout.
+  */
+  const HERO_BASE = { x: 180, y: 128 };
+  const PROP_ORIGIN = { x: 150, y: 92 };   // propInner draws the burger base center at (30, 36)
+  function heroSpot() {
+    const p = loader() && loader().point('grip.platform', 'contact');
+    const at = p || HERO_BASE;
+    const dx = Math.round((at.x - HERO_BASE.x) * 10) / 10, dy = Math.round((at.y - HERO_BASE.y) * 10) / 10;
+    return { x: at.x, y: at.y, dx, dy, prop: { x: PROP_ORIGIN.x + dx, y: PROP_ORIGIN.y + dy } };
+  }
+
   /* ---------- Set scene: viewBox x 0..360, y -70..340 ---------- */
 
   const STATIONS = {
@@ -201,6 +216,11 @@
 
   function setMarkup() {
     const s = S();
+    const h = heroSpot();
+    const moved = h.dx || h.dy;
+    const shiftPts = (pts) => pts.map(([x, y], i) => (i >= 2 ? [x + h.dx, y + h.dy] : [x, y]).join(',')).join(' ');
+    const heroOpen = moved ? `<g id="heroSpot" transform="translate(${h.dx} ${h.dy})">` : '';
+    const heroClose = moved ? '</g>' : '';
     return `
 <svg class="set" id="setSvg" viewBox="0 -70 360 410" role="img" aria-label="The Burger Job set">
   <defs>
@@ -272,26 +292,26 @@
   <g id="rig" filter="url(#cut)">
     <g id="rig-pole"><path d="M292 202 V54" ${s} stroke-width="2.4"/><path d="M282 202 l10 -14 l10 14" fill="none" ${s} stroke-width="2"/></g>
     <g id="rig-arm"><path d="M292 58 H196" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/></g>
-    <g id="rig-fork"><path d="M197 58 V74" ${s} stroke-width="2"/><path d="M191 74 h12 M193 74 v8 M197 74 v8 M201 74 v8" ${s} stroke-width="1.4"/></g>
-    <g id="rig-bottle"><path d="M197 58 V66" ${s} stroke-width="2"/><g transform="rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
+    <g id="rig-fork"><path d="M197 58 V${74 + h.dy}" ${s} stroke-width="2"/><path d="M191 ${74 + h.dy} h12 M193 ${74 + h.dy} v8 M197 ${74 + h.dy} v8 M201 ${74 + h.dy} v8" ${s} stroke-width="1.4"/></g>
+    <g id="rig-bottle"><path d="M197 58 V${66 + h.dy}" ${s} stroke-width="2"/><g transform="${moved ? `translate(0 ${h.dy}) ` : ''}rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
   </g>
 
-  <polygon id="beam" points="96,78 76,94 154,136 222,136" fill="#FFE7A3" opacity="0"/>
+  <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0"/>
   <g id="fillLight" opacity="0" filter="url(#cut)">
     <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
     <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>
   </g>
-  <polygon id="fillBeam" points="228,106 236,116 206,134 190,130" fill="#FFF4D6" opacity="0"/>
+  <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0"/>
   <g id="backLight" opacity="0">
     <path d="M214 -54 V-34" ${s} stroke-width="1.6"/><rect x="204" y="-34" width="20" height="12" rx="2" fill="#F4EEDF" ${s}/>
     <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>
   </g>
-  <g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
+  ${heroOpen}<g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
   <g id="prop" transform="translate(150 92)"></g>
   <path id="pour" class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
   <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0">
     <path d="M146 92 v-8 h10"/><path d="M214 92 v-8 h-10"/><path d="M146 132 v8 h10"/><path d="M214 132 v8 h-10"/>
-  </g>
+  </g>${heroClose}
 
   <!-- Electric: key light on a rolling stand, wheeled to its mark, aimed, switched on -->
   <g id="keyRig"><g filter="url(#cut)">
@@ -553,7 +573,7 @@
   }
 
   root.WrapArt = {
-    DEPT_COLOR, STATIONS, IDLE, CLIENT, AGENCY,
+    DEPT_COLOR, heroSpot, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };

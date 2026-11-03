@@ -116,6 +116,7 @@
       w: img.w / scale, h: img.h / scale, px: pv[0] / scale, py: pv[1] / scale,
       ox: off[0] || 0, oy: off[1] || 0, shadow, tint, pivotPx: pv, flip: !!cfg.flip,
       // sole: points along the bottom of a boot (image px), turned into units around the pivot (for the walk)
+      points: cfg.points && typeof cfg.points === 'object' ? cfg.points : {},
       sole: Array.isArray(cfg.sole) ? cfg.sole.map(([x, y]) => [(x - pv[0]) / scale, (y - pv[1]) / scale]) : null,
     };
   }
@@ -202,6 +203,21 @@
     const def = slotOf(id) || {};
     const anchor = { x: o.x !== undefined ? o.x : def.anchor.x, y: o.y !== undefined ? o.y : def.anchor.y };
     return useEl(id, state, anchor, true, o);
+  }
+
+  /*
+    A named spot on a delivered piece, in the parent's coordinates (set units on the set): for example where the
+    hero prop sits on the platform's lid. null when the piece has no art or no such point, so callers keep their
+    placeholder position.
+  */
+  function point(id, name, state) {
+    const def = slotOf(id);
+    const st = state || (def && def.initial) || 'default';
+    const r = resolve(id, has(id, st) ? st : statesOf(id)[0]);
+    if (!def || !r || !r.points[name]) return null;
+    const [px, py] = r.points[name];
+    const dx = (px - r.pivotPx[0]) / r.scale, dy = (py - r.pivotPx[1]) / r.scale;
+    return { x: def.anchor.x + r.ox + (r.flip ? -dx : dx), y: def.anchor.y + r.oy + dy };
   }
 
   /* ---------- Runtime state (display toggles only) ---------- */
@@ -337,7 +353,7 @@
   const slotDef = (id) => slotOf(id);
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -42,6 +42,8 @@ for pid, p in spec['pieces'].items():
         sizes[state] = (w, h, os.path.getsize(os.path.join(out_dir, name)))
     cfg = dict(p.get('settings', {}))
     cfg['pivot'] = [round(p['pivot'][0] * k, 1), round(p['pivot'][1] * k, 1)]
+    if p.get('points'):
+        cfg['points'] = {n: [round(v[0] * k, 1), round(v[1] * k, 1)] for n, v in p['points'].items()}
     if pid.split('.')[-1].startswith('leg-'):
         # Where the sole meets the floor, so the walk can keep the planted boot flat on the ground
         # The bottom outline of the boot, as a few points (image px): the lowest pixel of each column in the

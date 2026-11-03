@@ -24,6 +24,22 @@ One object per file, on a transparent background, cut along the paper edge. The 
 | No baked text | Anything the game changes stays out of the art: company name, chair labels, client logo, shot names, numbers |
 | Color variants | When a piece changes color per shot (the sweep), deliver a neutral light version the engine can tint, or one file per color |
 
+### Hero platform spec (revision 2, Nov 3)
+
+The hero burger sits on the platform's **contact point**, and everything aimed at the burger (frame marks, light beams, the cheese-pull fork, the sauce bottle, the sparkle) follows that point. Batch 1's box is flatter than the layout: its lid center lands at y 158, which drops the burger 30 units below where the set was composed. The next export draws the same box taller so the lid center lands at y 128.
+
+| Measure | Set units | Pixels at 6x |
+| --- | --- | --- |
+| Canvas | 112 x 76 | 672 x 456 |
+| Box width, left edge to right edge | about 104 | about 624 |
+| Front face height, floor to the lid's front edge | 56 | 336 |
+| Lid depth on screen, front edge to back edge | about 16 | about 96 |
+| Box bottom edge | 1 above the canvas bottom | 6 above the canvas bottom (y 450) |
+| Pivot: bottom center of the box | (56, 75) | (336, 450) |
+| Contact point: center of the lid, where the burger's base sits | 64 above the box bottom, centered | (336, 66) |
+
+Keep the batch 1 look (red paper sides, torn cream lid edges, corrugated edge). Same view and light direction. Name it `grip.platform@6x.png` and send the contact point with it if it moves. `art/grip.platform.json` holds it as `"points": { "contact": [336, 66] }`, and nothing else changes.
+
 ## Set assets: The Burger Job
 
 Layers run back to front: 0 is the wall, 9 is the effects over everything. Sizes are approximate set units. "Driven by" is the simulation value that sets the state, so art changes always match what the crew is doing.
@@ -36,7 +52,7 @@ Layers run back to front: 0 is the wall, 9 is the effects over everything. Sizes
 | set.plants | Two potted plants | 1 | 40 x 70 | Pot base | Static, optional two-frame sway | none |
 | set.floor | Kraft floor, tape marks, cable | 1 | 360 x 190 | none | Static | none |
 | grip.sweep | Paper sweep and its roll tube (separate) | 2 | 108 x 108, tube 118 x 8 | Top center, under the tube | Unrolls downward in 6 steps. Tinted per shot: yellow, coral, sage | Build tabletop 45–85% |
-| grip.platform | Red cardboard hero platform | 3 | 112 x 60 | Bottom center | Off to the right at the gear pile, carried in 6 hop steps, placed | Build tabletop 0–45% |
+| grip.platform | Red cardboard hero platform, taller box (see the platform spec below) | 3 | 112 x 76 | Bottom center of the box; contact point at the lid center | Off to the right at the gear pile, carried in 6 hop steps, placed | Build tabletop 0–45% |
 | grip.flag | Black flag on a C-stand | 3 | 26 x 140 | Stand base | Hidden, standing | Build tabletop 92% |
 | grip.gear-pile | Apple boxes and a sandbag | 3 | 46 x 30 | none | Static | none |
 | grip.rig | C-stand pole, arm, and head: fork for the cheese pull, bottle clamp for the sauce | 3 | Pole 20 x 150, arm 100 x 10 | Pole base | Pieces appear in order: pole, arm, head | Rig the pull, Mount bottle (thirds) |

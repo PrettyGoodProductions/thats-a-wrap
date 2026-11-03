@@ -624,7 +624,9 @@
       key = 'hero'; inner = A.propInner('hero');
       if (place < 1 && !captured && !rolling) {
         const k = steps(place, 5);
-        propT = `translate(${lerp(12, 150, k).toFixed(1)} ${(lerp(150, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
+        // #prop sits inside the hero spot group, so the art cart's position is taken back out of its shift
+        const hs = A.heroSpot();
+        propT = `translate(${lerp(12 - hs.dx, 150, k).toFixed(1)} ${(lerp(150 - hs.dy, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
       }
     } else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
       const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
