@@ -398,3 +398,28 @@ test('edit bay adds quality, capped at 100', () => {
   const full = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['edit']) }));
   assert.ok(Object.values(full.shots).every(s => s.quality <= 100));
 });
+
+/* ---------- Workstations ---------- */
+
+test('station info reports the task, the crew on it, progress and what blocks it', () => {
+  const st = fresh();
+  S.stepTicks(st, secs(5));
+  const table = S.stationInfo(st, 'table');
+  assert.equal(table.name, 'Hero platform');
+  assert.equal(table.label, 'Build tabletop');
+  assert.deepEqual(table.crew, ['Dani']);
+  assert.ok(table.pct > 0.3 && table.pct < 0.4);
+  const light = S.stationInfo(st, 'light');
+  assert.equal(light.label, 'Light the burger');
+  assert.equal(light.blocker, 'Needs Build tabletop');
+  assert.equal(S.stationInfo(st, 'cart').label, 'Style burger');
+  // When the key light dies, the light station says so
+  playUntil(st, s => !!s.pending);
+  assert.equal(S.stationInfo(st, 'light').state, 'blocked');
+  assert.match(S.stationInfo(st, 'light').text, /Key light is dead/);
+});
+
+test('every task maps to one of the four stations', () => {
+  const st = fresh();
+  for (const t of Object.values(st.tasks)) assert.ok(['light', 'table', 'camera', 'cart'].includes(S.stationOf(t)), t.id);
+});

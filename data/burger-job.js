@@ -157,7 +157,7 @@
   //   backupLight  a dead light becomes a free 2-second swap
   //   post       quality points added to every shot ("we'll fix it in post")
   const company = {
-    name: 'Take One Productions',
+    name: 'Pretty Good Productions',
     rooms: [
       { id: 'craft',   name: 'Craft Services', cost: 800,  effect: { speed: 1.08 },
         blurb: 'Coffee, donuts, a sad fruit plate. Everyone works 8% faster.' },

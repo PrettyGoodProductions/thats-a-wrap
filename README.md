@@ -17,6 +17,41 @@ The office is a cutaway building. Profit from each job goes into the bank, and y
 
 Progress saves in the browser on that device only.
 
+## Prototype 0.2, Milestone A (current)
+
+The Burger Job set is now the game board. Everything on it is a separate SVG object whose state comes from the simulation:
+
+- **Grip** carries the red hero platform in from the gear pile, unrolls the sweep from its tube, raises the flag, then builds the cheese and sauce rigs piece by piece.
+- **Electric** wheels the key light from the wall to its mark, aims it, switches it on, and re-aims it for each setup. A fill light goes up during the hero setup, and the backlight lowers from the grid for the sauce pour. During chaos the light stays dark until it's actually fixed.
+- **Camera** dollies to a new mark for each setup and swaps to a macro lens for the close-ups. Framing marks appear as the DP frames, and the video village monitor goes from color bars to the live shot.
+- **Art** builds the burger layer by layer on the art table, then carries it to the platform.
+- **Workstations:** each has a badge whose ring shows progress (red when blocked). Tap a station with nobody selected to see its task, crew, progress and blocker. Tap empty space to deselect.
+- **ACTION:** house lights dim, a spotlight lands on the burger, and the camera pushes in.
+- **Concept art in use:** the logo, the three shot thumbnails and a paper-grain texture are cut from `refs/concept-shoot.png` by `tools/extract_assets.py` into `src/assets.js`.
+- **Company name** is editable from the office (tap the name).
+
+The simulation is unchanged except for a read-only `stationInfo()` query. All motion follows sim state, quantized into stop-motion steps.
+
+### Phone QA checklist
+
+Run on an iPhone-sized screen (390x844) in portrait.
+
+- [ ] Title shows the logo. Office loads, and tapping the company name renames it, which survives a reload
+- [ ] Job board, brief and hire flow work. Referral and crew board buttons reveal art candidates
+- [ ] Shoot: the whole set is visible without horizontal scroll, and nothing important sits under the status ribbon
+- [ ] The platform slides in, the sweep unrolls and the flag goes up as the grip works
+- [ ] The key light rolls in, aims and switches on. The fill light appears
+- [ ] The burger builds on the art table, then travels to the platform
+- [ ] The camera moves between setups and the lens gets longer for the cheese and sauce shots
+- [ ] Tap each station with nobody selected: the card shows the right task, crew and blocker. Tap empty space to close it
+- [ ] Select a crew member, tap a station: they're assigned. Tap empty space: deselected
+- [ ] Key light failure: the light goes dark and the light badge turns red. It stays dark until the chosen fix completes
+- [ ] ACTION: lights dim, spotlight, push-in, clapper. The shot row shows the quality stamp afterward
+- [ ] Wrap report, bank update, and building a room all work
+- [ ] Reduced motion setting stops the looping animations
+
+`wip/crew-depth` (git branch) holds parked engine work for later milestones: walking time, organization, leadership, chemistry, specialties, take review, the 8 AM to 6 PM day clock and the $28,000 economy.
+
 ## Run it
 
 You need [Node.js](https://nodejs.org) 18 or newer for the build and tests. Playing needs only a browser.
@@ -36,6 +71,7 @@ After editing anything in `src/` or `data/`, run `node build.mjs` again and refr
 | --- | --- |
 | `data/burger-job.js` | The level: crew, shots, tasks, durations, dependencies. Edit this to tune. |
 | `src/sim.js` | All game rules. No drawing code. Runs in the browser and in Node. |
+| `src/assets.js` | Generated pieces of the concept art (logo, shot thumbnails, paper grain). Rebuild with `python3 tools/extract_assets.py`. |
 | `src/art.js` | Placeholder art drawn in code: crew puppets, props, the set, the office building. |
 | `src/ui.js` | Screens (title, hire, shoot, wrap). Draws the sim state and sends player commands. |
 | `src/page.html` | Page markup and styles. Script tags are filled in by the build. |

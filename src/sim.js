@@ -467,6 +467,37 @@
     return { state: 'open', text: st.flubbed[id] ? 'Botched. Redo' : (t.spoiled ? 'Went bad. Redo' : 'Up next'), pct };
   }
 
+  /* ---------- Workstations ---------- */
+
+  const STATION_NAMES = { light: 'Key light', table: 'Hero platform', camera: 'Camera', cart: 'Art table' };
+
+  function stationOf(t) {
+    if (t.dept === 'lighting') return 'light';
+    if (t.dept === 'camera') return 'camera';
+    if (t.dept === 'art' && !t.stage) return 'cart';
+    return 'table';
+  }
+
+  // What a workstation is doing right now: the task in progress there, or the next one waiting.
+  function stationInfo(st, station) {
+    const cand = stageCandidate(st);
+    const here = taskList(st).filter(t => stationOf(t) === station && !st.shots[t.shot].captured);
+    const open = here.filter(t => !t.done)
+      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || shotIndex(st, a.shot) - shotIndex(st, b.shot) || a.order - b.order);
+    const active = open.filter(t => workersOn(st, t.id).length);
+    const t = active[0] || open[0];
+    const name = STATION_NAMES[station] || station;
+    if (!t) return { station, name, state: 'idle', text: 'Nothing left to do here', crew: [], pct: 0, next: [] };
+    const ts = taskStatus(st, t.id);
+    return {
+      station, name, task: t.id, label: t.label, shot: st.shots[t.shot].name,
+      crew: workersOn(st, t.id).map(c => c.name),
+      pct: ts.pct, state: ts.state, text: ts.text,
+      blocker: ts.state === 'waiting' || ts.state === 'blocked' ? ts.text : null,
+      next: open.filter(x => x !== t).map(x => x.label),
+    };
+  }
+
   function score(st) {
     const lv = st.level;
     const shots = Object.values(st.shots);
@@ -616,7 +647,7 @@
 
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
-    readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score,
+    readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });

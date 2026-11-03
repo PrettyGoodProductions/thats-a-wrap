@@ -23,7 +23,7 @@
   /* ================= Save (this device only) ================= */
 
   const SAVE_KEY = 'thats-a-wrap-save-v1';
-  function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0 }; }
+  function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0, companyName: '' }; }
   function loadSave() {
     try { const v = JSON.parse(localStorage.getItem(SAVE_KEY)); if (v && typeof v.bank === 'number') return Object.assign(freshSave(), v); } catch (e) { /* storage blocked */ }
     return freshSave();
@@ -49,7 +49,7 @@
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {} });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null });
   }
 
   /* ================= Helpers ================= */
@@ -78,6 +78,10 @@
   const pct = id => { const t = st.tasks[id]; return !t ? 0 : t.done ? 1 : t.progress / t.need; };
   const isDone = id => !!(st.tasks[id] && st.tasks[id].done);
   const starsRow = n => [0, 1, 2].map(i => A.starSVG(i < n)).join('');
+  // Shot thumbnails cut from the approved concept art (src/assets.js), with the drawn prop as a fallback
+  const thumb = (shotId, cls) => window.WrapAssets && window.WrapAssets.thumbs[shotId]
+    ? `<img class="${cls || 'thumb'}" src="${window.WrapAssets.thumbs[shotId]}" alt="">`
+    : A.propSVG(shotId);
 
   /* ================= Title ================= */
 
@@ -87,7 +91,7 @@
       return `<g transform="translate(${34 + i * 44} 74) scale(1.15)">${A.puppet({ dept: r.dept, look: c.look })}</g>`;
     }).join('');
     $('screen-title').innerHTML = `
-      <h1>That's<span>a wrap!</span></h1>
+      ${window.WrapAssets ? `<img class="logo" src="${window.WrapAssets.logo}" alt="That's a Wrap!">` : `<h1>That's<span>a wrap!</span></h1>`}
       <p class="tagline">Build the crew. Run the shoot. Get the shot.</p>
       <svg class="title-art" viewBox="0 0 200 84" aria-hidden="true">${lineup}</svg>
       <button class="btn go" type="button" data-go="office">${save.runs ? 'Back to the office' : 'Open your production company'}</button>
@@ -96,14 +100,16 @@
 
   /* ================= Office ================= */
 
+  const companyName = () => (save.companyName || CO.name);
+
   function renderOffice() {
     $('screen-office').innerHTML = `
       <div class="topbar">
-        <div class="pill paper grow"><span>YOUR COMPANY</span><b class="hand">${esc(CO.name)}</b></div>
+        <button class="pill paper grow" type="button" data-rename><span>YOUR COMPANY · TAP TO RENAME</span><b class="hand">${esc(companyName())}</b></button>
         <div class="pill paper"><span>BANK</span><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b></div>
         <button class="sq" type="button" data-officemenu aria-label="Office menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       </div>
-      <div class="scene">${A.officeMarkup(CO, save.owned, save.bank)}</div>
+      <div class="scene">${A.officeMarkup(Object.assign({}, CO, { name: companyName() }), save.owned, save.bank)}</div>
       <button class="btn go" type="button" data-jobs>Check the job board</button>
       <p class="hint">Tap a room to build it. Every room changes how your shoots go. Profit from each job lands in the bank.</p>`;
   }
@@ -125,7 +131,7 @@
     const jobs = CO.jobs.map(j => {
       const best = save.best[j.id] || 0;
       return `<button class="job" type="button" ${j.playable ? `data-book="${j.id}"` : 'disabled'}>
-        <span class="jpic">${j.id === 'burger-job' ? A.propSVG('hero') : A.deptIcon('camera', 28)}</span>
+        <span class="jpic">${j.id === 'burger-job' ? thumb('hero') : A.deptIcon('camera', 28)}</span>
         <b>${esc(j.title)}</b>
         <span>${esc(j.client)} · ${esc(j.kind)}${j.playable ? ` · ${money(LEVEL.budget)}` : ''}</span>
         <span>${j.playable ? `<span class="jstars">${starsRow(best)}</span>` : esc(j.note)}</span>
@@ -143,6 +149,25 @@
       <p class="note">The budget pays your crew, rentals and overtime. Whatever's left is profit for the bank.</p>
       <button class="btn go" type="button" data-hire-screen>Book the crew</button>
       <button class="btn" type="button" data-close>Not yet</button>`);
+  }
+
+  function showRename() {
+    openModal('rename', `
+      <span class="label">Name your company</span>
+      <form id="renameForm" class="rename">
+        <label for="companyName">Company name</label>
+        <input id="companyName" name="companyName" type="text" maxlength="28" autocomplete="off" value="${esc(companyName())}" placeholder="${esc(CO.name)}">
+        <button class="btn go" type="submit">Hang the sign</button>
+      </form>
+      <button class="btn" type="button" data-close>Cancel</button>`);
+    const input = $('companyName');
+    input.focus(); input.select();
+    $('renameForm').addEventListener('submit', e => {
+      e.preventDefault();
+      save.companyName = input.value.trim().slice(0, 28);
+      persist();
+      closeModal(); renderOffice();
+    });
   }
 
   function showOfficeMenu() {
@@ -261,8 +286,9 @@
         <button class="sq" type="button" id="pauseBtn" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
       </div>
       <div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>
-      <div class="set-wrap">
+      <div class="set-wrap" id="setWrap">
         ${A.setMarkup()}
+        <div class="stcard" id="stcard" hidden></div>
         <div class="onstage"><small>ON STAGE</small><span id="onstage"></span></div>
         <button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>
         <div class="flash" id="flash"></div>
@@ -282,12 +308,12 @@
       g.style.transform = `translate(${idle.x}px, ${idle.y}px)`;
       g.innerHTML =
         `<ellipse class="selring" cx="0" cy="0" rx="19" ry="6" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="3 2"/>` +
-        `<g class="flip"><g transform="scale(1.25)" filter="url(#shadow)">${A.puppet(c)}</g></g>` +
+        `<g class="flip"><g transform="scale(1.25)">${A.puppet(c)}<g class="held"></g></g></g>` +
         `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>` +
         `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
         `<rect x="-18" y="-66" width="36" height="72" fill="transparent"/>`;
       layer.appendChild(g);
-      view.pups[c.id] = { g, flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
+      view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
       view.pos[c.id] = { x: idle.x, y: idle.y };
 
       const b = document.createElement('button');
@@ -302,12 +328,6 @@
 
   /* ================= Shoot: input ================= */
 
-  function stationOf(t) {
-    if (t.dept === 'lighting') return 'light';
-    if (t.dept === 'camera') return 'camera';
-    if (t.dept === 'art' && !t.stage) return 'cart';
-    return 'table';
-  }
 
   function selectCrew(id) {
     if (st.over || modal) return;
@@ -334,10 +354,11 @@
   }
 
   function assignStation(station) {
-    if (!selected) { say('Tap a crew member first, then a spot on the set.'); return; }
+    if (!selected) { view.stCard = view.stCard === station ? null : station; return; }
+    view.stCard = null;
     const cand = S.stageCandidate(st);
     const list = Object.values(st.tasks)
-      .filter(t => !t.done && stationOf(t) === station && !st.shots[t.shot].captured)
+      .filter(t => !t.done && S.stationOf(t) === station && !st.shots[t.shot].captured)
       .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || st.priority.indexOf(a.shot) - st.priority.indexOf(b.shot) || a.order - b.order);
     if (!list.length) { say('Nothing left to do there.', true); return; }
     const workable = list.find(t => !S.blockReason(st, t, true));
@@ -364,30 +385,79 @@
     return lastCapture || S.stageCandidate(st) || st.priority[0];
   }
 
+  // Progress inside a sub-range, and stepped so motion reads as stop-motion rather than a smooth slide
+  const seg = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
+  const steps = (p, n) => Math.floor(p * (n || 8) + 1e-9) / (n || 8);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const KEY_AIM = { hero: [-12, 20], cheese: [20, 34], sauce: [34, 12] };
+  const CAM_SHIFT = { hero: [0, 0], cheese: [-30, 6], sauce: [-16, -8] };
+  const MACRO = { hero: false, cheese: true, sauce: true };
+
+  function camPlace() {
+    const disp = displayShot();
+    const fp = st.shots[disp].captured || (st.capture && st.capture.shot === disp) ? 1 : pct(`${disp}.frame`);
+    const from = CAM_SHIFT[lastCapture] || [0, 0];
+    const to = CAM_SHIFT[disp] || [0, 0];
+    const move = steps(seg(fp, 0, 0.5), 6);
+    const lensFrom = MACRO[lastCapture] ? 1 : 0;
+    const lensTo = MACRO[disp] ? 1 : 0;
+    return { x: lerp(from[0], to[0], move), y: lerp(from[1], to[1], move), lens: lerp(lensFrom, lensTo, steps(seg(fp, 0.5, 0.8), 4)), fp };
+  }
+
   function renderSet(now) {
     const disp = displayShot();
-    const show = (id, on) => setAttr($(id), 'display', on ? 'inline' : 'none');
+    const showEl = (id, on) => setAttr($(id), 'display', on ? 'inline' : 'none');
     const captured = st.shots[disp] && st.shots[disp].captured;
     const rolling = st.capture && st.capture.shot === disp;
 
-    const n = isDone('hero.set') ? 4 : Math.floor(pct('hero.set') * 4);
-    show('pc-legs', n >= 1); show('pc-top', n >= 2); show('pc-sweep', n >= 3); show('pc-flag', n >= 4);
+    // GRIP builds the hero setup: carries the platform in from the gear pile, unrolls the sweep, raises the flag
+    const sp = st.shots.hero.captured || isDone('hero.set') ? 1 : pct('hero.set');
+    const carry = steps(seg(sp, 0, 0.45), 6);
+    showEl('platform', sp > 0);
+    setAttr($('platform'), 'transform', carry < 1 ? `translate(${(80 * (1 - carry)).toFixed(1)} ${(-8 * Math.sin(carry * Math.PI)).toFixed(1)})` : '');
+    showEl('pc-sweep', sp >= 0.4);
+    setAttr($('sweepRoll'), 'transform', `translate(0 28) scale(1 ${Math.max(0.03, steps(seg(sp, 0.45, 0.85), 6)).toFixed(3)}) translate(0 -28)`);
+    showEl('pc-flag', sp >= 0.92);
     setAttr($('sweep'), 'fill', SHOT_COLOR[disp] || '#E7B84F');
 
     const rigTask = disp === 'cheese' ? 'cheese.rig' : disp === 'sauce' ? 'sauce.mount' : null;
     const rn = !rigTask ? 0 : (isDone(rigTask) || captured) ? 3 : Math.floor(pct(rigTask) * 3);
-    show('rig-pole', rn >= 1); show('rig-arm', rn >= 2);
-    show('rig-fork', disp === 'cheese' && rn >= 3); show('rig-bottle', disp === 'sauce' && rn >= 3);
+    showEl('rig-pole', rn >= 1); showEl('rig-arm', rn >= 2);
+    showEl('rig-fork', disp === 'cheese' && rn >= 3); showEl('rig-bottle', disp === 'sauce' && rn >= 3);
 
-    const dead = !!st.pending || Object.values(st.blocks).includes('keylight');
-    const lp = captured ? 1 : pct(`${disp}.light`);
-    setAttr($('beam'), 'opacity', dead ? 0 : (0.5 * lp).toFixed(2));
-    setAttr($('lightFace'), 'fill', dead ? '#3A3631' : lp > 0 ? '#FFE7A3' : '#7A7468');
+    // ELECTRIC wheels the key light to its mark, aims it, then switches it on; later shots re-aim it
+    // The light stays dark until the fix, the rental or the bounce card actually resolves it
+    const dead = !!st.pending || Object.values(st.blocks).includes('keylight') || (!!st.tasks['keylight.fix'] && !st.tasks['keylight.fix'].done);
+    const hl = isDone('hero.light') ? 1 : pct('hero.light');
+    const anyLight = Math.max(hl, pct('cheese.light'), pct('sauce.light'), st.tasks['keylight.fix'] ? pct('keylight.fix') : 0);
+    const rollIn = (isDone('hero.light') || isDone('cheese.light') || isDone('sauce.light')) ? 1 : steps(seg(anyLight, 0, 0.4), 5);
+    setAttr($('keyRig'), 'transform', rollIn < 1 ? `translate(${(-44 * (1 - rollIn)).toFixed(1)} 0)` : '');
+    const aimRange = KEY_AIM[disp] || [20, 20];
+    const dl = captured || rolling ? 1 : pct(`${disp}.light`);
+    const aimP = disp === 'hero' ? steps(seg(dl, 0.4, 0.8), 5) : steps(dl, 5);
+    setAttr($('keyHead'), 'transform', `rotate(${lerp(aimRange[0], aimRange[1], aimP).toFixed(1)} 72 76)`);
+    let beam = 0;
+    if (!dead) beam = disp === 'hero' ? 0.5 * steps(seg(dl, 0.8, 1), 3) : (rollIn >= 1 ? 0.28 + 0.22 * dl : 0);
+    setAttr($('beam'), 'opacity', beam.toFixed(2));
+    setAttr($('lightFace'), 'fill', dead ? '#3A3631' : beam > 0 ? '#FFE7A3' : '#7A7468');
     setAttr($('dead'), 'opacity', dead ? 1 : 0);
+    const fillUp = isDone('hero.light') || st.shots.hero.captured || hl > 0.5;
+    setAttr($('fillLight'), 'opacity', fillUp ? 1 : 0);
+    setAttr($('fillBeam'), 'opacity', fillUp && !dead ? 0.35 : 0);
+    const bl = disp === 'sauce' ? (captured || rolling ? 1 : pct('sauce.light')) : 0;
+    setAttr($('backLight'), 'opacity', bl > 0 ? 1 : 0);
+    setAttr($('backLight'), 'transform', `translate(0 ${(-26 * (1 - steps(seg(bl, 0, 0.6), 4))).toFixed(1)})`);
 
-    let key = 'none', inner = '';
-    if (disp === 'hero' && (isDone('hero.place') || captured || rolling)) { key = 'hero'; inner = A.propInner('hero'); }
-    else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
+    // ART carries the finished burger from the art table to the platform; later props change on the set
+    const place = isDone('hero.place') ? 1 : pct('hero.place');
+    let key = 'none', inner = '', propT = 'translate(150 92)';
+    if (disp === 'hero' && (place > 0 || captured || rolling)) {
+      key = 'hero'; inner = A.propInner('hero');
+      if (place < 1 && !captured && !rolling) {
+        const k = steps(place, 5);
+        propT = `translate(${lerp(12, 150, k).toFixed(1)} ${(lerp(150, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
+      }
+    } else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
       const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
       const lift = rolling ? 10 + Math.round((1 - st.capture.left / st.capture.total) * 10) : ready ? 10 : 0;
       key = 'cheese' + lift; inner = ready ? A.propInner('cheese', { lift }) : A.propInner('hero');
@@ -396,23 +466,33 @@
       key = 'sauce' + sauced; inner = sauced ? A.propInner('sauce') : A.propInner('hero');
     }
     if (key !== view.propKey) { view.propKey = key; $('prop').innerHTML = inner; }
+    setAttr($('prop'), 'transform', propT);
     setAttr($('pour'), 'opacity', disp === 'sauce' && rolling ? 1 : 0);
+    setAttr($('sparkle'), 'opacity', disp === 'hero' && rolling ? 1 : 0);
 
-    // Framing marks on set, and the live monitor at video village
-    const fp = captured ? 1 : pct(`${disp}.frame`);
-    setAttr($('frameMarks'), 'opacity', (fp * 0.95).toFixed(2));
+    // CAMERA dollies to each setup and swaps to a macro lens for the close-ups
+    const cam = camPlace();
+    setAttr($('camRig'), 'transform', `translate(${cam.x.toFixed(1)} ${cam.y.toFixed(1)})`);
+    setAttr($('lens'), 'x', (270 - 12 * cam.lens).toFixed(1));
+    setAttr($('lens'), 'width', (19 + 12 * cam.lens).toFixed(1));
+    const fp = captured || rolling ? 1 : cam.fp;
+    setAttr($('frameMarks'), 'opacity', (steps(seg(fp, 0.6, 1), 4) * 0.95).toFixed(2));
     setAttr($('recDot'), 'fill', st.capture ? '#FF4B3A' : '#5A2A24');
-    const monKey = fp > 0 ? key + ':' + (fp >= 1 ? 'f' : 'p') : 'bars';
+    const monKey = fp > 0.5 ? key + ':' + (fp >= 1 ? 'f' : 'p') : 'bars';
     if (monKey !== view.monKey) {
       view.monKey = monKey;
-      $('monView').innerHTML = fp > 0 && inner
+      $('monView').innerHTML = fp > 0.5 && inner
         ? `<rect x="-4" y="-6" width="98" height="60" fill="${SHOT_COLOR[disp]}"/><g transform="translate(16 8)">${inner}</g>`
         : `<g opacity=".7"><rect x="-4" y="-6" width="14" height="60" fill="#E6E6E6"/><rect x="10" y="-6" width="14" height="60" fill="#E7B84F"/><rect x="24" y="-6" width="14" height="60" fill="#7FB0C9"/><rect x="38" y="-6" width="14" height="60" fill="#7FB069"/><rect x="52" y="-6" width="14" height="60" fill="#C77FC0"/><rect x="66" y="-6" width="14" height="60" fill="#D86B56"/><rect x="80" y="-6" width="14" height="60" fill="#344F70"/></g>`;
     }
     setAttr($('monRec'), 'opacity', st.capture ? 1 : 0);
 
-    // Art cart
-    const cn = isDone('hero.place') || st.shots.hero.captured ? 0 : isDone('hero.style') ? 5 : Math.floor(pct('hero.style') * 5);
+    // Rolling: house lights down, spotlight on the burger, camera pushes in
+    setAttr($('dim'), 'opacity', st.capture ? 0.55 : 0);
+    $('setWrap').classList.toggle('pushin', !!st.capture);
+
+    // Art table: the burger stack builds up while styling, then leaves with the art crew
+    const cn = place > 0 || st.shots.hero.captured ? 0 : isDone('hero.style') ? 5 : Math.floor(pct('hero.style') * 5);
     if (cn !== view.cartN) { view.cartN = cn; $('cartBurger').innerHTML = A.cartBurger(cn); }
     const melt = st.tasks['cheese.melt'];
     const mp = st.shots.cheese.captured ? 0 : pct('cheese.melt');
@@ -421,6 +501,21 @@
     setAttr($('potCheese'), 'fill', melt.spoiled && !melt.done ? '#B9A15A' : '#F2C14E');
     setAttr($('steam'), 'opacity', melt.done && !st.shots.cheese.captured ? 1 : 0);
     setAttr($('bowlSauce'), 'opacity', st.shots.sauce.captured ? 0 : pct('sauce.prep').toFixed(2));
+
+    // Workstation badges: the ring shows progress and turns red when the station is blocked
+    for (const stn of ['light', 'table', 'camera', 'cart']) {
+      const info = S.stationInfo(st, stn);
+      const b = $('badge-' + stn);
+      if (!b) continue;
+      const ring = b.querySelector('.bring');
+      const color = info.state === 'blocked' ? '#D86B56' : info.state === 'working' ? '#4E8A62' : info.state === 'done' ? '#4E8A62' : '#9AA0A8';
+      const fill = info.state === 'blocked' || info.state === 'waiting' ? 1 : info.pct;
+      setAttr(ring, 'stroke', color);
+      setAttr(ring, 'stroke-dasharray', `${(fill * 73).toFixed(1)} 73`);
+      setAttr(ring, 'stroke-opacity', info.state === 'waiting' ? 0.6 : 1);
+      b.classList.toggle('blocked', info.state === 'blocked');
+      b.classList.toggle('open', view.stCard === stn);
+    }
 
     // Client notes from video village
     if (!modal && !st.over) {
@@ -434,28 +529,31 @@
     setAttr($('clientBub'), 'opacity', talking ? 1 : 0);
     if (talking) setText($('clientText'), clientLine.text);
 
-    // Crew puppets
+    // Crew puppets go to their station (the camera station follows the dolly)
     const at = {};
     const targets = {};
     for (const c of st.crew) {
       let p;
       if (c.task) {
-        const stn = stationOf(st.tasks[c.task]);
+        const stn = S.stationOf(st.tasks[c.task]);
         at[stn] = (at[stn] || 0) + 1;
         const base = A.STATIONS[stn];
-        p = { x: base.x - (at[stn] - 1) * 28, y: base.y + (at[stn] - 1) * 5 };
+        const shift = stn === 'camera' ? [cam.x, cam.y] : [0, 0];
+        p = { x: Math.round(base.x + shift[0] - (at[stn] - 1) * 28), y: Math.round(base.y + shift[1] + (at[stn] - 1) * 5) };
       } else p = A.IDLE[c.dept];
       targets[c.id] = p;
       const v = view.pups[c.id];
       const prev = view.pos[c.id];
       if (prev.x !== p.x || prev.y !== p.y) {
-        if (p.x !== prev.x) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
+        if (Math.abs(p.x - prev.x) > 2) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
         v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
         view.pos[c.id] = { x: p.x, y: p.y };
       }
       const cs = S.crewStatus(st, c);
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
+      const hk = cs.state === 'WORKING' ? 'tool' : '';
+      if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
       if (cs.state === 'WORKING') {
         setAttr(v.ring, 'opacity', 1);
         setAttr(v.rp, 'stroke-dasharray', `${(cs.pct * 44).toFixed(1)} 44`);
@@ -476,6 +574,22 @@
     const order = st.crew.slice().sort((a, b) => targets[a.id].y - targets[b.id].y).map(c => c.id);
     const depth = order.join();
     if (depth !== view.depth) { view.depth = depth; for (const id of order) $('crewLayer').appendChild(view.pups[id].g); }
+  }
+
+  // Station card: what a workstation is doing, read straight from the simulation
+  function renderStationCard() {
+    const el = $('stcard');
+    if (!view.stCard) { el.hidden = true; return; }
+    const info = S.stationInfo(st, view.stCard);
+    el.hidden = false;
+    const crew = info.crew.length ? info.crew.join(' + ') : 'Nobody yet';
+    const status = info.blocker ? `<span class="stc-block">${esc(info.blocker)}</span>` : info.state === 'working' ? `<span class="stc-ok">${esc(info.text)}</span>` : `<span>${esc(info.text)}</span>`;
+    const html = `<div class="stc-h"><b>${esc(info.name)}</b><button class="stc-x" type="button" data-stclose aria-label="Close">✕</button></div>
+      ${info.label ? `<div class="stc-task">${esc(info.label)} <small>· ${esc(info.shot)}</small></div>
+      <div class="stc-bar"><i style="width:${Math.round(info.pct * 100)}%"></i></div>
+      <div class="stc-row"><span>Crew: <b>${esc(crew)}</b></span>${status}</div>
+      ${info.next.length ? `<div class="stc-next">Then: ${esc(info.next.slice(0, 2).join(', '))}</div>` : ''}` : `<div class="stc-task">${esc(info.text)}</div>`}`;
+    if (el._h !== html) { el._h = html; el.innerHTML = html; }
   }
 
   function renderHud(now) {
@@ -552,7 +666,7 @@
               return `<button class="ti dept-${t.dept}${t.optional ? ' optl' : ''}" type="button" data-task="${tid}" aria-label="${esc(t.label)}">${A.deptIcon(iconKey(t))}<i class="bd"></i></button>`;
             }).join('')}</span>`;
         return `<div class="srow ${cls}"><span class="sg">${s.captured ? '✓' : i + 1}</span>
-          <span class="sn">${esc(s.name)}${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</span>${right}</div>`;
+          <span class="sn">${thumb(id, 'sthumb')}${esc(s.name)}${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</span>${right}</div>`;
       }).join('');
       view.icons = {};
       document.querySelectorAll('#shotcard [data-task]').forEach(el => { view.icons[el.dataset.task] = el; });
@@ -658,6 +772,7 @@
     if (t.closest('[data-book]')) { showBrief(); return; }
     if (t.closest('[data-hire-screen]')) { closeModal(); renderHire(); show('hire'); return; }
     if (t.closest('[data-officemenu]')) { showOfficeMenu(); return; }
+    if (t.closest('[data-rename]')) { showRename(); return; }
     if (t.closest('[data-resetask]')) {
       openModal('reset', `<span class="label">Start over?</span><p>This empties the bank and tears down every room. It can't be undone.</p>
         <div class="row2"><button class="btn" type="button" data-close>Keep my company</button><button class="btn go" type="button" data-reset style="font-size:18px">Start over</button></div>`);
@@ -713,14 +828,18 @@
     if (t.closest('#pauseBtn')) { showPause(); return; }
     if (t.closest('#actionBtn')) { pressAction(); return; }
     if (t.closest('#autoBtn')) { const r = S.command(st, { type: 'release', crew: selected }); say(r.message); selected = null; return; }
+    if (t.closest('[data-stclose]')) { view.stCard = null; return; }
+    if (t.closest('#stcard')) return;
     const crew = t.closest('[data-crew]');
-    if (crew) { selectCrew(crew.dataset.crew); return; }
+    if (crew) { view.stCard = null; selectCrew(crew.dataset.crew); return; }
     const task = t.closest('[data-task]');
     if (task) { assignTo(task.dataset.task); return; }
     const stn = t.closest('[data-station]');
     if (stn) { assignStation(stn.dataset.station); return; }
     const mv = t.closest('[data-move]');
-    if (mv) { const r = S.command(st, { type: 'move', shot: mv.dataset.move, dir: -1 }); say(r.message, !r.ok); }
+    if (mv) { const r = S.command(st, { type: 'move', shot: mv.dataset.move, dir: -1 }); say(r.message, !r.ok); return; }
+    // Tapping empty space deselects and closes the station card
+    if (t.closest('#setWrap') || !t.closest('button')) { selected = null; view.stCard = null; }
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -742,6 +861,7 @@
       }
       renderSet(now);
       renderHud(now);
+      renderStationCard();
     }
     requestAnimationFrame(frame);
   }
