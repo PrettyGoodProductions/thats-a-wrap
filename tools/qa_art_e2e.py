@@ -10,6 +10,8 @@ Plays a real shoot at 2x on a phone-sized screen: title, office, job board, hire
 failure, wrap. Samples the page while it runs, saves a screenshot the first time each state shows up, and
 fails if a state never appears or the page logs any error.
 
+--expect ro     the delivered batch (art/): platform, key light states, and Ro on the fixed-character rig.
+                Hires Ro as gaffer and checks he walks, works, and is the only fixed character on set
 --expect art    stand-in art is built in: real images must draw, swap state with the simulation, and resolve
 --expect none   no art delivered: no art slots may exist and the placeholders must play exactly as before
 """
@@ -26,6 +28,8 @@ PROBE = """() => {
   const stateShown = (id, st) => { const s = slot(id); if (!s) return false; const u = s.querySelector(`:scope > use[data-st="${st}"]`); return !!u && shown(u); };
   const resolves = el => { try { const b = el.getBBox(); return b.width > 0 && b.height > 0; } catch (e) { return false; } };
   const uses = [...document.querySelectorAll('#setSvg use[data-st]')].filter(u => shown(u));
+  const ro = document.querySelector('#crewLayer .wl-rig[data-character="ro"]');
+  const roPup = ro && ro.closest('.pup');
   const work = [...document.querySelectorAll('.wl-pose[data-part="crew.arm-front"] use[data-st="work"]')].filter(shown);
   const idleArms = [...document.querySelectorAll('.wl-pose[data-part="crew.arm-front"] use[data-st="default"]')].filter(shown);
   const cart = document.querySelectorAll('#cartBurger use');
@@ -44,6 +48,9 @@ PROBE = """() => {
     action: !!document.querySelector('#actionBtn.on'),
     chaos: !!document.querySelector('[data-choose]'),
     wrap: !!document.querySelector('#overlay:not([hidden]) [data-again]'),
+    ro: !!ro, rigs: document.querySelectorAll('#crewLayer .wl-rig').length,
+    roWalking: !!(roPup && roPup.classList.contains('walking') && roPup.getAnimations({ subtree: true }).length),
+    roWorking: !!(roPup && roPup.classList.contains('working') && !roPup.classList.contains('walking') && roPup.getAnimations({ subtree: true }).some(a => a.animationName === 'rigReach')),
   };
 }"""
 
@@ -81,6 +88,9 @@ with sync_playwright() as p:
 
     for dept in ('grip', 'lighting', 'camera', 'art'):
         sel = f'[data-cands="{dept}"] [data-hire]:not([disabled])'
+        if expect == 'ro' and dept == 'lighting' and page.locator('[data-hire="lighting:ro"]').count():
+            page.click('[data-hire="lighting:ro"]')
+            continue
         if page.locator(sel).count() == 0:
             page.click(f'[data-net="{dept}:fof"]')
         n = page.locator(sel).count()
@@ -99,7 +109,7 @@ with sync_playwright() as p:
     page.click('[data-resume]')
 
     final = {}
-    peak = {'cartLayers': 0, 'usesResolved': 0, 'usesShown': 0, 'puppets': 0, 'workArm': 0, 'idleArm': 0}
+    peak = {'cartLayers': 0, 'usesResolved': 0, 'usesShown': 0, 'puppets': 0, 'workArm': 0, 'idleArm': 0, 'rigs': 0}
     deadline = time.time() + 150
     chaos_taken = False
     while time.time() < deadline:
@@ -117,6 +127,8 @@ with sync_playwright() as p:
             page.locator('[data-choose]').first.click()
             chaos_taken = True
         if pr['keyDead']: snap(page, '15-key-dead')
+        if pr['roWalking']: snap(page, '16-ro-walking')
+        if pr['roWorking']: snap(page, '17-ro-working')
         if pr['action']:
             page.click('#actionBtn')
         if pr['wrap']:
@@ -131,7 +143,13 @@ print(json.dumps(result, indent=2))
 problems = []
 if errors: problems.append('page logged errors')
 if not final.get('wrap'): problems.append('shoot never reached the wrap report')
-if expect == 'art':
+if expect == 'ro':
+    for need in ('10-platform', '11-key-on', '15-key-dead', 'key-off-seen', '16-ro-walking', '17-ro-working'):
+        if need not in seen: problems.append(f'never saw: {need}')
+    if peak['usesShown'] == 0 or peak['usesResolved'] < peak['usesShown']: problems.append('some delivered images did not resolve (use href broken)')
+    if peak['rigs'] != 1: problems.append(f"expected exactly one fixed-character puppet on set, saw {peak['rigs']}")
+    if hire_probe['uses'] == 0: problems.append('hire screen did not use Ro\'s art')
+elif expect == 'art':
     for need in ('10-platform', '11-key-on', '12-crew-working', '13-burger-stack', '15-key-dead', 'key-off-seen'):
         if need not in seen: problems.append(f'never saw: {need}')
     if peak['usesShown'] == 0 or peak['usesResolved'] < peak['usesShown']: problems.append('some delivered images did not resolve (use href broken)')

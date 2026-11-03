@@ -46,7 +46,9 @@
     const body = c.color || DEPT_COLOR[c.dept] || '#ccc';
     // A delivered modular puppet replaces the code-drawn one only when all its required parts exist
     if (loader()) {
-      const real = loader().puppet({ skin, hair, body, top: L.top, face: ['beard', 'mustache', 'glasses', 'earring'].filter(k => L[k]) });
+      // A fixed character (Ro) is its own art end to end, so no tint, hair or face extras go with it
+      const ch = loader().characterFor(c);
+      const real = ch ? loader().puppet({ character: ch }) : loader().puppet({ skin, hair, body, top: L.top, face: ['beard', 'mustache', 'glasses', 'earring'].filter(k => L[k]) });
       if (real) return real;
     }
     const s = `stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"`;
@@ -83,7 +85,9 @@
   }
 
   function faceSVG(c, cls) {
-    return `<svg class="${cls || ''}" viewBox="-13.5 -51 27 30" aria-hidden="true">${puppet(c)}</svg>`;
+    const ch = loader() && loader().characterFor(c);
+    const box = (ch && loader().portraitOf(ch)) || [-13.5, -51, 27, 30];
+    return `<svg class="${cls || ''}" viewBox="${box.join(' ')}" aria-hidden="true">${puppet(c)}</svg>`;
   }
 
   /* ---------- Held items (puppet coordinates, right hand near 10,-14) ---------- */

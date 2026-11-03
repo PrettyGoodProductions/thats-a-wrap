@@ -4,14 +4,16 @@ Put delivered art here, run `node build.mjs`, and the game uses it. No code chan
 
 ## File names
 
-Follow the Asset Manifest: `<dept>.<object>[.<state>]@3x.png`
+Follow the Asset Manifest: `<dept>.<object>[.<state>]@6x.png`, where `@6x` is the px per set unit (6 for set pieces, 8 for puppet parts)
 
 | Example | Meaning |
 | --- | --- |
-| `grip.platform@3x.png` | One look, no state |
-| `elec.keylight-head.off@3x.png`, `.on@`, `.dead@` | One file per state |
+| `grip.platform@6x.png` | One look, no state |
+| `elec.keylight-head.off@6x.png`, `.on@`, `.dead@` | One file per state |
 | `art.burger-build.bottom-bun@3x.png` | The state is the layer name |
 | `crew.arm-front.work@3x.png` | A pose variant of a puppet part |
+| `crew.ro.head@8x.png` | Part `head` of the fixed character Ro |
+| `crew.ro.arm-front.work@8x.png` | A pose of one of Ro's parts |
 
 Lower case, no spaces. Subfolders are fine, only the file name counts. PNG, WEBP or SVG. If both an SVG and a raster exist for the same look, the SVG is used. Files and folders starting with `_` or `.` are ignored.
 
@@ -37,6 +39,7 @@ One small file per piece, named `<dept>.<object>.json`, next to the images. Ever
 | `offset` | `[x, y]` nudge in set units, added to where the piece attaches |
 | `shadow` | `true` adds the soft paper shadow. Default depends on the piece |
 | `tint` | `"skin"`, `"dept"`, `"hair"`, a `#hex` color, or `false`. Multiplies a neutral light image by that color |
+| `flip` | `true` mirrors the image left to right about its pivot (art drawn facing the wrong way) |
 | `states` | Overrides for one state, using any key above except `states` |
 
 Scale, when nothing says otherwise: `@3x` in the file name, then 3 for PNG and WEBP, then 1 for SVG (one viewBox unit is one set unit).
@@ -72,6 +75,36 @@ Optional: `crew.arm-back`, `crew.hair.<look>` (`cap`, `beanie`, `bun`, `beret`, 
 | `crew.face.*` | center | Draw each on a canvas the size of the head, so they line up with it |
 
 Poses: add a state to any of head, torso, arms or legs, for example `crew.arm-front.work@3x.png`. Parts with no art for a pose keep their default look. The game asks for `idle` (falls back to the default) and `work` today. Walk and the reactions arrive with the crew animation milestone.
+
+### Fixed characters
+
+A character drawn as a whole person (Ro the Gaffer) is delivered as `crew.<character>.<part>`: `head`, `torso`, `arm-front`, `leg-front`, `leg-back` are required, `arm-back` is optional. The art is never tinted and gets no face or hair overlays. The crew member whose name matches the character (Ro) gets it, everyone else keeps their own puppet.
+
+One more file, `crew.<character>.json`, fits the character to the shared rig:
+
+```json
+{
+  "scale": 8,
+  "fixed": true,
+  "joints": { "hips": [0, -16.3], "neck": [0.3, -28.9], "shoulderFront": [5.4, -25.8], "shoulderBack": [-5.3, -25.7], "hipFront": [3.8, -21.6], "hipBack": [-4, -22] },
+  "portrait": [-11.5, -51, 23, 25.5]
+}
+```
+
+`joints` say where each part's pivot lands, in puppet units with the feet at 0,0 (a puppet is about 48 tall). `portrait` is the head crop for the hire cards and crew bar, `[x, y, width, height]`. `scale` and `tint` here are defaults for every part, a part's own `.json` (usually just its `pivot`) refines them.
+
+The walk, work and reach animations live in `src/page.html` (`.wl-rig` rules) and move parts by role, so every character on the rig animates the same way. A pose image such as `crew.ro.arm-front.work@8x.png` replaces the part while that pose plays.
+
+A new character is its files plus one line in `CHARACTERS` in `src/slots.js`.
+
+## Checking a batch
+
+| Command | What it checks |
+| --- | --- |
+| `python3 tools/prep_art.py <map.json> <delivery folder> art` | Names a raw delivery, cleans stray alpha, resizes to spec and writes the settings files. See `tools/batch1.map.json` |
+| `python3 tools/audit_art.py art` | Per file: size, weight, margins, specks, haze, edge halos. Per piece: how far states drift from each other |
+| `node build.mjs --lab --out /tmp/lab && python3 tools/qa_pipeline.py /tmp/lab /tmp/qa` | In Chrome: sharpness at phone and tablet scale, transparency, platform placement, key light jump and pivot, puppet walk and work frames (writes GIFs and contact sheets) |
+| `python3 tools/qa_art_e2e.py dist/index.html /tmp/e2e --expect ro` | Plays a real shoot with Ro hired and checks everything shows up |
 
 ## Adding a new piece
 

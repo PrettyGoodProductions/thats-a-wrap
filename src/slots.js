@@ -62,7 +62,31 @@
     faceOrder: ['beard', 'eyes', 'nose', 'mustache', 'glasses', 'earring'],
   };
 
-  const api = { SLOTS, RIG, PUPPET };
+  /*
+    Fixed characters: individually designed puppets (own head, outfit and skin) delivered as crew.<character>.<part>,
+    for example crew.ro.head@8x.png. They are never tinted and get no face overlays, because the art is the
+    whole character. They share one animation rig (walk, work and later reactions move the same named
+    joints), so a new character needs art and one line here, not new animation code.
+    The character's proportions live in art/crew.<character>.json: scale, joints (where each part attaches, in
+    puppet units, feet at 0,0) and portrait (the head crop for the hire cards).
+  */
+  const CHARACTERS = {
+    ro: { name: 'Ro' },
+  };
+  // One entry per part of the shared rig: the joint it hangs from and its default pivot inside the image
+  const ROLES = {
+    head: { joint: 'neck', pivot: 'bottom-center', size: [17, 21] },
+    torso: { joint: 'hips', pivot: 'bottom-center', size: [14, 15] },
+    'arm-front': { joint: 'shoulderFront', pivot: 'top-center', size: [8, 17] },
+    'arm-back': { joint: 'shoulderBack', pivot: 'top-center', size: [8, 17] },
+    'leg-front': { joint: 'hipFront', pivot: 'top-center', size: [11, 24] },
+    'leg-back': { joint: 'hipBack', pivot: 'top-center', size: [11, 24] },
+  };
+  // Back to front. The upper body (everything but the legs) leans as one when the character works.
+  const RIG_ORDER = { legs: ['leg-back', 'leg-front'], upper: ['arm-back', 'torso', 'head', 'arm-front'] };
+  const CHARACTER_REQUIRED = ['head', 'torso', 'arm-front', 'leg-front', 'leg-back'];
+
+  const api = { SLOTS, RIG, PUPPET, CHARACTERS, ROLES, RIG_ORDER, CHARACTER_REQUIRED };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapSlots = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -1,0 +1,150 @@
+{
+  "_note": "Maps the first art delivery (unnamed image files) to manifest names and fits it to the export spec. Pivots are in the SOURCE image's pixels, offsets and joints in set units. native = px per set unit in the delivered file, target = px per set unit to export.",
+  "pieces": {
+    "grip.platform": {
+      "native": 15.295,
+      "target": 6,
+      "pivot": [
+        856,
+        795
+      ],
+      "files": {
+        "default": "531e427a-image.png"
+      }
+    },
+    "elec.keylight-head": {
+      "native": 28.73,
+      "target": 6,
+      "pivot": [
+        805,
+        845
+      ],
+      "settings": {
+        "states": {
+          "on": {
+            "offset": [
+              -0.12,
+              0
+            ]
+          },
+          "dead": {
+            "offset": [
+              -0.31,
+              0
+            ]
+          }
+        },
+        "flip": true
+      },
+      "files": {
+        "off": "387c3775-image.png",
+        "on": "e9fe8e18-image.png",
+        "dead": "0b5df88a-image.png"
+      }
+    },
+    "crew.ro.head": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        209,
+        468
+      ],
+      "files": {
+        "default": "5c521630-image.png"
+      }
+    },
+    "crew.ro.torso": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        178,
+        371
+      ],
+      "files": {
+        "default": "b88a1ad5-image.png"
+      }
+    },
+    "crew.ro.arm-front": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        58,
+        75
+      ],
+      "files": {
+        "default": "8e642e3c-image.png"
+      }
+    },
+    "crew.ro.arm-back": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        165,
+        75
+      ],
+      "files": {
+        "default": "f1c83101-image.png"
+      }
+    },
+    "crew.ro.leg-front": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        99,
+        45
+      ],
+      "files": {
+        "default": "91b56124-image.png"
+      }
+    },
+    "crew.ro.leg-back": {
+      "native": 25,
+      "target": 8,
+      "pivot": [
+        172,
+        45
+      ],
+      "files": {
+        "default": "dd823c69-image.png"
+      }
+    }
+  },
+  "characters": {
+    "crew.ro": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0,
+          -16.32
+        ],
+        "neck": [
+          0.32,
+          -28.88
+        ],
+        "shoulderFront": [
+          5.44,
+          -25.76
+        ],
+        "shoulderBack": [
+          -5.32,
+          -25.72
+        ],
+        "hipFront": [
+          3.8,
+          -21.56
+        ],
+        "hipBack": [
+          -4,
+          -22
+        ]
+      },
+      "portrait": [
+        -11.5,
+        -51,
+        23,
+        25.5
+      ]
+    }
+  }
+}

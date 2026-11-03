@@ -89,7 +89,7 @@
   function renderTitle() {
     const lineup = LEVEL.hiring.map((r, i) => {
       const c = r.candidates.find(x => x.tier === 'Solid') || r.candidates[0];
-      return `<g transform="translate(${34 + i * 44} 74) scale(1.15)">${A.puppet({ dept: r.dept, look: c.look })}</g>`;
+      return `<g transform="translate(${34 + i * 44} 74) scale(1.15)">${A.puppet({ dept: r.dept, look: c.look, name: c.name })}</g>`;
     }).join('');
     $('screen-title').innerHTML = `
       ${window.WrapAssets ? `<img class="logo" src="${window.WrapAssets.logo}" alt="That's a Wrap!">` : `<h1>That's<span>a wrap!</span></h1>`}
@@ -199,7 +199,7 @@
     const perk = (c.perks || []).length && net !== 'board' ? `<span class="perk">${esc(PERKS[c.perks[0]])}</span>` : '';
     const tag = net === 'fof' ? ` via ${esc(c.via)}` : net === 'board' ? ' · crew board' : '';
     return `<button class="cand" type="button" data-hire="${r.dept}:${c.id}" aria-pressed="${picks[r.dept] === c.id}" ${c.booked ? 'disabled' : ''}>
-      ${A.faceSVG({ dept: r.dept, look: c.look }, 'face')}
+      ${A.faceSVG({ dept: r.dept, look: c.look, name: c.name }, 'face')}
       <span class="cand-name">${esc(c.name)}<span class="rate">${money(c.rate)}</span></span>
       <span class="tier ${c.tier}">${c.tier}${tag}</span>
       ${sp}${rel}${perk}
@@ -550,11 +550,16 @@
         if (Math.abs(p.x - prev.x) > 2) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
         v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
         view.pos[c.id] = { x: p.x, y: p.y };
+        // The walk animation runs for as long as the slide to the new spot takes (see .pup transition)
+        v.walking = true;
+        v.g.classList.add('walking');
+        clearTimeout(v.walkT);
+        v.walkT = setTimeout(() => { v.walking = false; v.g.classList.remove('walking'); }, 950);
       }
       const cs = S.crewStatus(st, c);
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
-      Ld.pose(v.g, cs.state === 'WORKING' ? 'work' : 'idle');
+      Ld.pose(v.g, v.walking ? 'walk' : cs.state === 'WORKING' ? 'work' : 'idle');
       const hk = cs.state === 'WORKING' ? 'tool' : '';
       if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
       if (cs.state === 'WORKING') {

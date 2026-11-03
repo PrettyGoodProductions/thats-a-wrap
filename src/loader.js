@@ -14,8 +14,7 @@
 (function (root) {
   'use strict';
   const slotsApi = (typeof require === 'function' && typeof module === 'object') ? require('./slots.js') : root.WrapSlots;
-  const SLOTS = slotsApi.SLOTS;
-  const PUPPET = slotsApi.PUPPET;
+  const { SLOTS, PUPPET, RIG, CHARACTERS, ROLES, RIG_ORDER, CHARACTER_REQUIRED } = slotsApi;
 
   const PIVOT_NAMES = {
     'top-left': [0, 0], 'top-center': [0.5, 0], 'top-right': [1, 0],
@@ -40,6 +39,28 @@
     tints.clear();
   }
 
+  /* ---------- Fixed characters (crew.<character>.<part>) ---------- */
+
+  // 'crew.ro.head' -> { char: 'ro', role: 'head' }, or null for anything that is not a character part
+  function charPart(id) {
+    const m = /^crew\.([a-z0-9]+)\.([a-z0-9-]+)$/.exec(id || '');
+    return m && CHARACTERS[m[1]] && ROLES[m[2]] ? { char: m[1], role: m[2] } : null;
+  }
+  // Character-level settings (art/crew.<character>.json): scale, tint, joints, portrait
+  const charCfg = (ch) => (getPack().characters || {})[ch] || {};
+  const jointOf = (ch, name) => {
+    const j = (charCfg(ch).joints || {})[name];
+    return Array.isArray(j) && isNum(j[0]) && isNum(j[1]) ? { x: j[0], y: j[1] } : RIG[name];
+  };
+  // Where a piece attaches. Character parts hang from their character's joints, everything else from the slot table.
+  function slotOf(id) {
+    if (SLOTS[id]) return SLOTS[id];
+    const cp = charPart(id);
+    if (!cp) return undefined;
+    const r = ROLES[cp.role];
+    return { anchor: jointOf(cp.char, r.joint), pivot: r.pivot, size: r.size, shadow: false, initial: 'default', character: cp.char, role: cp.role };
+  }
+
   function statesOf(id) {
     const piece = getPack().pieces[id];
     return piece ? Object.keys(piece.states).sort() : [];
@@ -60,15 +81,22 @@
       offset  [x, y] nudge in set units, added to the slot anchor
       shadow  true or false, the soft paper shadow under the piece
       tint    "skin", "dept", "hair", a #hex color, or false for none
+      flip    true mirrors the image left to right about its pivot
     With no scale or size the file name decides (@3x), then 3 for PNG/WEBP and 1 for SVG.
   */
   function resolve(id, state) {
     const piece = getPack().pieces[id];
     const img = piece && piece.states[state];
     if (!img) return null;
-    const slot = SLOTS[id] || {};
+    const slot = slotOf(id) || {};
     const base = piece.settings || {};
-    const cfg = Object.assign({}, base, (base.states && base.states[state]) || {});
+    // A character's own file sets the defaults for all its parts (scale, tint), the part's file refines them
+    const cp = charPart(id);
+    const cc = cp ? charCfg(cp.char) : {};
+    const inherit = {};
+    for (const k of ['scale', 'tint', 'shadow']) if (cc[k] !== undefined) inherit[k] = cc[k];
+    if (cp && cc.fixed !== false && inherit.tint === undefined) inherit.tint = false;
+    const cfg = Object.assign({}, inherit, base, (base.states && base.states[state]) || {});
 
     let scale;
     if (isNum(cfg.scale) && cfg.scale > 0) scale = cfg.scale;
@@ -86,7 +114,7 @@
       id, state, key: keyFor(id, state), src: img.src, format: img.format,
       imgW: img.w, imgH: img.h, scale,
       w: img.w / scale, h: img.h / scale, px: pv[0] / scale, py: pv[1] / scale,
-      ox: off[0] || 0, oy: off[1] || 0, shadow, tint, pivotPx: pv,
+      ox: off[0] || 0, oy: off[1] || 0, shadow, tint, pivotPx: pv, flip: !!cfg.flip,
     };
   }
 
@@ -140,7 +168,8 @@
     const x = anchor.x + r.ox * k;
     const y = anchor.y + r.oy * k;
     let tf = `translate(${f(x)} ${f(y)})`;
-    if (k !== 1) tf += ` scale(${f(k)})`;
+    // flip mirrors left to right about the pivot, so art drawn facing the wrong way needs no new export
+    if (k !== 1 || r.flip) tf += r.flip ? ` scale(${f(-k)} ${f(k)})` : ` scale(${f(k)})`;
     let filter = '';
     const t = o.tint !== undefined ? o.tint : r.tint;
     if (t && o.tintColor) { const ref = tintRef(o.tintColor); if (ref) filter = ` filter="${ref}"`; }
@@ -154,7 +183,7 @@
     has no image (and no "default" to fall back on), in which case the placeholder shows through.
   */
   function slot(id, placeholder, opts) {
-    const def = SLOTS[id];
+    const def = slotOf(id);
     const states = statesOf(id);
     if (!def || !states.length) return placeholder;
     const want = (opts && opts.state) || def.initial || 'default';
@@ -168,7 +197,7 @@
   function use(id, state, o) {
     if (!has(id, state)) return '';
     o = o || {};
-    const def = SLOTS[id] || {};
+    const def = slotOf(id) || {};
     const anchor = { x: o.x !== undefined ? o.x : def.anchor.x, y: o.y !== undefined ? o.y : def.anchor.y };
     return useEl(id, state, anchor, true, o);
   }
@@ -214,14 +243,58 @@
   const puppetMissing = () => PUPPET.required.filter(id => !has(id));
   const puppetReady = () => puppetMissing().length === 0;
 
+  /* ---------- Fixed character puppet ---------- */
+
+  const characterMissing = (ch) => CHARACTER_REQUIRED.map(r => `crew.${ch}.${r}`).filter(id => !has(id));
+  const characterReady = (ch) => !!CHARACTERS[ch] && characterMissing(ch).length === 0;
+
+  // Which delivered character plays this crew member: an explicit `character`, else the name. null means
+  // the generic puppet (or the code-drawn one) is used.
+  function characterFor(c) {
+    if (!c) return null;
+    const key = String(c.character || c.name || '').toLowerCase();
+    return CHARACTERS[key] && characterReady(key) ? key : null;
+  }
+
+  // Head crop for the hire cards and the crew bar, in puppet units: [x, y, width, height]
+  function portraitOf(ch) {
+    const p = charCfg(ch).portrait;
+    return Array.isArray(p) && p.length === 4 && p.every(isNum) ? p : null;
+  }
+
+  /*
+    The art is the whole character: no tint, no face overlays, no hair swap. Parts hang from the character's
+    joints and each is wrapped in a group whose transform-origin is its joint, so the shared animations
+    (walk, work, lean) rotate every character about the right point. The upper body is one group so a lean
+    carries the head and both arms with it.
+  */
+  function characterPuppet(ch) {
+    const part = (role) => {
+      const id = `crew.${ch}.${role}`;
+      const states = statesOf(id);
+      if (!states.length) return '';
+      const def = slotOf(id);
+      const show = states.includes('idle') ? 'idle' : states.includes('default') ? 'default' : states[0];
+      const inner = states.map(st => useEl(id, st, def.anchor, st === show)).join('');
+      return `<g class="wl-pose wl-r-${role}" data-part="${id}" style="transform-origin:${f(def.anchor.x)}px ${f(def.anchor.y)}px">${inner}</g>`;
+    };
+    const hips = jointOf(ch, 'hips');
+    return `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
+      `<g class="bodyg wl-rig" data-character="${ch}">` +
+      RIG_ORDER.legs.map(part).join('') +
+      `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + RIG_ORDER.upper.map(part).join('') + `</g>` +
+      `</g>`;
+  }
+
   /*
     Build a crew puppet from delivered parts. `o`: { skin, hair, body, top, face: ['glasses', ...] }.
     Returns null unless every required part has art, so a half-delivered puppet never replaces the
     complete code-drawn one.
   */
   function puppet(o) {
-    if (!puppetReady()) return null;
     o = o || {};
+    if (o.character && characterReady(o.character)) return characterPuppet(o.character);
+    if (!puppetReady()) return null;
     const tintOf = (id, st) => {
       const t = (resolve(id, st) || {}).tint;
       return t === 'skin' ? o.skin : t === 'dept' ? o.body : t === 'hair' ? o.hair : normColor(t) ? t : null;
@@ -251,13 +324,16 @@
   function report() {
     const p = getPack();
     const slots = {};
-    for (const id of Object.keys(p.pieces)) slots[id] = { states: statesOf(id), wired: !!SLOTS[id] };
-    return { pieces: slots, puppet: { ready: puppetReady(), missing: puppetMissing() } };
+    for (const id of Object.keys(p.pieces)) slots[id] = { states: statesOf(id), wired: !!slotOf(id) };
+    const characters = {};
+    for (const ch of Object.keys(CHARACTERS)) if (statesOfCharacter(ch)) characters[ch] = { ready: characterReady(ch), missing: characterMissing(ch) };
+    return { pieces: slots, puppet: { ready: puppetReady(), missing: puppetMissing() }, characters };
   }
 
-  const slotDef = (id) => SLOTS[id];
+  const slotDef = (id) => slotOf(id);
+  const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, puppetReady, puppetMissing, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

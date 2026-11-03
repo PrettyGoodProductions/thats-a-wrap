@@ -381,3 +381,87 @@ test('the set draws the delivered pieces in place and nothing else changes', () 
   // The client and agency puppets on the set are real puppets too
   assert.ok([...withArt.matchAll(/class="wl-pose" data-part="crew\.torso"/g)].length >= 2);
 });
+
+/* ---------- Fixed characters (crew.<character>.<part>) ---------- */
+
+// Ro built from the generic stand-in parts, renamed: crew.head@3x.png -> crew.ro.head@3x.png
+function roDir(opts) {
+  opts = opts || {};
+  const d = tmp();
+  const src = path.join(FIXTURES, 'crew');
+  for (const part of opts.parts || ['head', 'torso', 'arm-front', 'arm-back', 'leg-front', 'leg-back']) {
+    fs.copyFileSync(path.join(src, `crew.${part}@3x.png`), path.join(d, `crew.ro.${part}@3x.png`));
+  }
+  if (opts.generic) fs.cpSync(src, path.join(d, 'crew'), { recursive: true });
+  if (opts.char !== false) fs.writeFileSync(path.join(d, 'crew.ro.json'), JSON.stringify(opts.char || { fixed: true, joints: { neck: [0.5, -29], hips: [0, -16], shoulderFront: [5.5, -26] }, portrait: [-11.5, -51, 23, 25.5] }));
+  return d;
+}
+const RO = { name: 'Ro', dept: 'lighting', look: { skin: '#D9A07A', hair: '#2B2016', top: 'cap', beard: true } };
+const MIKA = { name: 'Mika', dept: 'camera', look: { skin: '#E1B48E', hair: '#3A2A1E', top: 'beanie' } };
+
+test('character file names: crew.ro.head is part "head" of Ro, crew.ro.arm-front.work is a pose of it', () => {
+  const d = roDir();
+  fs.copyFileSync(path.join(FIXTURES, 'crew', 'crew.arm-front.work@3x.png'), path.join(d, 'crew.ro.arm-front.work@3x.png'));
+  const r = load(d);
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(Loader.statesOf('crew.ro.head'), ['default']);
+  assert.deepEqual(Loader.statesOf('crew.ro.arm-front'), ['default', 'work']);
+  assert.ok(r.pack.characters.ro, 'character settings are packed even though they have no image');
+  assert.ok(r.notes.some(n => /character ro: all required parts present/.test(n)));
+});
+
+test('Ro gets the fixed rig: no tint, no face overlays, no hair swap, parts hang from his own joints', () => {
+  load(roDir({ generic: true }));
+  assert.equal(Loader.characterFor(RO), 'ro');
+  const m = A.puppet(RO);
+  assert.match(m, /class="bodyg wl-rig" data-character="ro"/);
+  assert.doesNotMatch(m, /filter="url\(#wl-tint/, 'fixed art is never tinted');
+  assert.doesNotMatch(m, /crew\.face|crew\.hair|wl-crew-face|wl-crew-hair/, 'no generic face or hair on top of his own');
+  // the neck joint from crew.ro.json, not the default rig
+  assert.match(m, /data-part="crew\.ro\.head" style="transform-origin:0\.5px -29px"/);
+  // joints not given fall back to the shared rig
+  assert.match(m, /data-part="crew\.ro\.leg-back" style="transform-origin:-4px -13px"/);
+  // upper body leans as one group, about the hips
+  assert.match(m, /<g class="wl-upper" style="transform-origin:0px -16px"><g class="wl-pose wl-r-arm-back"/);
+});
+
+test('other crew keep the generic or code-drawn puppet while Ro has his own', () => {
+  load(roDir({ generic: true }));
+  assert.equal(Loader.characterFor(MIKA), null);
+  const mika = A.puppet(MIKA);
+  assert.doesNotMatch(mika, /wl-rig/);
+  assert.match(mika, /data-part="crew\.head"/, 'generic tinted puppet');
+  load(roDir());
+  assert.match(A.puppet(MIKA), /class="arm"/, 'with no generic parts Mika is code-drawn');
+});
+
+test('a character missing a required part is not used, and the build says what is missing', () => {
+  const r = load(roDir({ parts: ['head', 'torso', 'arm-front', 'leg-front'] }));
+  assert.equal(Loader.characterFor(RO), null);
+  assert.ok(r.warnings.some(w => /character ro is incomplete \(missing crew\.ro\.leg-back\)/.test(w)));
+  assert.match(A.puppet(RO), /class="arm"/, 'Ro falls back to the code-drawn puppet');
+});
+
+test('portrait crop comes from crew.ro.json, others keep the default card crop', () => {
+  load(roDir());
+  assert.match(A.faceSVG(RO, 'face'), /viewBox="-11\.5 -51 23 25\.5"/);
+  assert.match(A.faceSVG(MIKA, 'face'), /viewBox="-13\.5 -51 27 30"/);
+});
+
+test('bad character settings fail the build with the file name', () => {
+  const r = buildPack(roDir({ char: { joints: { neck: 'up' }, portrait: [1, 2] } }));
+  assert.ok(r.errors.some(e => /crew\.ro\.json: joint neck must be \[x, y\]/.test(e)));
+  assert.ok(r.errors.some(e => /crew\.ro\.json: portrait must be/.test(e)));
+});
+
+test('flip mirrors a piece about its pivot, and per-state offsets still apply', () => {
+  const d = copyFixtures();
+  fs.writeFileSync(path.join(d, 'elec.keylight-head.json'), JSON.stringify({ pivot: 'center', flip: true, states: { dead: { offset: [-0.3, 0] } } }));
+  load(d);
+  const m = Loader.slot('elec.keylight-head', 'PH');
+  assert.match(m, /data-st="off" href="[^"]+" transform="translate\(72 76\) scale\(-1 1\)"/);
+  assert.match(m, /data-st="dead" href="[^"]+" transform="translate\(71\.7 76\) scale\(-1 1\)"/);
+  const bad = copyFixtures();
+  fs.writeFileSync(path.join(bad, 'elec.keylight-head.json'), JSON.stringify({ flip: 'yes' }));
+  assert.ok(buildPack(bad).errors.some(e => /flip must be true or false/.test(e)));
+});

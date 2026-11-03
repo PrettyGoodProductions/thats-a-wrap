@@ -15,13 +15,32 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const Loader = require('../src/loader.js');
-const { SLOTS, PUPPET } = require('../src/slots.js');
+const { SLOTS, PUPPET, CHARACTERS, ROLES, CHARACTER_REQUIRED, RIG } = require('../src/slots.js');
 
 const IMAGE_EXT = new Set(['.png', '.webp', '.svg']);
 const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
-const NAME = /^([a-z0-9]+\.[a-z0-9-]+)(?:\.([a-z0-9_-]+))?(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
-const ID = /^[a-z0-9]+\.[a-z0-9-]+$/;
-const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'states', 'note'];
+const FILE = /^(.+?)(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
+const SEG = [/^[a-z0-9]+$/, /^[a-z0-9-]+$/, /^[a-z0-9_-]+$/, /^[a-z0-9_-]+$/];
+const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'note'];
+const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'states', 'note'];
+
+// <dept>.<object>[.<state>], or for a fixed character crew.<character>.<part>[.<state>]. Returns null for a bad name.
+function parseName(name) {
+  const m = FILE.exec(name);
+  if (!m) return null;
+  const segs = m[1].split('.');
+  const isChar = segs[0] === 'crew' && segs.length >= 3 && CHARACTERS[segs[1]];
+  const idLen = isChar ? 3 : 2;
+  if (segs.length < idLen || segs.length > idLen + 1) return null;
+  if (!segs.every((sg, i) => SEG[i === idLen ? 2 : Math.min(i, 1)].test(sg))) return null;
+  return { id: segs.slice(0, idLen).join('.'), state: segs[idLen] || null, hint: m[2], fmt: m[3] };
+}
+const settingsId = (name) => {
+  const segs = name.split('.');
+  if (segs.length === 2 && segs.every((sg, i) => SEG[i].test(sg))) return { id: name, char: segs[0] === 'crew' && CHARACTERS[segs[1]] ? segs[1] : null };
+  if (segs.length === 3 && segs[0] === 'crew' && CHARACTERS[segs[1]] && /^[a-z0-9-]+$/.test(segs[2])) return { id: name, char: null };
+  return null;
+};
 const STATE_KEYS = SETTING_KEYS.filter(k => k !== 'states');
 
 function walk(dir) {
@@ -72,7 +91,22 @@ function checkSettings(id, cfg, where, errors, warnings) {
   if (cfg.scale !== undefined && !(typeof cfg.scale === 'number' && cfg.scale > 0)) errors.push(`${at}: scale must be a number above 0 (image pixels per set unit)`);
   if (cfg.size !== undefined && !(Array.isArray(cfg.size) && cfg.size.length === 2 && cfg.size.some(n => typeof n === 'number' && n > 0))) errors.push(`${at}: size must be [width, height] in set units`);
   if (cfg.offset !== undefined && !isPair(cfg.offset)) errors.push(`${at}: offset must be [x, y] in set units`);
+  if (cfg.flip !== undefined && typeof cfg.flip !== 'boolean') errors.push(`${at}: flip must be true or false`);
   if (cfg.tint !== undefined && cfg.tint !== false && !['skin', 'dept', 'hair'].includes(cfg.tint) && !Loader.normColor(cfg.tint)) errors.push(`${at}: tint must be "skin", "dept", "hair", a #hex color, or false`);
+}
+
+function checkCharacter(id, cfg, errors, warnings) {
+  for (const k of Object.keys(cfg)) if (!CHAR_SETTING_KEYS.includes(k)) warnings.push(`${id}.json: unknown setting "${k}", ignored`);
+  if (cfg.scale !== undefined && !(typeof cfg.scale === 'number' && cfg.scale > 0)) errors.push(`${id}.json: scale must be a number above 0 (image pixels per set unit)`);
+  if (cfg.tint !== undefined && cfg.tint !== false && !['skin', 'dept', 'hair'].includes(cfg.tint) && !Loader.normColor(cfg.tint)) errors.push(`${id}.json: tint must be "skin", "dept", "hair", a #hex color, or false`);
+  if (cfg.joints !== undefined) {
+    if (!cfg.joints || typeof cfg.joints !== 'object' || Array.isArray(cfg.joints)) errors.push(`${id}.json: joints must be an object like { "neck": [x, y] }`);
+    else for (const [k, v] of Object.entries(cfg.joints)) {
+      if (!RIG[k]) warnings.push(`${id}.json: unknown joint "${k}" (known: ${Object.keys(RIG).join(', ')}), ignored`);
+      else if (!isPair(v)) errors.push(`${id}.json: joint ${k} must be [x, y] in puppet units`);
+    }
+  }
+  if (cfg.portrait !== undefined && !(Array.isArray(cfg.portrait) && cfg.portrait.length === 4 && cfg.portrait.every(n => typeof n === 'number' && isFinite(n)) && cfg.portrait[2] > 0 && cfg.portrait[3] > 0)) errors.push(`${id}.json: portrait must be [x, y, width, height] in puppet units`);
 }
 
 export function buildPack(dir) {
@@ -83,7 +117,7 @@ export function buildPack(dir) {
   let bytes = 0;
   let files = 0;
 
-  if (!dir || !existsSync(dir)) return { pack: { version: 1, pieces }, errors, warnings, notes: [`no art folder at ${dir}, using placeholders everywhere`], bytes, files };
+  if (!dir || !existsSync(dir)) return { pack: { version: 1, pieces, characters: {} }, errors, warnings, notes: [`no art folder at ${dir}, using placeholders everywhere`], bytes, files };
 
   const settingsFiles = [];
   for (const path of walk(dir)) {
@@ -92,10 +126,10 @@ export function buildPack(dir) {
     const name = basename(path);
     if (ext === '.json') { settingsFiles.push({ path, rel, name }); continue; }
     if (!IMAGE_EXT.has(ext)) continue; // README and friends
-    const m = NAME.exec(name);
+    const m = parseName(name);
     if (!m) { warnings.push(`${rel}: name does not match <dept>.<object>[.<state>][@3x].png (lower case, no spaces), skipped`); continue; }
-    const [, id, stateRaw, hint, fmt] = m;
-    const state = stateRaw || 'default';
+    const { id, hint, fmt } = m;
+    const state = m.state || 'default';
     let buf;
     let dims;
     try { buf = readFileSync(path); dims = imageSize(buf, '.' + fmt, rel); } catch (e) { errors.push(e.message); continue; }
@@ -112,9 +146,19 @@ export function buildPack(dir) {
     files++;
   }
 
+  const characters = {};
   for (const { path, rel, name } of settingsFiles) {
-    const id = name.slice(0, -5);
-    if (!ID.test(id)) { warnings.push(`${rel}: settings files are named <dept>.<object>.json, skipped`); continue; }
+    const sid = settingsId(name.slice(0, -5));
+    if (!sid) { warnings.push(`${rel}: settings files are named <dept>.<object>.json (crew.<character>.json for a whole character), skipped`); continue; }
+    const id = sid.id;
+    if (sid.char) {
+      let cfg;
+      try { cfg = JSON.parse(readFileSync(path, 'utf8')); } catch (e) { errors.push(`${rel}: invalid JSON (${e.message})`); continue; }
+      if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) { errors.push(`${rel}: settings must be a JSON object`); continue; }
+      checkCharacter(id, cfg, errors, warnings);
+      characters[sid.char] = cfg;
+      continue;
+    }
     let cfg;
     try { cfg = JSON.parse(readFileSync(path, 'utf8')); } catch (e) { errors.push(`${rel}: invalid JSON (${e.message})`); continue; }
     if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) { errors.push(`${rel}: settings must be a JSON object`); continue; }
@@ -133,13 +177,13 @@ export function buildPack(dir) {
     const p = pieces[id];
     sorted[id] = { settings: p.settings, states: Object.fromEntries(Object.keys(p.states).sort().map(s => [s, p.states[s]])) };
   }
-  const pack = { version: 1, pieces: sorted };
+  const pack = { version: 1, pieces: sorted, characters };
 
   // Sanity checks run through the same resolver the game uses, so what is reported is what will be drawn
   Loader.configure(pack);
   for (const id of Object.keys(sorted)) {
-    const slot = SLOTS[id];
-    if (!slot) { warnings.push(`${id}: no slot for this ID in src/slots.js yet, so the game does not use it`); continue; }
+    const slot = Loader.slotDef(id);
+    if (!slot) { warnings.push(`${id}: no slot for this ID in src/slots.js yet, so the game does not use it` + (/^crew\.[a-z0-9]+$/.test(id) ? ' (a new character is one line in CHARACTERS)' : '')); continue; }
     for (const st of Object.keys(sorted[id].states)) {
       const r = Loader.resolve(id, st);
       const label = `${id}${st === 'default' ? '' : '.' + st}`;
@@ -160,7 +204,16 @@ export function buildPack(dir) {
       if (missing.length) notes.push(`${id}: layers still on placeholder art: ${missing.join(', ')}`);
     }
   }
-  const crew = Object.keys(sorted).filter(id => id.startsWith('crew.'));
+  for (const ch of Object.keys(CHARACTERS)) {
+    if (!Loader.characterReady(ch) && !CHARACTER_REQUIRED.some(r => sorted[`crew.${ch}.${r}`])) continue;
+    const missing = Loader.characterMissing(ch);
+    if (missing.length) warnings.push(`character ${ch} is incomplete (missing ${missing.join(', ')}), so ${CHARACTERS[ch].name} keeps the generic puppet until it is`);
+    else {
+      notes.push(`character ${ch}: all required parts present, ${CHARACTERS[ch].name} uses the fixed rig (no tint, no face overlays)`);
+      if (!characters[ch] || !characters[ch].joints) warnings.push(`crew.${ch}.json has no joints, so ${ch} uses the default rig joints. Set joints so the parts meet`);
+    }
+  }
+  const crew = Object.keys(sorted).filter(id => id.startsWith('crew.') && !Loader.slotDef(id)?.character);
   if (crew.length) {
     const missing = PUPPET.required.filter(id => !sorted[id]);
     if (missing.length) warnings.push(`crew puppet is incomplete (missing ${missing.join(', ')}), so crew keep the code-drawn puppet until it is`);

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- page-style -->
+<style>
+  html, body { background: transparent !important; margin: 0; padding: 0; }
+  #stage { position: relative; width: 390px; }
+  /* Isolation modes: hide the whole set, then show only the piece under test */
+  .iso-key #setSvg * { visibility: hidden !important; }
+  .iso-key #keyHead, .iso-key #keyHead * { visibility: visible !important; }
+  .iso-platform #setSvg * { visibility: hidden !important; }
+  .iso-platform #platform, .iso-platform #platform * { visibility: visible !important; }
+  .iso-puppet #setSvg > *:not(#labCrew) { visibility: hidden !important; }
+  .iso-puppet #setSvg > :not(#labCrew) * { visibility: hidden !important; }
+  .lab-checker { background: conic-gradient(#d8d8d8 25%, #fff 0 50%, #d8d8d8 0 75%, #fff 0) 0 0 / 16px 16px; }
+</style>
+</head>
+<body>
+<div id="defs"></div>
+<div id="stage"></div>
+<!-- inline:src/assets.js -->
+<!-- inline:src/art-pack.js -->
+<!-- inline:src/slots.js -->
+<!-- inline:src/loader.js -->
+<!-- inline:src/art.js -->
+<script>
+/*
+  Art lab. Drives the real set markup, loader and animation CSS from a script (tools/qa_pipeline.py), so the
+  checks run on exactly what the game draws. Nothing here is shipped in the game.
+*/
+(function () {
+  'use strict';
+  const A = window.WrapArt, Ld = window.WrapLoader;
+  const $ = (id) => document.getElementById(id);
+  document.getElementById('defs').innerHTML = A.globalDefs();
+  const NS = 'http://www.w3.org/2000/svg';
+  const crew = {};
+
+  const BG = { transparent: '', white: '#fff', black: '#000', mid: '#8a8a8a', magenta: '#ff00ff', checker: null, set: '#F6EFE0' };
+  function mount(o) {
+    o = o || {};
+    const stage = $('stage');
+    stage.style.width = (o.width || 390) + 'px';
+    stage.className = o.bg === 'checker' ? 'lab-checker' : '';
+    stage.style.background = o.bg && BG[o.bg] ? BG[o.bg] : '';
+    stage.innerHTML = A.setMarkup();
+    const svg = $('setSvg');
+    svg.insertAdjacentHTML('beforeend', '<g id="labCrew"></g>');
+    for (const k of Object.keys(crew)) delete crew[k];
+    return { w: stage.getBoundingClientRect().width, h: stage.getBoundingClientRect().height, dpr: window.devicePixelRatio };
+  }
+  const iso = (mode) => { $('stage').classList.remove('iso-key', 'iso-platform', 'iso-puppet'); if (mode) $('stage').classList.add('iso-' + mode); };
+
+  function key(state, angle) {
+    Ld.state('elec.keylight-head', state);
+    $('keyHead').setAttribute('transform', `rotate(${angle} 72 76)`);
+  }
+
+  // A puppet exactly as the game builds it: in a .pup group, scaled 1.25, facing right unless flipped
+  function addPuppet(id, c, x, y, flip) {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'pup');
+    g.style.transform = `translate(${x}px, ${y}px)`;
+    g.style.transition = 'none';
+    g.innerHTML = `<g class="flip"${flip ? ' transform="scale(-1 1)"' : ''}><g transform="scale(1.25)">${A.puppet(c)}</g></g>`;
+    $('labCrew').appendChild(g);
+    crew[id] = g;
+    return g.getBoundingClientRect().toJSON();
+  }
+  const cls = (id, name) => { crew[id].classList.remove('walking', 'working'); if (name) crew[id].classList.add(name); crew[id].querySelectorAll('.wl-pose').forEach(() => 0); Ld.pose(crew[id], name === 'walking' ? 'walk' : name === 'working' ? 'work' : 'idle'); };
+  // Stop every animation under a puppet at a point in its cycle (0..1), so a frame can be captured exactly
+  function freeze(id, t, cycleMs) {
+    for (const a of crew[id].getAnimations({ subtree: true })) { a.pause(); a.currentTime = t * cycleMs; }
+    return crew[id].getAnimations({ subtree: true }).length;
+  }
+
+  // How many device pixels each drawn image gets, against how many pixels it has
+  function measure() {
+    const dpr = window.devicePixelRatio;
+    const out = [];
+    for (const u of document.querySelectorAll('#setSvg use[data-st], .wl-pose use[data-st]')) {
+      let shown = true;
+      for (let n = u; n && n.nodeType === 1; n = n.parentNode) if (n.getAttribute && n.getAttribute('display') === 'none') { shown = false; break; }
+      if (!shown) continue;
+      const key = (u.getAttribute('href') || '').slice(1);
+      const img = document.getElementById(key);
+      if (!img) continue;
+      const r = u.getBoundingClientRect();
+      const iw = img.getAttribute('data-w') || null;
+      out.push({ key, st: u.getAttribute('data-st'), cssW: r.width, cssH: r.height, devW: r.width * dpr, devH: r.height * dpr });
+    }
+    return out;
+  }
+  // Every delivered image with its pixel size, so a run can compare pixels delivered with pixels drawn
+  function images() {
+    const out = [];
+    const rep = Ld.report();
+    for (const id of Object.keys(rep.pieces)) for (const st of rep.pieces[id].states) {
+      const r = Ld.resolve(id, st);
+      out.push({ id, st, key: r.key, imgW: r.imgW, imgH: r.imgH, w: r.w, h: r.h, scale: r.scale, ox: r.ox, oy: r.oy });
+    }
+    return out;
+  }
+  // A hire-card portrait: the same markup and crop the game uses, at the size the card draws it
+  function portrait(c, w, h, bg) {
+    const stage = $('stage');
+    stage.className = bg === 'checker' ? 'lab-checker' : '';
+    stage.style.background = bg && BG[bg] ? BG[bg] : '';
+    stage.style.width = w + 'px';
+    stage.innerHTML = A.faceSVG(c, 'face').replace('<svg ', `<svg width="${w}" height="${h}" style="display:block" `);
+    return stage.getBoundingClientRect().toJSON();
+  }
+  const rect = (sel) => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); const s = $('stage').getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height }; };
+  window.lab = { mount, iso, key, addPuppet, cls, freeze, measure, images, portrait, rect, report: () => Ld.report(), pack: () => Ld.report(), unitsPerCss: () => 360 / $('stage').getBoundingClientRect().width };
+})();
+</script>
+</body>
+</html>
