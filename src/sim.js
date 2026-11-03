@@ -218,6 +218,7 @@
     if (missing.length) return `Needs ${st.tasks[missing[0]].label}`;
     const cand = stageCandidate(st);
     if (t.stage && cand !== t.shot) {
+      if (st.capture) return `Rolling on ${st.shots[st.capture.shot].name}. The stage clears after the cut`;
       return st.stageShot ? `Stage busy with ${st.shots[st.stageShot].name}` : `${st.shots[cand].name} goes first`;
     }
     if (t.perishable && !manual && cand !== t.shot) return `Holding until ${st.shots[t.shot].name} is on stage`;
@@ -548,6 +549,34 @@
     return { state: 'go', task: t.id, label: t.label, why: '' };
   }
 
+  // The next thing the player should do for the shot on stage: the first required task that someone could start right
+  // now and nobody is on, with the crew member best suited to it. null when the shot is ready, rolling or waiting.
+  function nextStep(st) {
+    const cand = stageCandidate(st);
+    if (!cand || st.capture || st.pending) return null;
+    const memo = {};
+    const open = st.shots[cand].taskIds.map(id => st.tasks[id])
+      .filter(t => !t.done && !t.optional && !workersOn(st, t.id).length && !blockReason(st, t, true))
+      .sort((a, b) => chainLen(st, b, memo) - chainLen(st, a, memo) || a.order - b.order);
+    const t = open[0];
+    if (!t) return null;
+    const who = st.crew.find(c => c.dept === t.dept && !c.task) || st.crew.find(c => c.dept === t.dept);
+    return { task: t.id, label: t.label, station: stationOf(t), crew: who ? who.id : null, name: who ? who.name : '' };
+  }
+
+  // Who a blocked crew member is waiting on: the first unfinished dependency of their next task, and who does it.
+  function waitingOn(st, crew) {
+    const c = typeof crew === 'string' ? crewById(st, crew) : crew;
+    const cand = stageCandidate(st);
+    const mine = taskList(st).filter(t => t.dept === c.dept && !t.done && !shotLocked(st, t))
+      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || shotIndex(st, a.shot) - shotIndex(st, b.shot) || a.order - b.order)[0];
+    if (!mine) return null;
+    const dep = mine.needs.map(id => st.tasks[id]).find(d => !d.done);
+    if (!dep) return null;
+    const who = workersOn(st, dep.id)[0] || st.crew.find(x => x.dept === dep.dept);
+    return { task: mine.id, label: mine.label, dep: dep.id, depLabel: dep.label, name: who ? who.name : '', working: !!workersOn(st, dep.id).length };
+  }
+
   // The task an idle crew member would take if they were on auto, or null. Used to tell "waiting for orders"
   // (work exists) from "nothing for them to do" (no work exists).
   function idleWork(st, crew) {
@@ -709,7 +738,7 @@
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
     readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
-    stationTasks, canAssign, idleWork, tierAutonomy,
+    stationTasks, canAssign, idleWork, tierAutonomy, nextStep, waitingOn,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });

@@ -571,3 +571,44 @@ test('every autonomy level finishes the shoot with the scripted player', () => {
     assert.equal(st.endReason, 'wrap', `autonomy ${level} wrapped`);
   }
 });
+
+test('while rolling, the next shot is refused with "the stage clears after the cut", then opens', () => {
+  const st = withAutonomy(0);
+  const order = [['grip', 'hero.set'], ['art', 'hero.style']];
+  for (const [c, t] of order) S.command(st, { type: 'assign', crew: c, task: t });
+  runUntil(st, s => s.tasks['hero.set'].done && s.tasks['hero.style'].done);
+  S.command(st, { type: 'assign', crew: 'art', task: 'hero.place' });
+  runUntil(st, s => s.tasks['hero.place'].done);
+  S.command(st, { type: 'assign', crew: 'dp', task: 'hero.frame' });
+  runUntil(st, s => s.tasks['hero.frame'].done);
+  assert.ok(S.command(st, { type: 'action' }).ok);
+  const r = S.command(st, { type: 'assign', crew: 'grip', task: 'cheese.rig' });
+  assert.equal(r.ok, false);
+  assert.match(r.message, /Rolling on Hero Burger\. The stage clears after the cut/);
+  runUntil(st, s => s.shots.hero.captured);
+  assert.equal(st.stageShot, null, 'the stage is clear after the cut');
+  assert.equal(S.canAssign(st, 'grip', 'table').state, 'go');
+});
+
+test('nextStep names the first order for the shot on stage, and waitingOn names who blocks a crew member', () => {
+  const st = withAutonomy(0);
+  const n = S.nextStep(st);
+  assert.ok(['hero.set', 'hero.style'].includes(n.task), `first step is a root task, got ${n.task}`);
+  assert.equal(n.task, 'hero.style', 'the longest chain goes first (style 18 + place 4 + frame 8)');
+  assert.equal(n.name, 'Lu');
+  assert.equal(n.station, 'cart');
+  const w = S.waitingOn(st, 'gaffer');
+  assert.equal(w.depLabel, 'Build tabletop');
+  assert.equal(w.name, 'Dani');
+  // After the hero wraps, the gaffer and DP wait for the grip to rig the pull
+  const done = directedPlay(withAutonomy(0), 0, s => {
+    if (s.shots.hero.captured && !s.stageShot && !s.__checked) {
+      s.__checked = true;
+      const n2 = S.nextStep(s);
+      assert.ok(['cheese.rig', 'cheese.melt'].includes(n2.task), `next step is a required Cheese Pull task, got ${n2.task}`);
+      assert.equal(S.blockReason(s, s.tasks[n2.task], true), null, 'and it can be started right now');
+      assert.equal(S.waitingOn(s, 'gaffer').depLabel, 'Rig the pull');
+    }
+  });
+  assert.ok(done.__checked, 'checked the moment between shots');
+});

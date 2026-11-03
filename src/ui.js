@@ -82,7 +82,9 @@
   }
   function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
-  function say(text, bad) { toast = { text, bad: !!bad, until: performance.now() + 2600 }; }
+  function say(text, bad, ms) { toast = { text, bad: !!bad, until: performance.now() + (ms || 2600) }; }
+  const STATION_WORD = { light: 'key light', table: 'platform', camera: 'camera', cart: 'art table' };
+  const nextLine = n => `${n.name} to the ${STATION_WORD[n.station]} to ${n.label.toLowerCase()}`;
   const setText = (el, t) => { if (el && el._t !== t) { el._t = t; el.textContent = t; } };
   const setW = (el, p) => { const v = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; if (el._w !== v) { el._w = v; el.style.width = v; } };
   const setAttr = (el, k, v) => { if (el && el.getAttribute(k) !== String(v)) el.setAttribute(k, v); };
@@ -546,7 +548,7 @@
   function displayShot() {
     if (st.capture) return st.capture.shot;
     if (st.stageShot) return st.stageShot;
-    return lastCapture || S.stageCandidate(st) || st.priority[0];
+    return S.stageCandidate(st) || lastCapture || st.priority[0];
   }
 
   // Progress inside a sub-range, and stepped so motion reads as stop-motion rather than a smooth slide
@@ -805,7 +807,13 @@
       const asking = !!lab && !!S.idleWork(st, c);
       v.dot.className = 'dotst ' + cs.state;
       v.el.classList.toggle('ask', asking);
-      setText(v.tx, asking ? 'Waiting for orders' : cs.state === 'WORKING' ? cs.text + (cs.cross ? ' (half speed)' : '') : cs.text);
+      let tx = asking ? 'Waiting for orders' : cs.state === 'WORKING' ? cs.text + (cs.cross ? ' (half speed)' : '') : cs.text;
+      if (!asking && cs.state !== 'WORKING' && /^Needs /.test(cs.text)) {
+        const w = S.waitingOn(st, c);
+        if (w && w.name) { tx = `Waits for ${w.name}`; v.el.title = `${c.name} waits for ${w.name} to ${w.depLabel.toLowerCase()}`; }
+      }
+      if (!asking && st.capture && cs.state !== 'WORKING') tx = 'Quiet on set. Rolling';
+      setText(v.tx, tx);
       setW(v.bar, cs.state === 'WORKING' ? cs.pct : 0);
       v.man.hidden = !c.override || !!lab;
       v.el.classList.toggle('sel', selected === c.id);
@@ -818,7 +826,8 @@
     if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
     else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a lit-up spot on the set, a task icon, or a busy coworker.` : `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
     else if (now < tipUntil) text = lab ? 'Everyone waits for your orders. Tap a person, then tap where they should work.' : 'Your crew start on their own. Tap a person to give them a different job.';
-    else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set.`;
+    else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set. The stage clears after the cut.`;
+    else if (lab && !(r && r.ready) && S.nextStep(st)) text = `Next: ${nextLine(S.nextStep(st))}.`;
     else if (r && r.ready) text = r.missingOptional.length ? `Ready! Call ACTION now, or wait for ${r.missingOptional.map(x => x.label.toLowerCase()).join(', ')}.` : 'Ready! Everything is done. Call ACTION.';
     else if (r) text = `${st.shots[cand].name} needs: ${r.missingRequired.map(x => x.label.toLowerCase()).join(', ')}.`;
     else text = "That's a wrap.";
@@ -1047,7 +1056,13 @@
         const before = st.capture && st.capture.shot;
         S.advance(st, dt * speed);
         if (lab) labTick();
-        if (before && !st.capture) lastCapture = before;
+        if (before && !st.capture) {
+          lastCapture = before;
+          if (!st.over) {
+            const n = S.nextStep(st);
+            say(`${st.shots[before].name} is in the can. Stage is clear` + (n ? `. Next: ${nextLine(n)}.` : '.'), false, 5000);
+          }
+        }
         if (st.pending) showChaos();
         else if (st.over) showWrap();
       }
