@@ -27,7 +27,7 @@ The Burger Job set is now the game board. Everything on it is a separate SVG obj
 - **Art** builds the burger layer by layer on the art table, then carries it to the platform.
 - **Workstations:** each has a badge whose ring shows progress (red when blocked). Tap a station with nobody selected to see its task, crew, progress and blocker. Tap empty space to deselect.
 - **ACTION:** house lights dim, a spotlight lands on the burger, and the camera pushes in.
-- **Concept art in use:** the logo, the three shot thumbnails and a paper-grain texture are cut from `refs/concept-shoot.png` by `tools/extract_assets.py` into `src/assets.js`.
+- **Concept art in use:** the logo and the three shot thumbnails are cut from `refs/concept-shoot.png` by `tools/extract_assets.py` into `src/assets.js`. A paper-grain tile is cut too, but it is no longer laid over the set: each asset carries its own texture.
 - **Company name** is editable from the office (tap the name).
 
 The simulation is unchanged except for a read-only `stationInfo()` query. All motion follows sim state, quantized into stop-motion steps.

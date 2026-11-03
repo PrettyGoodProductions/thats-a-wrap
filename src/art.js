@@ -46,7 +46,9 @@
     const body = c.color || DEPT_COLOR[c.dept] || '#ccc';
     // A delivered modular puppet replaces the code-drawn one only when all its required parts exist
     if (loader()) {
-      const real = loader().puppet({ skin, hair, body, top: L.top, face: ['beard', 'mustache', 'glasses', 'earring'].filter(k => L[k]) });
+      // A fixed character (Ro) is its own art end to end, so no tint, hair or face extras go with it
+      const ch = loader().characterFor(c);
+      const real = ch ? loader().puppet({ character: ch }) : loader().puppet({ skin, hair, body, top: L.top, face: ['beard', 'mustache', 'glasses', 'earring'].filter(k => L[k]) });
       if (real) return real;
     }
     const s = `stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"`;
@@ -83,7 +85,9 @@
   }
 
   function faceSVG(c, cls) {
-    return `<svg class="${cls || ''}" viewBox="-13.5 -51 27 30" aria-hidden="true">${puppet(c)}</svg>`;
+    const ch = loader() && loader().characterFor(c);
+    const box = (ch && loader().portraitOf(ch)) || [-13.5, -51, 27, 30];
+    return `<svg class="${cls || ''}" viewBox="${box.join(' ')}" aria-hidden="true">${puppet(c)}</svg>`;
   }
 
   /* ---------- Held items (puppet coordinates, right hand near 10,-14) ---------- */
@@ -197,11 +201,9 @@
 
   function setMarkup() {
     const s = S();
-    const grain = (root.WrapAssets && root.WrapAssets.grain) || '';
     return `
 <svg class="set" id="setSvg" viewBox="0 -70 360 410" role="img" aria-label="The Burger Job set">
   <defs>
-    <pattern id="grainPat" width="80" height="70" patternUnits="userSpaceOnUse"><image href="${grain}" width="80" height="70" preserveAspectRatio="none"/></pattern>
     <pattern id="corrRed" width="5" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#D7705A"/><rect width="2" height="10" fill="#C2604B"/></pattern>
     <mask id="spotMask" maskUnits="userSpaceOnUse" x="0" y="-70" width="360" height="410">
       <rect x="0" y="-70" width="360" height="410" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask>
@@ -381,7 +383,6 @@
   <g id="fxLayer"></g>
 
   <rect id="dim" x="0" y="-70" width="360" height="410" fill="#0B0F18" opacity="0" mask="url(#spotMask)" pointer-events="none"/>
-  <rect x="0" y="-70" width="360" height="410" fill="url(#grainPat)" opacity=".22" style="mix-blend-mode:multiply" pointer-events="none"/>
 
   <!-- Clapper for ACTION -->
   <g id="clap" class="clap" transform="translate(146 30)">

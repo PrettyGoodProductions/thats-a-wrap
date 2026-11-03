@@ -10,14 +10,17 @@ One object per file, on a transparent background, cut along the paper edge. The 
 
 | Rule | Spec |
 | --- | --- |
-| Format | Layered SVG preferred, one group per part with the part name as its id. Otherwise PNG at 3x |
-| Scale | Sizes below are in set units. Deliver PNGs at 3x (a 112 x 60 platform is 336 x 180 px) |
+| Format | PNG-32, sRGB, straight (not premultiplied) alpha. Layered SVG also works, one group per part with the part name as its id |
+| Scale | Sizes below are in set units. Set props and lights at **6 px per unit** (a 112 x 60 platform is 672 x 360 px). Puppet parts at **8 px per unit** (they also appear larger on the hire cards). Measured on batch 1: this is sharp on a 3x phone and a 2x tablet with 1.1 to 1.8x headroom. Larger masters are fine to keep, `tools/prep_art.py` fits them |
+| Transparency | Fully transparent background, no glow or halo baked in, nothing between alpha 1 and 7 (clip it to 0), no stray specks. About 4 px of empty margin at export size |
 | Set coordinates | The shoot set is 360 units wide and 410 tall, with the floor line at about y 150. Phones show it at about 1.08 px per unit |
 | HQ coordinates | The office is 360 x 470 units |
 | View | Front three-quarter, slightly elevated, the same angle as the concept art. Light from the upper left |
 | Shadows | Keep the soft shadow between layers inside a piece. Do not paint cast shadows on the floor: the engine adds them so they move with the object |
 | Pivots | Each piece rotates or slides around the pivot listed below. Mark it in the file name or a note, in the piece's own pixel coordinates |
-| Naming | `dept.object.state@3x.png`, for example `elec.keylight-head.on@3x.png` |
+| Naming | `dept.object.state@6x.png`, for example `elec.keylight-head.on@6x.png`. The `@Nx` is the px per set unit. Characters: `crew.<character>.<part>@8x.png` (see below) |
+| States | Every state of a piece on one identical canvas, with everything that does not change at exactly the same pixels. The game swaps states in place, so any drift shows as a jump |
+| Facing | Puppets face right. Lights face right, toward the set |
 | No baked text | Anything the game changes stays out of the art: company name, chair labels, client logo, shot names, numbers |
 | Color variants | When a piece changes color per shot (the sweep), deliver a neutral light version the engine can tint, or one file per color |
 
@@ -85,6 +88,18 @@ Build one modular paper puppet and dress it, instead of drawing every crew membe
 
 Required for the real puppet to be used: head, torso, front arm, both legs. Everything else is optional, and a missing part is simply left out.
 
+**Fixed characters** (individually designed crew such as Ro the Gaffer). The art is the whole character, so it is never tinted and gets no face or hair overlays. Every character uses the same shared animation rig, so walk, work and later reactions need no new code per character.
+
+| ID | Part | Pivot (in the part's own pixels) |
+| --- | --- | --- |
+| `crew.ro.head` | Head with hat, hair and face, plus a short neck stub | Bottom center of the neck stub |
+| `crew.ro.torso` | Shirt and belt, without sleeves | Bottom center of the hem |
+| `crew.ro.arm-front`, `crew.ro.arm-back` | Sleeve, forearm and hand in one piece, hanging straight | Center of the round sleeve cap at the top |
+| `crew.ro.leg-front`, `crew.ro.leg-back` | Trouser leg and boot, with the rounded hip tab at the top | Center of the hip tab |
+| `crew.ro.json` | Scale, joints (where each part attaches, puppet units, feet at 0,0) and the hire card head crop | |
+
+Pose variants use the same names with a state: `crew.ro.arm-front.work@8x.png`. A new character is these files plus one line in `src/slots.js`. Long term the shared rig mixes both kinds: a character's own head and outfit, with library parts for anything it does not have.
+
 **Poses and states** (two or three frames each, stop-motion timing):
 
 | State | Look | When |
@@ -128,7 +143,7 @@ The office is a cutaway building 360 x 470 units. Each room is a 152 x 112 box s
 | --- | --- | --- | --- |
 | ui.logo | THAT'S A WRAP! sticker | 340 x 220 px at 1x | **In use now**, cut from the concept art. Needs a clean high-res version |
 | ui.shot-thumbs | Hero Burger, Cheese Pull, Sauce Pour polaroid photos | 120 x 105 px at 1x | **In use now**, cut from the concept art. Needs clean 3x versions without the polaroid border |
-| ui.paper-grain | Seamless paper fiber tile, neutral gray | 256 x 256 px | **In use now**, made from the concept art's foam board. A real seamless tile would remove the faint repeat |
+| ui.paper-grain | Seamless paper fiber tile, neutral gray | 256 x 256 px | **Retired as a whole-set overlay.** Each asset carries its own paper texture in its art. The tile is kept in `src/assets.js` but nothing draws it |
 | ui.card | Torn paper card frame, nine-slice | Corners 24 px | For panels, chaos card, wrap report |
 | ui.tape | Masking tape strip | 60 x 18 | Pinning labels |
 | ui.clapper | Clapperboard: board and hinged stick, separate | 100 x 70 | Stick pivot at its left hinge. Used for the ACTION button and the in-scene clap |
@@ -151,4 +166,4 @@ Start where the eye goes and where code-drawn shapes look weakest. The asset loa
 5. **HQ:** shell, sign board, four rooms in the for-rent and built states, lobby, van.
 6. **UI:** clean logo, shot thumbnails, card frame, clapper, icons.
 
-When a batch arrives, it goes in the `art/` folder and the build packs it. The asset loader is in place, so no code changes are needed for the wired pieces: `grip.platform`, `elec.keylight-head` (off, on, dead), `art.burger-build` and the `crew.*` puppet. Each piece can have a small `<dept>.<object>.json` for pivot and scale. The build prints what it found and warns about wrong scales, so a bad batch is caught before anyone looks at the screen. Every state is then checked against this list.
+When a batch arrives, it goes in the `art/` folder and the build packs it. The asset loader is in place, so no code changes are needed for the wired pieces: `grip.platform`, `elec.keylight-head` (off, on, dead), `art.burger-build`, the generic `crew.*` puppet and fixed characters (`crew.ro.*`). Batch 1 (platform, key light, Ro) is in, see `docs/project/Art-Batch-1-Validation.md`. Each piece can have a small `<dept>.<object>.json` for pivot and scale. The build prints what it found and warns about wrong scales, so a bad batch is caught before anyone looks at the screen. Every state is then checked against this list.

@@ -221,6 +221,27 @@ button.pill{text-align:left}
 .pup .bodyg{transform-box:fill-box}
 .pup.working .bodyg{animation:bob .44s steps(2) infinite}
 .pup.working .arm{transform-box:fill-box; transform-origin:50% 8%; animation:hammer .36s steps(2) infinite}
+/* Delivered characters (src/loader.js characterPuppet): one shared rig, animated per part role, so every character
+   walks and works the same way. Each part's transform-origin is its joint, in puppet units. */
+.wl-rig .wl-pose,.wl-rig .wl-upper{transform-box:view-box}
+.pup.walking .wl-rig{animation:rigBob .56s ease-in-out infinite}
+.pup.walking .wl-r-leg-front{animation:rigLeg .56s ease-in-out infinite}
+.pup.walking .wl-r-leg-back{animation:rigLeg .56s ease-in-out -.28s infinite}
+.pup.walking .wl-r-arm-front{animation:rigArm .56s ease-in-out -.28s infinite}
+.pup.walking .wl-r-arm-back{animation:rigArm .56s ease-in-out infinite}
+.pup.walking .wl-upper{animation:rigLean .56s ease-in-out infinite}
+.pup.working:not(.walking) .wl-rig{animation:rigWorkBob .6s ease-in-out infinite}
+.pup.working:not(.walking) .wl-upper{animation:rigWorkLean 1.2s ease-in-out infinite}
+.pup.working:not(.walking) .wl-r-arm-front{animation:rigReach .6s ease-in-out infinite}
+.pup.working:not(.walking) .wl-r-arm-back{animation:rigBraceArm 1.2s ease-in-out infinite}
+@keyframes rigBob{0%,50%,100%{transform:translateY(0)}25%,75%{transform:translateY(-.9px)}}
+@keyframes rigLeg{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+@keyframes rigArm{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
+@keyframes rigLean{0%,100%{transform:rotate(1.2deg)}50%{transform:rotate(-1.2deg)}}
+@keyframes rigWorkBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-.5px)}}
+@keyframes rigWorkLean{0%,100%{transform:rotate(3deg)}50%{transform:rotate(5deg)}}
+@keyframes rigReach{0%,100%{transform:rotate(-68deg)}50%{transform:rotate(-92deg)}}
+@keyframes rigBraceArm{0%,100%{transform:rotate(10deg)}50%{transform:rotate(4deg)}}
 .pup .selring{display:none}
 .pup.sel .selring{display:inline}
 .station-hit{fill:transparent; cursor:pointer}
@@ -343,6 +364,7 @@ body.lab-land #modal[data-kind="chaos"] > .opt{grid-column:auto; grid-template-c
 body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
 
 @media (prefers-reduced-motion:reduce){
+  .pup.walking .wl-rig,.pup.walking .wl-pose,.pup.walking .wl-upper,.pup.working .wl-rig,.pup.working .wl-pose,.pup.working .wl-upper{animation:none}
   .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
 }
 </style>

@@ -2,6 +2,7 @@
 //   node build.mjs                          builds with the art in art/
 //   node build.mjs --art some/folder        builds with art from another folder (tests use this)
 //   node build.mjs --out some/folder        writes somewhere other than dist/
+//   node build.mjs --lab                    also writes lab.html, the art test bench (tools/qa_pipeline.py)
 // Outputs:
 //   dist/index.html     full page, open it in any browser (double-click works)
 //   dist/artifact.html  same page without <html>/<head>/<body>, for publishing as a Claude artifact
@@ -57,3 +58,16 @@ mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'artifact.html'), fragment);
 writeFileSync(join(outDir, 'index.html'), full);
 console.log(`Built ${join(outDir, 'index.html')} and ${join(outDir, 'artifact.html')}`);
+
+// --lab also writes lab.html: the art test bench driven by tools/qa_pipeline.py (not part of the game)
+if (process.argv.includes('--lab')) {
+  const style = /<style>[\s\S]*?<\/style>/.exec(page)[0];
+  const lab = readFileSync('tools/lab.html', 'utf8')
+    .replace('<!-- page-style -->', () => style)
+    .replace(/<!-- inline:(\S+) -->/g, (_, file) => {
+      const code = generated[file] !== undefined ? generated[file] : readFileSync(file, 'utf8');
+      return `<script>\n/* ${file} */\n${code}\n</script>`;
+    });
+  writeFileSync(join(outDir, 'lab.html'), lab);
+  console.log(`Built ${join(outDir, 'lab.html')}`);
+}
