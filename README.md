@@ -61,6 +61,19 @@ Delivered art goes in `art/` (see `art/README.md`). `node build.mjs` packs it, a
 - **How it stays fast:** each image is defined once and drawn with `<use>`. State changes (key light, puppet pose) only toggle display, driven by the simulation. No per-frame rebuilding.
 - **Testing:** `tests/loader.test.js` covers it. `python3 tools/make_standins.py` regenerates the rough stand-in images in `tests/fixtures/art/`. `tools/qa_art_e2e.py` plays a whole shoot in Chrome with and without art (see its header).
 
+## Milestone B, first slice (branch `milestone-b-lab`)
+
+Crew now have an **autonomy** level: 0 waits for orders, 1 keeps going at its station, 2 picks eligible work in its department (the original auto crew, still the default, so nothing changes unless a run opts in). `createGame(level, { autonomy: 0 | 1 | 2 | 'tier', assist: true })`. New engine queries: `canAssign`, `stationTasks`, `idleWork`. See `docs/project/Milestone-B-Plan.md` for the decisions and the sequence of work.
+
+**Layout lab:** office screen, "Layout lab" button. Plays one seeded shoot with every crew member at autonomy 0, in portrait or landscape, and measures the interaction (orders per minute, wait for an order, idle share, taps per order, real pixel sizes). Lab runs never touch the bank. To test it in a real browser with real taps:
+
+```bash
+node build.mjs
+python3 tools/qa_lab_e2e.py dist/index.html /tmp/qa-lab port       # portrait 390x844
+python3 tools/qa_lab_e2e.py dist/index.html /tmp/qa-lab land       # landscape 844x390
+python3 tools/qa_lab_e2e.py dist/index.html /tmp/qa-lab land-rot   # landscape on a portrait-locked phone
+```
+
 ## Run it
 
 You need [Node.js](https://nodejs.org) 18 or newer for the build and tests. Playing needs only a browser.

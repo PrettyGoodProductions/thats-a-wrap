@@ -423,3 +423,151 @@ test('every task maps to one of the four stations', () => {
   const st = fresh();
   for (const t of Object.values(st.tasks)) assert.ok(['light', 'table', 'camera', 'cart'].includes(S.stationOf(t)), t.id);
 });
+
+/* ---------- Autonomy (Milestone B1 slice) ---------- */
+
+const withAutonomy = (autonomy, opts) => S.createGame(burgerJob, Object.assign({ autonomy }, opts || {}));
+// A scripted player: every tick, gives each idle crew member the best workable task for them, calls ACTION when
+// ready and answers chaos with a fix. reactTicks is how long a person waits before reacting to an idle crew member.
+function directedPlay(st, reactTicks, onTick) {
+  const waitingSince = {};
+  let guard = 0;
+  while (!st.over && guard++ < 10000) {
+    if (st.pending) S.command(st, { type: 'choose', option: 'fix' });
+    for (const c of st.crew) {
+      if (S.idleWork(st, c)) {
+        waitingSince[c.id] = waitingSince[c.id] == null ? st.ticks : waitingSince[c.id];
+        if (st.ticks - waitingSince[c.id] >= reactTicks) { S.command(st, { type: 'assign', crew: c.id, task: S.idleWork(st, c) }); waitingSince[c.id] = null; }
+      } else waitingSince[c.id] = null;
+    }
+    S.tick(st);
+    if (onTick) onTick(st);
+    const cand = S.stageCandidate(st);
+    if (cand && !st.capture && S.readiness(st, cand).ready) S.command(st, { type: 'action' });
+  }
+  return st;
+}
+
+test('crew default to autonomy 2, the original auto crew', () => {
+  assert.ok(fresh().crew.every(c => c.autonomy === 2));
+});
+
+test('autonomy 0 crew do nothing until told', () => {
+  const st = withAutonomy(0);
+  S.stepTicks(st, secs(30));
+  assert.ok(st.crew.every(c => !c.task), 'nobody started anything');
+  assert.ok(Object.values(st.tasks).every(t => t.progress === 0));
+  assert.equal(st.log.filter(e => e.type === 'start').length, 0);
+});
+
+test('autonomy 0 crew finish what they are given, then wait for the next order', () => {
+  const st = withAutonomy(0);
+  S.command(st, { type: 'assign', crew: 'grip', task: 'hero.set' });
+  assert.ok(runUntil(st, s => s.tasks['hero.set'].done));
+  S.stepTicks(st, secs(5));
+  const grip = st.crew.find(c => c.id === 'grip');
+  assert.equal(grip.task, null);
+  assert.ok(S.idleWork(st, 'art') === 'hero.style', 'art has work available but nobody told them');
+  assert.equal(st.tasks['hero.style'].progress, 0);
+});
+
+test('autonomy 1 keeps going at its own station but does not walk to another one', () => {
+  const st = withAutonomy(1);
+  S.command(st, { type: 'assign', crew: 'art', task: 'hero.style' });
+  S.command(st, { type: 'assign', crew: 'grip', task: 'hero.set' });
+  assert.ok(runUntil(st, s => s.tasks['hero.set'].done && s.tasks['hero.style'].done));
+  S.stepTicks(st, 3);
+  const art = st.crew.find(c => c.id === 'art');
+  assert.equal(art.task, 'sauce.prep', 'carries on at the art table with the next art-table job');
+  assert.notEqual(art.task, 'hero.place', 'hero.place is at the platform, a different station');
+  const grip = st.crew.find(c => c.id === 'grip');
+  assert.equal(grip.task, null, 'nothing else eligible at the platform yet, so the grip waits');
+});
+
+test('autonomy 1 crew who have never worked anywhere wait for a first order', () => {
+  const st = withAutonomy(1);
+  S.stepTicks(st, secs(5));
+  assert.ok(st.crew.every(c => !c.task));
+});
+
+test('autonomy 2 still walks to the platform for the next job (original behavior)', () => {
+  const st = withAutonomy(2);
+  assert.ok(runUntil(st, s => s.tasks['hero.place'].progress > 0));
+  assert.equal(st.crew.find(c => c.id === 'art').task, 'hero.place');
+});
+
+test('tier sets autonomy and Assist Mode lifts the floor without lowering veterans', () => {
+  const all = burgerJob.hiring.flatMap(r => r.candidates.map(c => Object.assign({ role: r.role, dept: r.dept }, c)));
+  const crew = [all.find(c => c.id === 'ines'), all.find(c => c.id === 'sam'), all.find(c => c.id === 'dani'), all.find(c => c.id === 'kit')];
+  crew[0].dept = 'camera'; crew[1].dept = 'lighting'; crew[2].dept = 'grip'; crew[3].dept = 'art';
+  const plain = S.createGame(burgerJob, { crew, autonomy: 'tier' });
+  assert.deepEqual(plain.crew.map(c => c.autonomy), [2, 0, 1, 0], 'Veteran 2, Newbie 0, Solid 1, Unknown 0');
+  const assist = S.createGame(burgerJob, { crew, autonomy: 'tier', assist: true });
+  assert.deepEqual(assist.crew.map(c => c.autonomy), [2, 1, 1, 1]);
+  assert.equal(S.tierAutonomy('Veteran'), 2);
+});
+
+test('canAssign says go, slow, busy or no, with the reason', () => {
+  const st = withAutonomy(0);
+  assert.equal(S.canAssign(st, 'grip', 'table').state, 'go');
+  assert.equal(S.canAssign(st, 'art', 'table').state, 'slow', 'art on a grip job runs at half speed');
+  const gaffer = S.canAssign(st, 'gaffer', 'light');
+  assert.equal(gaffer.state, 'no');
+  assert.match(gaffer.why, /Needs Build tabletop/);
+  S.command(st, { type: 'assign', crew: 'grip', task: 'hero.set' });
+  assert.equal(S.canAssign(st, 'grip', 'table').state, 'busy');
+  assert.equal(S.canAssign(st, 'dp', 'camera').state, 'no');
+});
+
+test('canAssign refuses everything while a chaos decision is pending', () => {
+  const st = withAutonomy(0);
+  S.command(st, { type: 'assign', crew: 'grip', task: 'hero.set' });
+  st.pending = 'keylight';
+  assert.equal(S.canAssign(st, 'grip', 'table').state, 'no');
+});
+
+test('choosing the repair is the order: an autonomy 0 gaffer starts the fix on their own', () => {
+  const st = withAutonomy(0);
+  st.pending = 'keylight';
+  st.fired.keylight = true;
+  for (const tid of burgerJob.events[0].blocks) st.blocks[tid] = 'keylight';
+  st.stageShot = 'cheese';
+  S.command(st, { type: 'choose', option: 'fix' });
+  const gaffer = st.crew.find(c => c.id === 'gaffer');
+  assert.equal(gaffer.task, 'keylight.fix');
+});
+
+test('a scripted player with every crew member at autonomy 0 finishes the shoot', () => {
+  const st = directedPlay(withAutonomy(0), 10, assertNoSoftLock);
+  assert.ok(st.over);
+  assert.equal(st.endReason, 'wrap');
+  assert.ok(Object.values(st.shots).every(s => s.captured));
+  assert.equal(st.log.filter(e => e.type === 'start').length, 0, 'every task was ordered, none picked');
+  assert.ok(S.seconds(st) < burgerJob.hardStop);
+});
+
+test('the scripted player finishes in every shot order, even with a slow 2 second reaction', () => {
+  const ids = ['hero', 'cheese', 'sauce'];
+  const perms = [];
+  const permute = (a, rest) => rest.length ? rest.forEach((x, i) => permute(a.concat(x), rest.filter((_, j) => j !== i))) : perms.push(a);
+  permute([], ids);
+  for (const order of perms) {
+    const st = withAutonomy(0);
+    S.command(st, { type: 'setPriority', order });
+    directedPlay(st, 20, assertNoSoftLock);
+    assert.equal(st.endReason, 'wrap', `order ${order} wrapped before the client pulled the plug`);
+  }
+});
+
+test('directed play is deterministic', () => {
+  const a = directedPlay(withAutonomy(0, { seed: 7 }), 10);
+  const b = directedPlay(withAutonomy(0, { seed: 7 }), 10);
+  assert.equal(S.snapshot(a), S.snapshot(b));
+});
+
+test('every autonomy level finishes the shoot with the scripted player', () => {
+  for (const level of [0, 1, 2]) {
+    const st = directedPlay(withAutonomy(level), 10, assertNoSoftLock);
+    assert.equal(st.endReason, 'wrap', `autonomy ${level} wrapped`);
+  }
+});

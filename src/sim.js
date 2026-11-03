@@ -7,7 +7,11 @@
 
   Each tick:
     1. Assignment: every crew member keeps their task, follows a manual override,
-       or picks the best eligible task in their own department.
+       or picks their next task according to their autonomy level:
+         0 Newbie   waits for orders once a task is finished
+         1 Solid    keeps going with eligible tasks at the station they are already working at
+         2 Veteran  picks the best eligible task in their own department (the original auto crew)
+       Autonomy never touches strategy: shot order, spending, risky perishables and ACTION stay with the player.
     2. Stage claim: the first stage task started locks the stage to that shot. Chaos events can fire here.
     3. Work: tasks gain progress from everyone on them (speed x 1 in their dept, x crossDeptRate outside).
        A finished task can be botched by an unreliable crew member: half of it is redone, once per task.
@@ -81,6 +85,10 @@
 
   const BASE_MODS = { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 };
 
+  // How much a crew member does on their own. Experience sets it, Assist Mode lifts the floor to 1.
+  const TIER_AUTONOMY = { Veteran: 2, Solid: 1, Vouched: 1, Newbie: 0, Unknown: 0 };
+  const tierAutonomy = tier => (tier in TIER_AUTONOMY ? TIER_AUTONOMY[tier] : 2);
+
   // Combine the effects of owned office rooms into shoot-day modifiers.
   function companyMods(rooms, owned) {
     const m = Object.assign({}, BASE_MODS);
@@ -103,10 +111,18 @@
     const errors = validateLevel(level);
     if (errors.length) throw new Error('Invalid level:\n' + errors.join('\n'));
     const src = opts.crew || level.crew;
+    // opts.autonomy: a number for everyone, 'tier' to derive it from experience, or leave out for 2 (the original auto crew)
+    const autonomyOf = c => {
+      let a = c.autonomy != null ? c.autonomy : 2;
+      if (typeof opts.autonomy === 'number') a = opts.autonomy;
+      else if (opts.autonomy === 'tier') a = tierAutonomy(c.tier);
+      return opts.assist ? Math.max(a, 1) : a;
+    };
     const crew = src.map((c, i) => ({
       id: opts.crew ? c.dept : c.id, name: c.name, role: c.role, dept: c.dept,
       speed: c.speed || 1, reliability: c.reliability != null ? c.reliability : 1,
       perks: (c.perks || []).slice(), rate: c.rate || 0, look: c.look || null, tier: c.tier || '',
+      autonomy: autonomyOf(c), lastStation: null,
       task: null, override: null, order: i,
     }));
     const tasks = {};
@@ -225,17 +241,26 @@
     return false;
   }
 
-  function pickAuto(st, c) {
+  // station: optionally limit the pick to tasks at one workstation (autonomy 1)
+  function pickAuto(st, c, station) {
     let best = null, bestKey = null;
     const memo = {};
     for (const t of taskList(st)) {
       if (t.dept !== c.dept) continue;
+      if (station && stationOf(t) !== station) continue;
       if (blockReason(st, t, false)) continue;
       if (workersOn(st, t.id, c).length) continue;
       const key = [shotIndex(st, t.shot), -chainLen(st, t, memo), t.order];
       if (!best || lexLess(key, bestKey)) { best = t; bestKey = key; }
     }
     return best ? best.id : null;
+  }
+
+  // The next task someone takes on their own, by autonomy level. Level 0 never picks.
+  function pickFor(st, c) {
+    if (c.autonomy <= 0) return null;
+    if (c.autonomy === 1) return pickAuto(st, c, c.lastStation || '__none__');
+    return pickAuto(st, c);
   }
 
   function spend(st, amount, kind) {
@@ -305,9 +330,11 @@
         else { c.task = c.override; continue; }
       }
       if (c.task && !blockReason(st, st.tasks[c.task], false)) continue;
-      c.task = pickAuto(st, c);
+      c.task = pickFor(st, c);
       if (c.task && c.task !== before) log(st, 'start', `${c.name} starts ${st.tasks[c.task].label}`, { crew: c.id, task: c.task });
     }
+    // Remember where each person is working, so autonomy 1 knows which station to stay at
+    for (const c of st.crew) if (c.task) c.lastStation = stationOf(st.tasks[c.task]);
 
     // 2. Stage claim + chaos triggers
     if (!st.stageShot) {
@@ -498,6 +525,37 @@
     };
   }
 
+  // Open tasks at a workstation, best first: the shot on stage, then shot priority, then data order.
+  function stationTasks(st, station) {
+    const cand = stageCandidate(st);
+    return taskList(st)
+      .filter(t => !t.done && stationOf(t) === station && !st.shots[t.shot].captured)
+      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || shotIndex(st, a.shot) - shotIndex(st, b.shot) || a.order - b.order);
+  }
+
+  // What happens if this crew member is sent to this workstation: 'go' (full speed), 'slow' (outside their
+  // department, half speed), 'busy' (already on it) or 'no' (with the reason). Drives the green/amber/red highlights.
+  function canAssign(st, crew, station) {
+    const c = typeof crew === 'string' ? crewById(st, crew) : crew;
+    if (st.over) return { state: 'no', why: 'The shoot is wrapped' };
+    if (st.pending) return { state: 'no', why: 'Deal with the problem first' };
+    const list = stationTasks(st, station);
+    if (!list.length) return { state: 'no', why: 'Nothing left to do there' };
+    const t = list.find(x => !blockReason(st, x, true));
+    if (!t) return { state: 'no', task: list[0].id, label: list[0].label, why: blockReason(st, list[0], true) };
+    if (c.override === t.id || c.task === t.id) return { state: 'busy', task: t.id, label: t.label, why: 'Already on it' };
+    if (c.dept !== t.dept) return { state: 'slow', task: t.id, label: t.label, why: 'Half speed outside their department' };
+    return { state: 'go', task: t.id, label: t.label, why: '' };
+  }
+
+  // The task an idle crew member would take if they were on auto, or null. Used to tell "waiting for orders"
+  // (work exists) from "nothing for them to do" (no work exists).
+  function idleWork(st, crew) {
+    const c = typeof crew === 'string' ? crewById(st, crew) : crew;
+    if (st.over || st.capture || st.pending || c.task) return null;
+    return pickAuto(st, c);
+  }
+
   function score(st) {
     const lv = st.level;
     const shots = Object.values(st.shots);
@@ -601,6 +659,9 @@
           st.shots[shot].taskIds.push(id);
           for (const tid of ev.blocks) st.tasks[tid].needs.push(id);
           unblock(st, ev.id);
+          // Choosing the repair is the order. Crew who would not pick it up on their own start it now.
+          const fixer = st.crew.find(c => c.dept === o.dept);
+          if (fixer && fixer.autonomy < 2 && !fixer.override) { fixer.override = id; fixer.task = id; }
         } else if (o.kind === 'wait') {
           st.blockText[ev.id] = o.waitText;
           st.waits.push({ event: ev.id, left: Math.round(o.secs * TPS), total: Math.round(o.secs * TPS), doneText: o.owned ? 'Backup light is up' : 'Backup light arrived' });
@@ -648,6 +709,7 @@
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
     readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
+    stationTasks, canAssign, idleWork, tierAutonomy,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });

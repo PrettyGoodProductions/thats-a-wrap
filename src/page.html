@@ -269,8 +269,81 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 .seg button{padding:7px 14px; font:700 13px var(--font-mono); background:var(--card)}
 .seg button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
 
+/* ---------- layout lab (Milestone B experiment) ---------- */
+/* Station highlights while a crew member is selected: green = full speed, amber = half speed, red = can't, with the reason on tap */
+body.picking .station-hit.hit-go{fill:rgba(78,138,98,.30); stroke:#2F6B45; stroke-width:2.5; stroke-dasharray:none}
+body.picking .station-hit.hit-slow{fill:rgba(231,184,79,.32); stroke:#B98A1E; stroke-width:2.5; stroke-dasharray:6 3}
+body.picking .station-hit.hit-no{fill:rgba(216,107,86,.22); stroke:#B5472F; stroke-width:2; stroke-dasharray:2 4}
+body.picking .station-hit.hit-busy{fill:rgba(255,255,255,.10); stroke:#fff; stroke-width:1.5; stroke-dasharray:4 3}
+/* Idle crew who have work available ask for orders */
+.pup.ask .bb{animation:askpulse .6s steps(2) infinite}
+.cb.ask{animation:pulse 1s steps(2) infinite}
+.cb.ask .dotst{background:var(--mustard)}
+@keyframes askpulse{50%{stroke-width:3.2; fill:#FFD76B}}
+
+.labcmp{display:grid; grid-template-columns:1fr auto auto; gap:5px 12px; font-size:13px; align-items:baseline}
+.labcmp .h{font:400 15px var(--font-hand)}
+.labcmp b{font:600 13px var(--font-mono); text-align:right}
+.labcmp .dim{color:var(--ink-2)}
+.labrun{display:flex; flex-direction:column; gap:8px}
+
+/* Landscape shoot: shot list left, the set in the middle at full height, crew and ACTION under the right thumb */
+#screen-shoot.land{position:fixed; inset:0; z-index:5; max-width:none; margin:0; gap:0; overflow:hidden; background:var(--paper);
+  padding:max(6px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.land-grid{height:100%; display:grid; grid-template-columns:minmax(170px,26%) minmax(0,1fr) minmax(176px,24%); gap:8px; min-height:0}
+.land-col{display:flex; flex-direction:column; gap:6px; min-height:0; min-width:0}
+.land-mid{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column}
+.land .set-wrap{flex:1; min-height:0; display:grid; place-items:center}
+.land .set{width:100%; height:100%}
+.land .land-hud{position:absolute; top:12px; left:6px; right:6px; z-index:4; pointer-events:none}
+.land .land-hud .topbar{gap:4px; pointer-events:none}
+.land .land-hud .pill, .land .land-hud .sq{pointer-events:auto}
+.land .land-hud .pill{padding:3px 7px; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
+.land .land-hud .pill b{font-size:13px}
+.land .land-hud .pill .hand{font-size:13px}
+.land .land-hud .pill span{font-size:8.5px}
+.land .land-hud .sq{width:40px; min-height:40px; height:auto; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
+.land .daybar{position:absolute; left:0; right:0; top:0; z-index:4; margin:0; height:8px; border-radius:3px 3px 0 0}
+.land .daybar .wm span{display:none}
+.land .land-hud .pill.grow{flex:0 1 auto}
+.land .land-hud .pill .hand{display:none}
+.land .onstage{display:none}
+.land .ribbon{margin:0; min-height:0; font-size:12px; line-height:1.25; padding:5px 7px; flex:none}
+.land .shotcard{flex:1; min-height:0; overflow:auto; padding:2px 8px}
+.land .srow{grid-template-columns:20px minmax(0,1fr); grid-template-areas:"sg sn" "ic ic"; row-gap:3px; padding:4px 0; min-height:0; align-items:center}
+.land .srow .sg{grid-area:sg}
+.land .srow .sn{grid-area:sn; font-size:15px}
+.land .srow .icons, .land .srow .stamp-q{grid-area:ic}
+.land .srow.stage{margin-inline:-8px; padding-inline:8px}
+.land .icons{flex-wrap:wrap; gap:4px}
+.land .crewbar{grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); flex:1; min-height:0}
+.land .cb{padding:4px 3px 9px; justify-content:center}
+.land .cb svg{width:36px; height:36px}
+.land .cb .tx{height:24px; font-size:10.5px}
+.land .clapbtn{position:static; width:100%; max-width:none; flex:none; min-height:76px; flex-direction:row; align-items:center; gap:8px}
+.land .clapbtn svg{width:74px; flex:none}
+.land .clapbtn .cap{flex:1; font-size:14px; padding:10px 6px; text-align:center}
+.land .stcard{left:6px; right:6px; bottom:6px; font-size:12px}
+
+/* Phones locked to portrait: the game turns the shoot sideways itself (turn the phone counterclockwise) */
+body.rot{overflow:hidden}
+body.rot #screen-shoot.land, body.rot .overlay{position:fixed; inset:auto; top:0; left:0; width:100vh; height:100vw; width:100dvh; height:100dvw;
+  transform-origin:0 0; transform:translateX(100vw) rotate(90deg); transform:translateX(100dvw) rotate(90deg)}
+body.rot.flip #screen-shoot.land, body.rot.flip .overlay{transform:translateY(100vh) rotate(-90deg); transform:translateY(100dvh) rotate(-90deg)}
+
+body.lab-land .modal{max-width:780px; padding:10px 14px; gap:6px}
+body.lab-land .chaos-h{margin:-10px -14px 0; padding:6px 14px}
+body.lab-land .chaos-h b{font-size:22px}
+body.lab-land .chaos-h .bang{width:26px; height:26px; font-size:18px}
+body.lab-land .chaos-t{font-size:18px}
+body.lab-land .modal .note{font-size:12.5px; margin:0}
+body.lab-land #modal[data-kind="chaos"]{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px 8px}
+body.lab-land #modal[data-kind="chaos"] > *{grid-column:1 / -1}
+body.lab-land #modal[data-kind="chaos"] > .opt{grid-column:auto; grid-template-columns:30px 1fr; align-items:start}
+body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
+
 @media (prefers-reduced-motion:reduce){
-  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working{animation:none}
+  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
 }
 </style>
 

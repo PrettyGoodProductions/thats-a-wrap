@@ -269,8 +269,81 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 .seg button{padding:7px 14px; font:700 13px var(--font-mono); background:var(--card)}
 .seg button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
 
+/* ---------- layout lab (Milestone B experiment) ---------- */
+/* Station highlights while a crew member is selected: green = full speed, amber = half speed, red = can't, with the reason on tap */
+body.picking .station-hit.hit-go{fill:rgba(78,138,98,.30); stroke:#2F6B45; stroke-width:2.5; stroke-dasharray:none}
+body.picking .station-hit.hit-slow{fill:rgba(231,184,79,.32); stroke:#B98A1E; stroke-width:2.5; stroke-dasharray:6 3}
+body.picking .station-hit.hit-no{fill:rgba(216,107,86,.22); stroke:#B5472F; stroke-width:2; stroke-dasharray:2 4}
+body.picking .station-hit.hit-busy{fill:rgba(255,255,255,.10); stroke:#fff; stroke-width:1.5; stroke-dasharray:4 3}
+/* Idle crew who have work available ask for orders */
+.pup.ask .bb{animation:askpulse .6s steps(2) infinite}
+.cb.ask{animation:pulse 1s steps(2) infinite}
+.cb.ask .dotst{background:var(--mustard)}
+@keyframes askpulse{50%{stroke-width:3.2; fill:#FFD76B}}
+
+.labcmp{display:grid; grid-template-columns:1fr auto auto; gap:5px 12px; font-size:13px; align-items:baseline}
+.labcmp .h{font:400 15px var(--font-hand)}
+.labcmp b{font:600 13px var(--font-mono); text-align:right}
+.labcmp .dim{color:var(--ink-2)}
+.labrun{display:flex; flex-direction:column; gap:8px}
+
+/* Landscape shoot: shot list left, the set in the middle at full height, crew and ACTION under the right thumb */
+#screen-shoot.land{position:fixed; inset:0; z-index:5; max-width:none; margin:0; gap:0; overflow:hidden; background:var(--paper);
+  padding:max(6px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.land-grid{height:100%; display:grid; grid-template-columns:minmax(170px,26%) minmax(0,1fr) minmax(176px,24%); gap:8px; min-height:0}
+.land-col{display:flex; flex-direction:column; gap:6px; min-height:0; min-width:0}
+.land-mid{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column}
+.land .set-wrap{flex:1; min-height:0; display:grid; place-items:center}
+.land .set{width:100%; height:100%}
+.land .land-hud{position:absolute; top:12px; left:6px; right:6px; z-index:4; pointer-events:none}
+.land .land-hud .topbar{gap:4px; pointer-events:none}
+.land .land-hud .pill, .land .land-hud .sq{pointer-events:auto}
+.land .land-hud .pill{padding:3px 7px; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
+.land .land-hud .pill b{font-size:13px}
+.land .land-hud .pill .hand{font-size:13px}
+.land .land-hud .pill span{font-size:8.5px}
+.land .land-hud .sq{width:40px; min-height:40px; height:auto; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
+.land .daybar{position:absolute; left:0; right:0; top:0; z-index:4; margin:0; height:8px; border-radius:3px 3px 0 0}
+.land .daybar .wm span{display:none}
+.land .land-hud .pill.grow{flex:0 1 auto}
+.land .land-hud .pill .hand{display:none}
+.land .onstage{display:none}
+.land .ribbon{margin:0; min-height:0; font-size:12px; line-height:1.25; padding:5px 7px; flex:none}
+.land .shotcard{flex:1; min-height:0; overflow:auto; padding:2px 8px}
+.land .srow{grid-template-columns:20px minmax(0,1fr); grid-template-areas:"sg sn" "ic ic"; row-gap:3px; padding:4px 0; min-height:0; align-items:center}
+.land .srow .sg{grid-area:sg}
+.land .srow .sn{grid-area:sn; font-size:15px}
+.land .srow .icons, .land .srow .stamp-q{grid-area:ic}
+.land .srow.stage{margin-inline:-8px; padding-inline:8px}
+.land .icons{flex-wrap:wrap; gap:4px}
+.land .crewbar{grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); flex:1; min-height:0}
+.land .cb{padding:4px 3px 9px; justify-content:center}
+.land .cb svg{width:36px; height:36px}
+.land .cb .tx{height:24px; font-size:10.5px}
+.land .clapbtn{position:static; width:100%; max-width:none; flex:none; min-height:76px; flex-direction:row; align-items:center; gap:8px}
+.land .clapbtn svg{width:74px; flex:none}
+.land .clapbtn .cap{flex:1; font-size:14px; padding:10px 6px; text-align:center}
+.land .stcard{left:6px; right:6px; bottom:6px; font-size:12px}
+
+/* Phones locked to portrait: the game turns the shoot sideways itself (turn the phone counterclockwise) */
+body.rot{overflow:hidden}
+body.rot #screen-shoot.land, body.rot .overlay{position:fixed; inset:auto; top:0; left:0; width:100vh; height:100vw; width:100dvh; height:100dvw;
+  transform-origin:0 0; transform:translateX(100vw) rotate(90deg); transform:translateX(100dvw) rotate(90deg)}
+body.rot.flip #screen-shoot.land, body.rot.flip .overlay{transform:translateY(100vh) rotate(-90deg); transform:translateY(100dvh) rotate(-90deg)}
+
+body.lab-land .modal{max-width:780px; padding:10px 14px; gap:6px}
+body.lab-land .chaos-h{margin:-10px -14px 0; padding:6px 14px}
+body.lab-land .chaos-h b{font-size:22px}
+body.lab-land .chaos-h .bang{width:26px; height:26px; font-size:18px}
+body.lab-land .chaos-t{font-size:18px}
+body.lab-land .modal .note{font-size:12.5px; margin:0}
+body.lab-land #modal[data-kind="chaos"]{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px 8px}
+body.lab-land #modal[data-kind="chaos"] > *{grid-column:1 / -1}
+body.lab-land #modal[data-kind="chaos"] > .opt{grid-column:auto; grid-template-columns:30px 1fr; align-items:start}
+body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
+
 @media (prefers-reduced-motion:reduce){
-  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working{animation:none}
+  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
 }
 </style>
 
@@ -492,7 +565,11 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 
   Each tick:
     1. Assignment: every crew member keeps their task, follows a manual override,
-       or picks the best eligible task in their own department.
+       or picks their next task according to their autonomy level:
+         0 Newbie   waits for orders once a task is finished
+         1 Solid    keeps going with eligible tasks at the station they are already working at
+         2 Veteran  picks the best eligible task in their own department (the original auto crew)
+       Autonomy never touches strategy: shot order, spending, risky perishables and ACTION stay with the player.
     2. Stage claim: the first stage task started locks the stage to that shot. Chaos events can fire here.
     3. Work: tasks gain progress from everyone on them (speed x 1 in their dept, x crossDeptRate outside).
        A finished task can be botched by an unreliable crew member: half of it is redone, once per task.
@@ -566,6 +643,10 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 
   const BASE_MODS = { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 };
 
+  // How much a crew member does on their own. Experience sets it, Assist Mode lifts the floor to 1.
+  const TIER_AUTONOMY = { Veteran: 2, Solid: 1, Vouched: 1, Newbie: 0, Unknown: 0 };
+  const tierAutonomy = tier => (tier in TIER_AUTONOMY ? TIER_AUTONOMY[tier] : 2);
+
   // Combine the effects of owned office rooms into shoot-day modifiers.
   function companyMods(rooms, owned) {
     const m = Object.assign({}, BASE_MODS);
@@ -588,10 +669,18 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     const errors = validateLevel(level);
     if (errors.length) throw new Error('Invalid level:\n' + errors.join('\n'));
     const src = opts.crew || level.crew;
+    // opts.autonomy: a number for everyone, 'tier' to derive it from experience, or leave out for 2 (the original auto crew)
+    const autonomyOf = c => {
+      let a = c.autonomy != null ? c.autonomy : 2;
+      if (typeof opts.autonomy === 'number') a = opts.autonomy;
+      else if (opts.autonomy === 'tier') a = tierAutonomy(c.tier);
+      return opts.assist ? Math.max(a, 1) : a;
+    };
     const crew = src.map((c, i) => ({
       id: opts.crew ? c.dept : c.id, name: c.name, role: c.role, dept: c.dept,
       speed: c.speed || 1, reliability: c.reliability != null ? c.reliability : 1,
       perks: (c.perks || []).slice(), rate: c.rate || 0, look: c.look || null, tier: c.tier || '',
+      autonomy: autonomyOf(c), lastStation: null,
       task: null, override: null, order: i,
     }));
     const tasks = {};
@@ -710,17 +799,26 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     return false;
   }
 
-  function pickAuto(st, c) {
+  // station: optionally limit the pick to tasks at one workstation (autonomy 1)
+  function pickAuto(st, c, station) {
     let best = null, bestKey = null;
     const memo = {};
     for (const t of taskList(st)) {
       if (t.dept !== c.dept) continue;
+      if (station && stationOf(t) !== station) continue;
       if (blockReason(st, t, false)) continue;
       if (workersOn(st, t.id, c).length) continue;
       const key = [shotIndex(st, t.shot), -chainLen(st, t, memo), t.order];
       if (!best || lexLess(key, bestKey)) { best = t; bestKey = key; }
     }
     return best ? best.id : null;
+  }
+
+  // The next task someone takes on their own, by autonomy level. Level 0 never picks.
+  function pickFor(st, c) {
+    if (c.autonomy <= 0) return null;
+    if (c.autonomy === 1) return pickAuto(st, c, c.lastStation || '__none__');
+    return pickAuto(st, c);
   }
 
   function spend(st, amount, kind) {
@@ -790,9 +888,11 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
         else { c.task = c.override; continue; }
       }
       if (c.task && !blockReason(st, st.tasks[c.task], false)) continue;
-      c.task = pickAuto(st, c);
+      c.task = pickFor(st, c);
       if (c.task && c.task !== before) log(st, 'start', `${c.name} starts ${st.tasks[c.task].label}`, { crew: c.id, task: c.task });
     }
+    // Remember where each person is working, so autonomy 1 knows which station to stay at
+    for (const c of st.crew) if (c.task) c.lastStation = stationOf(st.tasks[c.task]);
 
     // 2. Stage claim + chaos triggers
     if (!st.stageShot) {
@@ -983,6 +1083,37 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     };
   }
 
+  // Open tasks at a workstation, best first: the shot on stage, then shot priority, then data order.
+  function stationTasks(st, station) {
+    const cand = stageCandidate(st);
+    return taskList(st)
+      .filter(t => !t.done && stationOf(t) === station && !st.shots[t.shot].captured)
+      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || shotIndex(st, a.shot) - shotIndex(st, b.shot) || a.order - b.order);
+  }
+
+  // What happens if this crew member is sent to this workstation: 'go' (full speed), 'slow' (outside their
+  // department, half speed), 'busy' (already on it) or 'no' (with the reason). Drives the green/amber/red highlights.
+  function canAssign(st, crew, station) {
+    const c = typeof crew === 'string' ? crewById(st, crew) : crew;
+    if (st.over) return { state: 'no', why: 'The shoot is wrapped' };
+    if (st.pending) return { state: 'no', why: 'Deal with the problem first' };
+    const list = stationTasks(st, station);
+    if (!list.length) return { state: 'no', why: 'Nothing left to do there' };
+    const t = list.find(x => !blockReason(st, x, true));
+    if (!t) return { state: 'no', task: list[0].id, label: list[0].label, why: blockReason(st, list[0], true) };
+    if (c.override === t.id || c.task === t.id) return { state: 'busy', task: t.id, label: t.label, why: 'Already on it' };
+    if (c.dept !== t.dept) return { state: 'slow', task: t.id, label: t.label, why: 'Half speed outside their department' };
+    return { state: 'go', task: t.id, label: t.label, why: '' };
+  }
+
+  // The task an idle crew member would take if they were on auto, or null. Used to tell "waiting for orders"
+  // (work exists) from "nothing for them to do" (no work exists).
+  function idleWork(st, crew) {
+    const c = typeof crew === 'string' ? crewById(st, crew) : crew;
+    if (st.over || st.capture || st.pending || c.task) return null;
+    return pickAuto(st, c);
+  }
+
   function score(st) {
     const lv = st.level;
     const shots = Object.values(st.shots);
@@ -1086,6 +1217,9 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
           st.shots[shot].taskIds.push(id);
           for (const tid of ev.blocks) st.tasks[tid].needs.push(id);
           unblock(st, ev.id);
+          // Choosing the repair is the order. Crew who would not pick it up on their own start it now.
+          const fixer = st.crew.find(c => c.dept === o.dept);
+          if (fixer && fixer.autonomy < 2 && !fixer.override) { fixer.override = id; fixer.task = id; }
         } else if (o.kind === 'wait') {
           st.blockText[ev.id] = o.waitText;
           st.waits.push({ event: ev.id, left: Math.round(o.secs * TPS), total: Math.round(o.secs * TPS), doneText: o.owned ? 'Backup light is up' : 'Backup light arrived' });
@@ -1133,6 +1267,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
     readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
+    stationTasks, canAssign, idleWork, tierAutonomy,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });
@@ -2076,7 +2211,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   /* ================= Save (this device only) ================= */
 
   const SAVE_KEY = 'thats-a-wrap-save-v1';
-  function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0, companyName: '' }; }
+  function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0, companyName: '', lab: {} }; }
   function loadSave() {
     try { const v = JSON.parse(localStorage.getItem(SAVE_KEY)); if (v && typeof v.bank === 'number') return Object.assign(freshSave(), v); } catch (e) { /* storage blocked */ }
     return freshSave();
@@ -2099,10 +2234,12 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   let lastCapture = null;
   let banked = false;
   let clientLine = { text: '', until: 0, next: 0, i: 0 };
+  let lab = null; // Layout Lab run (Milestone B experiment): same shoot, every crew member waits for orders, taps are measured
+  let labFlip = false;
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null });
   }
 
   /* ================= Helpers ================= */
@@ -2120,9 +2257,17 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   function show(name) {
     screen = name;
     for (const n of ['title', 'office', 'hire', 'shoot']) $('screen-' + n).hidden = n !== name;
+    syncRot();
     window.scrollTo(0, 0);
   }
-  function openModal(kind, html) { modal = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
+  // A landscape lab shoot on a phone held upright (or locked to portrait): turn the whole shoot sideways ourselves
+  function syncRot() {
+    const rot = !!lab && lab.layout === 'land' && screen === 'shoot' && window.innerHeight > window.innerWidth;
+    document.body.classList.toggle('rot', rot);
+    document.body.classList.toggle('lab-land', !!lab && lab.layout === 'land' && screen === 'shoot');
+    document.body.classList.toggle('flip', rot && labFlip);
+  }
+  function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
   function say(text, bad) { toast = { text, bad: !!bad, until: performance.now() + 2600 }; }
   const setText = (el, t) => { if (el && el._t !== t) { el._t = t; el.textContent = t; } };
@@ -2164,6 +2309,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
       </div>
       <div class="scene">${A.officeMarkup(Object.assign({}, CO, { name: companyName() }), save.owned, save.bank)}</div>
       <button class="btn go" type="button" data-jobs>Check the job board</button>
+      <button class="btn" type="button" data-lab>Layout lab: portrait vs landscape shoot</button>
       <p class="hint">Tap a room to build it. Every room changes how your shoots go. Profit from each job lands in the bank.</p>`;
   }
 
@@ -2318,6 +2464,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   /* ================= Shoot: build ================= */
 
   function startShoot() {
+    lab = null;
     const map = chosenMap();
     const crew = LEVEL.hiring.map(r => map[r.dept]);
     st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: S.companyMods(CO.rooms, save.owned) });
@@ -2331,28 +2478,40 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 
   function buildShoot() {
     resetView();
-    const perks = save.owned.map(id => CO.rooms.find(r => r.id === id).name);
-    $('screen-shoot').innerHTML = `
-      <div class="topbar">
+    const land = !!lab && lab.layout === 'land';
+    $('screen-shoot').className = 'app' + (lab ? (land ? ' lab land' : ' lab port') : '');
+    const perks = lab ? [] : save.owned.map(id => CO.rooms.find(r => r.id === id).name);
+    // The same pieces in both arrangements. Portrait stacks them; landscape puts the shot list left, the set in the
+    // middle at full height and crew plus ACTION under the right thumb. Ids are the same, so rendering is shared.
+    const top = `<div class="topbar">
         <div class="pill paper grow"><b class="hand">${esc(LEVEL.title)}</b><span><span id="shotCount">0/3 SHOTS</span> · <span class="clock" id="clock">0:00</span></span></div>
         <div class="pill paper"><span>CASH LEFT</span><b id="budget">$0</b></div>
         <button class="sq" type="button" id="pauseBtn" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
-      </div>
-      <div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>
-      <div class="set-wrap" id="setWrap">
+      </div>`;
+    const daybar = `<div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>`;
+    const actionBtn = `<button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>`;
+    const setBox = `<div class="set-wrap" id="setWrap">
         ${A.setMarkup()}
         <div class="stcard" id="stcard" hidden></div>
         <div class="onstage"><small>ON STAGE</small><span id="onstage"></span></div>
-        <button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>
+        ${land ? '' : actionBtn}
         <div class="flash" id="flash"></div>
-      </div>
-      <div class="ribbon" id="ribbon"><span id="ribbonText"></span><button class="btn small" type="button" id="autoBtn" hidden>Back to auto</button></div>
-      <div class="shotcard paper" id="shotcard"></div>
-      <div class="crewbar" id="crewbar"></div>
-      ${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
+      </div>`;
+    const ribbon = `<div class="ribbon" id="ribbon"><span id="ribbonText"></span><button class="btn small" type="button" id="autoBtn" hidden>Back to auto</button></div>`;
+    const shotcard = `<div class="shotcard paper" id="shotcard"></div>`;
+    const crewbar = `<div class="crewbar" id="crewbar"></div>`;
+    $('screen-shoot').innerHTML = land
+      ? `<div class="land-grid">
+          <div class="land-col">${ribbon}${shotcard}</div>
+          <div class="land-mid">${daybar}<div class="land-hud">${top}</div>${setBox}</div>
+          <div class="land-col">${crewbar}${actionBtn}</div>
+        </div>`
+      : `${top}${daybar}${setBox}${ribbon}${shotcard}${crewbar}${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
+    syncRot();
 
     const layer = $('crewLayer');
     const bar = $('crewbar');
+    const HIT_W = lab ? 48 : 36; // the lab widens the tap area around each puppet so the layouts are compared on comfortable targets
     for (const c of st.crew) {
       const idle = A.IDLE[c.dept];
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -2364,7 +2523,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
         `<g class="flip"><g transform="scale(1.25)">${A.puppet(c)}<g class="held"></g></g></g>` +
         `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>` +
         `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
-        `<rect x="-18" y="-66" width="36" height="72" fill="transparent"/>`;
+        `<rect x="${-HIT_W / 2}" y="-66" width="${HIT_W}" height="72" fill="transparent"/>`;
       layer.appendChild(g);
       view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
       view.pos[c.id] = { x: idle.x, y: idle.y };
@@ -2382,17 +2541,25 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   /* ================= Shoot: input ================= */
 
 
-  function selectCrew(id) {
+  // Every order goes through here so the lab can time and count it
+  function cmdAssign(crewId, taskId) {
+    const r = S.command(st, { type: 'assign', crew: crewId, task: taskId });
+    if (lab) labOrder(crewId, r);
+    return r;
+  }
+
+  function selectCrew(id, via) {
     if (st.over || modal) return;
     const other = st.crew.find(c => c.id === id);
     if (selected && selected !== id && other.task) {
       const helper = st.crew.find(c => c.id === selected);
-      const r = S.command(st, { type: 'assign', crew: selected, task: other.task });
+      const r = cmdAssign(selected, other.task);
       say(r.ok ? `${helper.name} helps ${other.name}: ${r.message}` : r.message, !r.ok);
       if (r.ok) selected = null;
       return;
     }
     selected = selected === id ? null : id;
+    if (lab && selected) lab.selVia = via || 'set';
   }
 
   function assignTo(taskId) {
@@ -2401,7 +2568,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
       say(`${st.tasks[taskId].label}: ${ts.text}. Tap a crew member first to reassign.`);
       return;
     }
-    const r = S.command(st, { type: 'assign', crew: selected, task: taskId });
+    const r = cmdAssign(selected, taskId);
     say(r.message, !r.ok);
     if (r.ok) selected = null;
   }
@@ -2409,13 +2576,144 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   function assignStation(station) {
     if (!selected) { view.stCard = view.stCard === station ? null : station; return; }
     view.stCard = null;
-    const cand = S.stageCandidate(st);
-    const list = Object.values(st.tasks)
-      .filter(t => !t.done && S.stationOf(t) === station && !st.shots[t.shot].captured)
-      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || st.priority.indexOf(a.shot) - st.priority.indexOf(b.shot) || a.order - b.order);
+    const list = S.stationTasks(st, station);
     if (!list.length) { say('Nothing left to do there.', true); return; }
     const workable = list.find(t => !S.blockReason(st, t, true));
     assignTo((workable || list[0]).id);
+  }
+
+  /* ================= Layout lab (Milestone B experiment) ================= */
+
+  // Same crew and seed for every lab run, so the only thing that changes between runs is the layout
+  const LAB_PICKS = { camera: 'mika', lighting: 'ro', grip: 'dani', art: 'paz' };
+  const LAB_SEED = 4242;
+  const LAB_LAYOUTS = { port: 'Portrait', land: 'Landscape' };
+
+  function newLab(layout) {
+    return { layout, orders: 0, refused: 0, taps: 0, dropped: 0, kinds: {}, via: { set: 0, bar: 0 }, selVia: 'set', waits: [], idle: 0, waitStart: {}, lastTicks: 0 };
+  }
+
+  function startLab(layout) {
+    lab = newLab(layout);
+    const crew = LEVEL.hiring.map(r => candidate(r.dept, LAB_PICKS[r.dept]));
+    st = S.createGame(LEVEL, { crew, seed: LAB_SEED, autonomy: 0 });
+    selected = null; lastCapture = null; toast = null; banked = true;
+    clientLine = { text: '', until: 0, next: performance.now() + 9000, i: 0 };
+    tipUntil = performance.now() + 9000;
+    buildShoot();
+    closeModal();
+    show('shoot');
+  }
+
+  function labOrder(crewId, r) {
+    if (!r.ok) { lab.refused++; return; }
+    if (/already/.test(r.message)) return;
+    lab.orders++;
+    lab.via[lab.selVia] = (lab.via[lab.selVia] || 0) + 1;
+    const since = lab.waitStart[crewId];
+    if (since != null) { lab.waits.push((st.ticks - since) / S.TPS); lab.waitStart[crewId] = null; }
+  }
+
+  // Called every frame while the shoot runs: who is standing around with work available, and for how long
+  function labTick() {
+    const d = st.ticks - lab.lastTicks;
+    lab.lastTicks = st.ticks;
+    if (d <= 0) return;
+    if (!lab.geo && st.ticks >= 20) lab.geo = labGeometry(); // early, before the ACTION push-in zoom changes the set's size
+    for (const c of st.crew) {
+      if (S.idleWork(st, c)) {
+        if (lab.waitStart[c.id] == null) lab.waitStart[c.id] = st.ticks - d;
+        lab.idle += d / S.TPS;
+      } else lab.waitStart[c.id] = null;
+    }
+  }
+
+  function labTap(kind) {
+    lab.taps++;
+    lab.kinds[kind] = (lab.kinds[kind] || 0) + 1;
+    if (kind === 'empty' && selected) lab.dropped++;
+  }
+
+  // What the layout actually gave the player on this device, in real pixels
+  function labGeometry() {
+    const rot = document.body.classList.contains('rot');
+    const dims = el => { const r = el.getBoundingClientRect(); return rot ? [r.height, r.width] : [r.width, r.height]; };
+    const [sw, sh] = dims($('setSvg'));
+    const unit = Math.min(sw / 360, sh / 410);
+    const tile = dims(document.querySelector('.cb'));
+    const act = dims($('actionBtn'));
+    return {
+      unit: +unit.toFixed(2), puppetW: Math.round(48 * unit), puppetH: Math.round(72 * unit),
+      tileW: Math.round(tile[0]), tileH: Math.round(tile[1]), actW: Math.round(act[0]), actH: Math.round(act[1]),
+      icon: Math.round(dims(document.querySelector('.ti') || document.body)[0]),
+      scroll: Math.max(0, Math.round(document.documentElement.scrollHeight - window.innerHeight)),
+      viewport: `${window.innerWidth}x${window.innerHeight}${rot ? ' (rotated)' : ''}`,
+    };
+  }
+
+  function labResult() {
+    const secs = Math.max(1, S.seconds(st));
+    const sc = S.score(st);
+    return {
+      layout: lab.layout, at: Date.now(),
+      orders: lab.orders, perMin: +(lab.orders / (secs / 60)).toFixed(1),
+      wait: lab.waits.length ? +(lab.waits.reduce((a, b) => a + b, 0) / lab.waits.length).toFixed(1) : 0,
+      idlePct: Math.round(lab.idle / (st.crew.length * secs) * 100),
+      tapsPerOrder: lab.orders ? +(lab.taps / lab.orders).toFixed(1) : 0,
+      dropped: lab.dropped, refused: lab.refused, viaBar: lab.via.bar || 0, viaSet: lab.via.set || 0,
+      time: Math.round(secs), shots: sc.shotsDone, quality: sc.avgQuality, stars: sc.stars,
+      geo: lab.geo || labGeometry(),
+    };
+  }
+
+  function labCompare() {
+    const rows = [
+      ['Orders per minute', r => r.perMin, 'higher is busier'],
+      ['Wait for an order (s)', r => r.wait, 'lower is faster'],
+      ['Crew standing idle', r => r.idlePct + '%', ''],
+      ['Taps per order', r => r.tapsPerOrder, 'lower is smoother'],
+      ['Dropped selections', r => r.dropped, ''],
+      ['Refused orders', r => r.refused, ''],
+      ['Picked crew from set / bar', r => `${r.viaSet} / ${r.viaBar}`, ''],
+      ['Shoot time', r => S.fmtTime(r.time), ''],
+      ['Scrolling needed to see it all (px)', r => r.geo.scroll, '0 is the goal'],
+      ['Set scale (px per unit)', r => r.geo.unit, 'bigger reads better'],
+      ['Crew tap target on set (px)', r => `${r.geo.puppetW}x${r.geo.puppetH}`, ''],
+      ['Crew tile (px)', r => `${r.geo.tileW}x${r.geo.tileH}`, ''],
+      ['Task icon (px)', r => r.geo.icon, ''],
+      ['ACTION button (px)', r => `${r.geo.actW}x${r.geo.actH}`, ''],
+      ['Screen', r => r.geo.viewport, ''],
+    ];
+    const last = k => (save.lab[k] || []).slice(-1)[0];
+    const p = last('port'), l = last('land');
+    const cell = (r, fn) => (r ? esc(String(fn(r))) : '<span class="dim">not played</span>');
+    return `<div class="labcmp"><span></span><span class="h">Portrait</span><span class="h">Landscape</span>${rows.map(([name, fn]) => `<span>${name}</span><b>${cell(p, fn)}</b><b>${cell(l, fn)}</b>`).join('')}</div>`;
+  }
+
+  function showLab() {
+    openModal('lab', `
+      <span class="label">Layout lab</span>
+      <p>The same shoot with the same crew and seed. Everyone waits for your orders, so you direct the whole shoot. Play it once in each layout and the numbers below fill in.</p>
+      <div class="labrun">
+        <button class="btn go" type="button" data-labstart="port" style="font-size:19px">Play portrait</button>
+        <button class="btn go" type="button" data-labstart="land" style="font-size:19px;background:var(--slate)">Play landscape</button>
+      </div>
+      <p class="note">Landscape: turn the phone sideways. If it stays upright because rotation is locked, the game turns the shoot sideways for you (turn the phone counterclockwise). <button class="btn small" type="button" data-labflip>Turned the other way? Flip</button></p>
+      ${labCompare()}
+      <button class="btn" type="button" data-close>Back to the office</button>`);
+  }
+
+  function showLabWrap() {
+    const res = labResult();
+    save.lab[lab.layout] = (save.lab[lab.layout] || []).concat(res).slice(-5);
+    persist();
+    const other = lab.layout === 'port' ? 'land' : 'port';
+    openModal('labwrap', `
+      <div class="chaos-h" style="background:var(--slate)"><b>${LAB_LAYOUTS[lab.layout]} run done</b></div>
+      <p>${res.shots}/3 shots in ${S.fmtTime(res.time)}. ${res.orders} orders, one every ${(res.time / Math.max(1, res.orders)).toFixed(1)}s.</p>
+      ${labCompare()}
+      <button class="btn go" type="button" data-labstart="${other}" style="font-size:19px">Now play ${LAB_LAYOUTS[other].toLowerCase()}</button>
+      <div class="row2"><button class="btn" type="button" data-labstart="${lab.layout}">Replay this one</button><button class="btn" type="button" data-labback>Lab home</button></div>`);
   }
 
   function pressAction() {
@@ -2571,6 +2869,16 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
       b.classList.toggle('open', view.stCard === stn);
     }
 
+    // Lab: while someone is selected, each station shows what it would do for them (green full speed, amber half speed, red can't)
+    if (lab) {
+      if (!view.hits) view.hits = [...document.querySelectorAll('.station-hit')];
+      for (const el of view.hits) {
+        const k = selected ? 'hit-' + S.canAssign(st, selected, el.getAttribute('data-station')).state : '';
+        const cls = 'station-hit' + (k ? ' ' + k : '');
+        if (el.getAttribute('class') !== cls) el.setAttribute('class', cls);
+      }
+    }
+
     // Client notes from video village
     if (!modal && !st.over) {
       if (now > clientLine.next && now > clientLine.until) {
@@ -2604,8 +2912,10 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
         view.pos[c.id] = { x: p.x, y: p.y };
       }
       const cs = S.crewStatus(st, c);
+      const asking = !!lab && !!S.idleWork(st, c); // standing around with work available, waiting for an order
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
+      v.g.classList.toggle('ask', asking);
       Ld.pose(v.g, cs.state === 'WORKING' ? 'work' : 'idle');
       const hk = cs.state === 'WORKING' ? 'tool' : '';
       if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
@@ -2617,7 +2927,8 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
         setAttr(v.ring, 'opacity', 0);
         let txt = '...', fill = '#fff', col = '#22262B';
         let showBub = true;
-        if (cs.state === 'BLOCKED') { txt = '!'; fill = '#D86B56'; col = '#fff'; }
+        if (asking) { txt = '?'; fill = '#E7B84F'; }
+        else if (cs.state === 'BLOCKED') { txt = '!'; fill = '#D86B56'; col = '#fff'; }
         else if (/ACTION/.test(cs.text)) txt = 'ACTION?';
         else if (/^No /.test(cs.text) || cs.text === 'Wrapped' || /Rolling/.test(cs.text) || /Holding|goes first|Stage busy/.test(cs.text)) showBub = false;
         setAttr(v.bub, 'opacity', showBub ? 1 : 0);
@@ -2678,10 +2989,12 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     for (const c of st.crew) {
       const v = view.cb[c.id];
       const cs = S.crewStatus(st, c);
+      const asking = !!lab && !!S.idleWork(st, c);
       v.dot.className = 'dotst ' + cs.state;
-      setText(v.tx, cs.state === 'WORKING' ? cs.text + (cs.cross ? ' (half speed)' : '') : cs.text);
+      v.el.classList.toggle('ask', asking);
+      setText(v.tx, asking ? 'Waiting for orders' : cs.state === 'WORKING' ? cs.text + (cs.cross ? ' (half speed)' : '') : cs.text);
       setW(v.bar, cs.state === 'WORKING' ? cs.pct : 0);
-      v.man.hidden = !c.override;
+      v.man.hidden = !c.override || !!lab;
       v.el.classList.toggle('sel', selected === c.id);
     }
     document.body.classList.toggle('picking', !!selected);
@@ -2690,8 +3003,8 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     const rb = $('ribbon');
     let text = '', bad = false;
     if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
-    else if (selected) { const c = st.crew.find(x => x.id === selected); text = `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
-    else if (now < tipUntil) text = 'Your crew start on their own. Tap a person to give them a different job.';
+    else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a lit-up spot on the set, a task icon, or a busy coworker.` : `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
+    else if (now < tipUntil) text = lab ? 'Everyone waits for your orders. Tap a person, then tap where they should work.' : 'Your crew start on their own. Tap a person to give them a different job.';
     else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set.`;
     else if (r && r.ready) text = r.missingOptional.length ? `Ready! Call ACTION now, or wait for ${r.missingOptional.map(x => x.label.toLowerCase()).join(', ')}.` : 'Ready! Everything is done. Call ACTION.';
     else if (r) text = `${st.shots[cand].name} needs: ${r.missingRequired.map(x => x.label.toLowerCase()).join(', ')}.`;
@@ -2699,7 +3012,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     rb.classList.toggle('bad', bad);
     setText($('ribbonText'), text);
     const sc = selected && st.crew.find(x => x.id === selected);
-    $('autoBtn').hidden = !(sc && sc.override);
+    $('autoBtn').hidden = !!lab || !(sc && sc.override);
 
     renderShotCard(cand);
   }
@@ -2771,6 +3084,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
   }
 
   function showWrap() {
+    if (lab) { showLabWrap(); return; } // lab runs measure the layout and never touch the bank
     const sc = S.score(st);
     if (!banked) {
       banked = true;
@@ -2824,6 +3138,9 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     }
     if (t.closest('[data-close]')) { closeModal(); return; }
     if (t.closest('[data-jobs]')) { showJobs(); return; }
+    if (t.closest('[data-lab]') || t.closest('[data-labback]')) { showLab(); return; }
+    if (t.closest('[data-labstart]')) { startLab(t.closest('[data-labstart]').dataset.labstart); return; }
+    if (t.closest('[data-labflip]')) { labFlip = !labFlip; showLab(); say(labFlip ? 'Rotating the other way' : 'Rotating the default way'); return; }
     if (t.closest('[data-book]')) { showBrief(); return; }
     if (t.closest('[data-hire-screen]')) { closeModal(); renderHire(); show('hire'); return; }
     if (t.closest('[data-officemenu]')) { showOfficeMenu(); return; }
@@ -2876,17 +3193,20 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
       return;
     }
     if (t.closest('[data-resume]')) { st.paused = false; closeModal(); return; }
-    if (t.closest('[data-again]')) { startShoot(); return; }
+    if (t.closest('[data-again]')) { if (lab) startLab(lab.layout); else startShoot(); return; }
     if (t.closest('[data-quit]')) { closeModal(); renderOffice(); show('office'); return; }
 
     if (screen !== 'shoot' || !st || modal) return;
+    if (lab && !t.closest('#pauseBtn')) {
+      labTap(t.closest('#actionBtn') ? 'action' : t.closest('.cb') ? 'bar' : t.closest('.pup') ? 'puppet' : t.closest('[data-station]') ? 'station' : t.closest('[data-task]') ? 'icon' : t.closest('button') ? 'other' : 'empty');
+    }
     if (t.closest('#pauseBtn')) { showPause(); return; }
     if (t.closest('#actionBtn')) { pressAction(); return; }
     if (t.closest('#autoBtn')) { const r = S.command(st, { type: 'release', crew: selected }); say(r.message); selected = null; return; }
     if (t.closest('[data-stclose]')) { view.stCard = null; return; }
     if (t.closest('#stcard')) return;
     const crew = t.closest('[data-crew]');
-    if (crew) { view.stCard = null; selectCrew(crew.dataset.crew); return; }
+    if (crew) { view.stCard = null; selectCrew(crew.dataset.crew, crew.classList.contains('cb') ? 'bar' : 'set'); return; }
     const task = t.closest('[data-task]');
     if (task) { assignTo(task.dataset.task); return; }
     const stn = t.closest('[data-station]');
@@ -2896,6 +3216,9 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
     // Tapping empty space deselects and closes the station card
     if (t.closest('#setWrap') || !t.closest('button')) { selected = null; view.stCard = null; }
   });
+
+  window.addEventListener('resize', syncRot);
+  window.addEventListener('orientationchange', syncRot);
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && screen === 'shoot' && st && !st.over && !modal) showPause();
@@ -2910,6 +3233,7 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
       if (!modal) {
         const before = st.capture && st.capture.shot;
         S.advance(st, dt * speed);
+        if (lab) labTick();
         if (before && !st.capture) lastCapture = before;
         if (st.pending) showChaos();
         else if (st.over) showWrap();
