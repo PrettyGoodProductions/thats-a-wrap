@@ -28,7 +28,7 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B, first slice (in review, Nov 3)
 
-- **Playable link (Layout Lab build):** LAB_LINK
+- **Playable link (Layout Lab build):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE
 - **Branch:** `milestone-b-lab`. `master` is still Milestone A until the experiment is reviewed.
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
