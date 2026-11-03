@@ -6,6 +6,7 @@
   'use strict';
   const S = window.WrapSim;
   const A = window.WrapArt;
+  const Ld = window.WrapLoader; // delivered art: state swaps only, the simulation still decides every state
   const LEVEL = window.LEVELS.burgerJob;
   const CO = window.LEVELS.company;
   const $ = id => document.getElementById(id);
@@ -440,6 +441,7 @@
     if (!dead) beam = disp === 'hero' ? 0.5 * steps(seg(dl, 0.8, 1), 3) : (rollIn >= 1 ? 0.28 + 0.22 * dl : 0);
     setAttr($('beam'), 'opacity', beam.toFixed(2));
     setAttr($('lightFace'), 'fill', dead ? '#3A3631' : beam > 0 ? '#FFE7A3' : '#7A7468');
+    Ld.state('elec.keylight-head', dead ? 'dead' : beam > 0 ? 'on' : 'off');
     setAttr($('dead'), 'opacity', dead ? 1 : 0);
     const fillUp = isDone('hero.light') || st.shots.hero.captured || hl > 0.5;
     setAttr($('fillLight'), 'opacity', fillUp ? 1 : 0);
@@ -552,6 +554,7 @@
       const cs = S.crewStatus(st, c);
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
+      Ld.pose(v.g, cs.state === 'WORKING' ? 'work' : 'idle');
       const hk = cs.state === 'WORKING' ? 'tool' : '';
       if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
       if (cs.state === 'WORKING') {

@@ -27,8 +27,15 @@
       <pattern id="mesh" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#5C6470"/><path d="M0 0 L7 7 M7 0 L0 7" stroke="#8D95A1" stroke-width=".9"/></pattern>
       <pattern id="brick" width="26" height="14" patternUnits="userSpaceOnUse"><rect width="26" height="14" fill="#D9785F"/><path d="M0 7 H26 M0 14 H26 M13 0 V7 M0 7 V14 M26 7 V14" stroke="#C4644D" stroke-width="1.2"/></pattern>
       <pattern id="tile" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#F2E9D8"/><path d="M0 0 H12 V12" fill="none" stroke="#D8CBB0" stroke-width="1"/></pattern>
+      ${loader() ? loader().defs() : ''}
     </defs></svg>`;
   }
+
+  /* ---------- Delivered art ----------
+     WrapLoader (src/loader.js) swaps in real art wherever a file was delivered. slot() wraps a placeholder so
+     the real image can replace it, and hands the placeholder back untouched when there is no art for it. */
+  const loader = () => root.WrapLoader;
+  const slot = (id, placeholder) => (loader() ? loader().slot(id, placeholder) : placeholder);
 
   /* ---------- Puppets (feet at 0,0, about 48 units tall) ---------- */
 
@@ -37,6 +44,11 @@
     const skin = L.skin || '#E1B48E';
     const hair = L.hair || '#2A1D14';
     const body = c.color || DEPT_COLOR[c.dept] || '#ccc';
+    // A delivered modular puppet replaces the code-drawn one only when all its required parts exist
+    if (loader()) {
+      const real = loader().puppet({ skin, hair, body, top: L.top, face: ['beard', 'mustache', 'glasses', 'earring'].filter(k => L[k]) });
+      if (real) return real;
+    }
     const s = `stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"`;
     const hairCap = `<path d="M-8.6 -35 q0 -10.5 8.6 -10.5 q8.6 0 8.6 10.5 q-2.5 -5 -8.6 -5 q-6.1 0 -8.6 5z" fill="${hair}" ${s}/>`;
     let top = '';
@@ -139,8 +151,21 @@
       '<path d="M5 21 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 v2.5 h-48z" fill="#7FB069"/>',
       '<path d="M7.5 19 q0 -15 22.5 -15 q22.5 0 22.5 15 z" fill="#E3A85A"/>',
     ];
+    // Delivered layers are drawn per layer, so a half-delivered stack mixes real and placeholder layers.
+    // The group this lands in is scaled by CART_SCALE, so delivered images are scaled back up by its inverse.
+    const L = loader();
+    const def = L && L.slotDef('art.burger-build');
+    if (def && def.layers.some(name => L.has('art.burger-build', name))) {
+      const k = 1 / CART_SCALE;
+      return layers.slice(0, n).map((markup, i) => {
+        const name = def.layers[i];
+        const real = L.use('art.burger-build', name, { x: def.anchor.x, y: def.anchor.y + (def.stack[name] || 0) * k, k });
+        return real || `<g stroke="${INK}" stroke-width="1.6">${markup}</g>`;
+      }).join('');
+    }
     return `<g stroke="${INK}" stroke-width="1.6">${layers.slice(0, n).join('')}</g>`;
   }
+  const CART_SCALE = 0.42;
 
   /* ---------- Set scene: viewBox x 0..360, y -70..340 ---------- */
 
@@ -231,11 +256,11 @@
     <rect x="121" y="24" width="118" height="8" rx="4" fill="#8B6A43" ${s}/>
   </g>
   <g id="pc-flag" filter="url(#cut)"><path d="M262 200 V64" ${s} stroke-width="2"/><rect x="250" y="62" width="25" height="44" fill="${INK}"/><path d="M256 200 h12" ${s} stroke-width="3"/></g>
-  <g id="platform"><g filter="url(#cut)">
+  <g id="platform">${slot('grip.platform', `<g filter="url(#cut)">
     <path d="M128 140 L136 132 H240 L232 140Z" fill="#E58A70" ${s}/>
     <rect x="128" y="140" width="104" height="52" fill="url(#corrRed)" ${s}/>
     <path d="M232 140 L240 132 V184 L232 192Z" fill="#B85846" ${s}/>
-  </g></g>
+  </g>`)}</g>
   <g filter="url(#cut)">
     <rect x="246" y="186" width="26" height="16" fill="#C2915A" ${s}/><rect x="250" y="174" width="18" height="12" fill="#B5864D" ${s}/>
     <ellipse cx="282" cy="200" rx="10" ry="5" fill="#E7B84F" ${s}/>
@@ -271,9 +296,9 @@
     <path d="M58 200 L72 158 L86 200 M72 158 V200" fill="none" ${s} stroke-width="2"/>
     <circle cx="58" cy="202" r="2.6" fill="${INK}"/><circle cx="86" cy="202" r="2.6" fill="${INK}"/>
     <path d="M72 158 V76" ${s} stroke-width="2.4"/>
-    <g id="keyHead" transform="rotate(20 72 76)">
+    <g id="keyHead" transform="rotate(20 72 76)">${slot('elec.keylight-head', `
       <polygon points="52,58 92,58 100,92 44,92" fill="#F4EEDF" ${s}/>
-      <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>
+      <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>`)}
     </g>
   </g></g>
   <g id="dead" opacity="0">
@@ -299,7 +324,7 @@
     <circle cx="16" cy="209" r="3.5" fill="${INK}"/><circle cx="74" cy="209" r="3.5" fill="${INK}"/>
     <g ${s} stroke-width="1"><rect x="64" y="186" width="7" height="9" fill="#D86B56"/><rect x="54" y="186" width="7" height="9" fill="#7D9E91"/></g>
   </g>
-  <g id="cartBurger" transform="translate(12 150) scale(.42)"></g>
+  <g id="cartBurger" transform="translate(12 150) scale(${CART_SCALE})"></g>
   <g id="pot" transform="translate(44 156)">
     <g class="steam" id="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0"><path d="M4 -2 q-2 -4 0 -7"/><path d="M10 -2 q2 -4 0 -7"/></g>
     <path d="M0 2 h16 l-1.5 13 h-13z" fill="#7A7F88" stroke="${INK}" stroke-width="1.3"/>

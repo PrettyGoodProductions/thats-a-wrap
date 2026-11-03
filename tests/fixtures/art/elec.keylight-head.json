@@ -1,0 +1,15 @@
+{
+  "note": "stand-in. pivot is the yoke, in the image pixels. dead gets a nudge to prove per-state settings work",
+  "pivot": [
+    84,
+    51
+  ],
+  "states": {
+    "dead": {
+      "offset": [
+        0,
+        1
+      ]
+    }
+  }
+}

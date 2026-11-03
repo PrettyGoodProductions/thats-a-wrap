@@ -1,0 +1,11 @@
+{
+  "note": "stand-in. layers stack with the engine defaults, top-bun gets a small nudge to prove offsets work",
+  "states": {
+    "top-bun": {
+      "offset": [
+        0,
+        -0.4
+      ]
+    }
+  }
+}

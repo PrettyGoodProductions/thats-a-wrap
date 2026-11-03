@@ -26,6 +26,10 @@ A single-player mobile game about running a small video production company, made
 - **Tests:** 33 automated simulation tests pass, including soft-lock fuzzing.
 - **Known gap:** the shoot plays itself. It takes 84 seconds, the crew pick all 14 tasks, the player makes 4 decisions and the crew are idle 57% of the time. The Active Play Proposal addresses this.
 
+## Asset loader (done, Nov 3)
+
+Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired for the first batch: hero platform, key light head (off, on, dead), burger build stack (5 layers) and the modular crew puppet (parts named in the manifest). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+
 ## Docs in this project
 
 | Doc | What it is |
@@ -64,7 +68,7 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 2. **B2, crew animation:** walking from sim positions, work poses, idle hand-raise, reactions.
 3. **C1, controls:** station highlights, queue pips, idle bell, bigger touch targets.
 4. **C2, content:** split the Burger Job into short steps, then add carrying, two-person jobs, small problems and peak windows. Tune to 3 to 5 minutes.
-5. **Art test batch from ChatGPT:** the hero platform, the key light head (on, off, dead) and one modular puppet. Claude adds an asset loader when they arrive.
+5. **Art test batch from ChatGPT:** the hero platform, the key light head (off, on, dead), one modular puppet in parts and optionally the burger build stack. The loader is ready, so the batch only needs to be dropped into `art/`.
 
 ## How development works
 

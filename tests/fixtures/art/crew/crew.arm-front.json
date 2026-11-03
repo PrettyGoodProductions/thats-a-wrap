@@ -1,0 +1,12 @@
+{
+  "note": "stand-in. both arms hang from the shoulder, the work pose is a different shape with its own pivot",
+  "pivot": "top-center",
+  "states": {
+    "work": {
+      "pivot": [
+        4,
+        2
+      ]
+    }
+  }
+}

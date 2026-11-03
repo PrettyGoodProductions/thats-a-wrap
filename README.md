@@ -52,12 +52,22 @@ Run on an iPhone-sized screen (390x844) in portrait.
 
 `wip/crew-depth` (git branch) holds parked engine work for later milestones: walking time, organization, leadership, chemistry, specialties, take review, the 8 AM to 6 PM day clock and the $28,000 economy.
 
+## Asset loader (real art drops in, placeholders stay)
+
+Delivered art goes in `art/` (see `art/README.md`). `node build.mjs` packs it, and the game draws a real image wherever a file exists and keeps the code-drawn placeholder everywhere else. Swapping or adding art never needs a code change, only files plus an optional small `<dept>.<object>.json` for pivot and scale.
+
+- **Wired now:** `grip.platform`, `elec.keylight-head` (off, on, dead), `art.burger-build` (5 layers) and the modular crew puppet (`crew.*`).
+- **How it stays safe:** a piece with no art is untouched. A half-delivered puppet is ignored until its required parts all exist. A key light with no `dead` image shows the code-drawn head for that state.
+- **How it stays fast:** each image is defined once and drawn with `<use>`. State changes (key light, puppet pose) only toggle display, driven by the simulation. No per-frame rebuilding.
+- **Testing:** `tests/loader.test.js` covers it. `python3 tools/make_standins.py` regenerates the rough stand-in images in `tests/fixtures/art/`. `tools/qa_art_e2e.py` plays a whole shoot in Chrome with and without art (see its header).
+
 ## Run it
 
 You need [Node.js](https://nodejs.org) 18 or newer for the build and tests. Playing needs only a browser.
 
 ```bash
-node build.mjs        # makes dist/index.html
+node build.mjs        # makes dist/index.html, packing any art in art/
+node build.mjs --art tests/fixtures/art --out /tmp/standin   # build with the stand-in art
 node --test           # runs the simulation tests
 ```
 
@@ -72,6 +82,10 @@ After editing anything in `src/` or `data/`, run `node build.mjs` again and refr
 | `data/burger-job.js` | The level: crew, shots, tasks, durations, dependencies. Edit this to tune. |
 | `src/sim.js` | All game rules. No drawing code. Runs in the browser and in Node. |
 | `src/assets.js` | Generated pieces of the concept art (logo, shot thumbnails, paper grain). Rebuild with `python3 tools/extract_assets.py`. |
+| `src/loader.js` | Runtime for delivered art: slots, state swaps, the modular puppet. |
+| `src/slots.js` | Where each piece of art attaches (anchors, default pivots, puppet joints). |
+| `tools/pack-art.mjs` | Scans `art/`, validates names and settings, builds the pack the page loads. |
+| `art/` | Drop folder for delivered art. See `art/README.md`. |
 | `src/art.js` | Placeholder art drawn in code: crew puppets, props, the set, the office building. |
 | `src/ui.js` | Screens (title, hire, shoot, wrap). Draws the sim state and sends player commands. |
 | `src/page.html` | Page markup and styles. Script tags are filled in by the build. |

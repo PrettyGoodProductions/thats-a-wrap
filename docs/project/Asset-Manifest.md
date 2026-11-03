@@ -72,6 +72,19 @@ Build one modular paper puppet and dress it, instead of drawing every crew membe
 | Front arm | Shoulder | Rotates for work actions. The hand is the anchor for held items |
 | Legs (two) | Hip | Four-frame walk cycle |
 
+**File names for the puppet parts** (the loader looks for exactly these, see `art/README.md`). Parts attach at the joint named in the pivot column, in the part's own pixels.
+
+| ID | Part | States |
+| --- | --- | --- |
+| `crew.head` | Head, neutral light so the engine can tint skin | `default` |
+| `crew.torso` | Torso, neutral light so the engine can tint the department color | `default` |
+| `crew.arm-front`, `crew.arm-back` | Arms | `default`, then poses like `work` |
+| `crew.leg-front`, `crew.leg-back` | Legs | `default`, then `walk1` to `walk4` later |
+| `crew.hair.<look>` | Hair and hats | `cap`, `beanie`, `bun`, `beret`, `slick`, `default` |
+| `crew.face.<extra>` | Face extras, each on a canvas the size of the head | `eyes`, `nose`, `beard`, `mustache`, `glasses`, `earring` |
+
+Required for the real puppet to be used: head, torso, front arm, both legs. Everything else is optional, and a missing part is simply left out.
+
 **Poses and states** (two or three frames each, stop-motion timing):
 
 | State | Look | When |
@@ -138,4 +151,4 @@ Start where the eye goes and where code-drawn shapes look weakest. When the firs
 5. **HQ:** shell, sign board, four rooms in the for-rent and built states, lobby, van.
 6. **UI:** clean logo, shot thumbnails, card frame, clapper, icons.
 
-When a batch arrives, I swap it in and check every state against this list.
+When a batch arrives, it goes in the `art/` folder and the build packs it. The asset loader is in place, so no code changes are needed for the wired pieces: `grip.platform`, `elec.keylight-head` (off, on, dead), `art.burger-build` and the `crew.*` puppet. Each piece can have a small `<dept>.<object>.json` for pivot and scale. The build prints what it found and warns about wrong scales, so a bad batch is caught before anyone looks at the screen. Every state is then checked against this list.
