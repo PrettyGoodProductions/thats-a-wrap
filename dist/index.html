@@ -1,0 +1,2283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>That's a Wrap!</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Permanent+Marker&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: portrait phone column. Screens: title, hire (role sections + sticky budget footer), shoot (HUD, paper set, crew bar,
+   shot card with task icons). Office: cutaway building with rooms to build. Look: the style guide's cut paper on kraft, hand-lettered headings, clean readable UI text.
+   Single paper theme by choice. */
+:root{
+  --paper:#F2E9D8; --paper-2:#E6D8BE; --kraft:#D8C29C; --card:#FBF6EC; --ink:#22262B; --ink-2:#5E5A52; --edge:#CDBFA5;
+  --coral:#D86B56; --sage:#7D9E91; --mustard:#E7B84F; --slate:#344F70; --ok:#4E8A62;
+  --d-grip:#8EA3C2; --d-lighting:#E7B84F; --d-camera:#8FB1A3; --d-art:#E59380;
+  --font-ui:'Atkinson Hyperlegible',system-ui,sans-serif;
+  --font-hand:'Permanent Marker','Marker Felt','Chalkboard SE','Comic Sans MS',cursive;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --shadow:2px 3px 0 rgba(34,38,43,.85);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{color:var(--ink); font:15px/1.35 var(--font-ui); padding-block:8px 24px;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-appearance:none; appearance:none; text-align:left}
+button:focus-visible{outline:3px solid var(--slate); outline-offset:2px}
+button:disabled{cursor:default}
+.app{max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
+.hand{font-family:var(--font-hand); font-weight:400; letter-spacing:.01em}
+.eyebrow{font:700 11px var(--font-ui); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2)}
+.paper{background:var(--card); border:2px solid var(--ink); border-radius:4px 7px 5px 8px; box-shadow:var(--shadow)}
+.label{display:inline-block; align-self:flex-start; background:var(--card); border:2px solid var(--ink); padding:3px 10px 2px; font:400 18px/1.1 var(--font-hand); transform:rotate(-1.5deg); box-shadow:var(--shadow)}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:8px 14px; border:2px solid var(--ink); border-radius:6px 9px 7px 8px; background:var(--card); font-weight:700; box-shadow:var(--shadow); text-align:center}
+.btn:active{transform:translate(1px,2px); box-shadow:0 1px 0 var(--ink)}
+.btn.go{background:var(--coral); color:#fff; font:400 22px var(--font-hand); width:100%}
+.btn.go:disabled{background:var(--paper-2); color:var(--ink-2); box-shadow:none}
+.btn.small{min-height:36px; padding:5px 10px; font-size:13px}
+
+/* ---------- title ---------- */
+.title{display:flex; flex-direction:column; gap:16px; padding-top:18px}
+.title h1{margin:0; font:400 64px/.9 var(--font-hand); transform:rotate(-3deg); text-wrap:balance}
+.title h1 span{display:block; color:var(--coral)}
+.tagline{font:400 22px/1.25 var(--font-hand)}
+.brief{padding:14px; display:flex; flex-direction:column; gap:8px; transform:rotate(.6deg)}
+.facts{display:flex; flex-wrap:wrap; gap:6px}
+.facts span{font:600 12px var(--font-mono); border:1.5px solid var(--edge); border-radius:4px; padding:3px 7px; background:var(--paper)}
+.title-art{width:100%; height:auto; display:block}
+
+/* ---------- hire ---------- */
+.hire-h{display:flex; flex-direction:column; gap:8px}
+.hire-h h2{margin:0; font:400 34px/1 var(--font-hand)}
+.role{display:flex; flex-direction:column; gap:8px}
+.role-h{display:flex; align-items:center; gap:8px}
+.role-h .tab{width:14px; height:14px; border-radius:3px; border:2px solid var(--ink)}
+.role-h h3{margin:0; font:400 21px var(--font-hand)}
+.role-h .picked{margin-left:auto; font:600 12px var(--font-mono); color:var(--ink-2)}
+.dry{padding:10px 12px; background:#FFF3D6; border:2px dashed var(--ink); border-radius:6px; display:flex; flex-direction:column; gap:8px; font-size:14px}
+.dry-actions{display:flex; gap:8px; flex-wrap:wrap}
+.cands{display:flex; gap:10px; overflow-x:auto; padding:2px 2px 8px; scroll-snap-type:x mandatory; margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px))); padding-right:16px}
+.cand{position:relative; flex:0 0 156px; scroll-snap-align:start; display:flex; flex-direction:column; gap:5px; padding:10px; background:var(--card); border:2px solid var(--ink); border-radius:5px 8px 6px 9px; box-shadow:var(--shadow)}
+.cand[aria-pressed="true"]{background:#FFF7E3; outline:3px solid var(--coral); outline-offset:1px}
+.cand:disabled{opacity:.55; box-shadow:none}
+.cand .face{width:56px; height:60px; align-self:center}
+.cand-name{font-weight:700; font-size:16px; display:flex; justify-content:space-between; align-items:baseline; gap:6px}
+.rate{font:600 14px var(--font-mono)}
+.tier{align-self:flex-start; font:700 10px var(--font-ui); letter-spacing:.08em; text-transform:uppercase; padding:2px 6px; border-radius:3px; background:var(--paper-2)}
+.tier.Veteran{background:var(--ink); color:var(--paper)}
+.tier.Solid{background:var(--sage); color:#fff}
+.tier.Newbie{background:var(--mustard)}
+.tier.Vouched{background:var(--slate); color:#fff}
+.tier.Unknown{background:var(--coral); color:#fff}
+.stat{display:grid; grid-template-columns:62px 1fr; align-items:center; gap:6px; font-size:12px; color:var(--ink-2)}
+.stat b{height:8px; border:1.5px solid var(--ink); border-radius:2px; background:linear-gradient(90deg,var(--ink) calc(var(--v)*100%),transparent 0)}
+.stat b.fuzzy{background:repeating-linear-gradient(-45deg,var(--edge) 0 3px,transparent 3px 6px)}
+.stat em{font-style:normal; font-size:12px; color:var(--ink)}
+.perk{font-size:11.5px; font-weight:700; color:var(--slate)}
+.blurb{font-size:12.5px; color:var(--ink-2); line-height:1.3}
+.cta{margin-top:auto; text-align:center; font-weight:700; font-size:13px; padding:6px; border-radius:4px; border:2px solid var(--ink)}
+.cand[aria-pressed="true"] .cta{background:var(--coral); color:#fff; border-color:var(--coral)}
+.stamp{position:absolute; top:34px; left:50%; transform:translateX(-50%) rotate(-12deg); font:400 20px var(--font-hand); color:var(--coral); border:3px solid var(--coral); padding:0 6px; background:rgba(251,246,236,.85)}
+.hire-foot{position:sticky; bottom:0; z-index:4; margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px))) calc(-1 * max(16px,env(safe-area-inset-right,0px)));
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:var(--paper-2); border-top:2px solid var(--ink); display:flex; flex-direction:column; gap:8px; margin-bottom:-24px}
+.money{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; font-size:12px; color:var(--ink-2)}
+.money b{display:block; font:600 17px var(--font-mono); color:var(--ink)}
+.money b.neg{color:var(--coral)}
+.mbar{height:10px; border:2px solid var(--ink); border-radius:3px; background:var(--card); overflow:hidden}
+.mbar i{display:block; height:100%; width:0; background:var(--sage)}
+.mbar.over i{background:var(--coral)}
+.foot-note{font-size:13px; color:var(--ink-2); min-height:18px}
+
+/* ---------- office ---------- */
+.topbar{display:flex; align-items:stretch; gap:8px}
+.pill{display:flex; flex-direction:column; justify-content:center; padding:5px 10px; min-width:0}
+.pill span{font:700 9.5px var(--font-ui); letter-spacing:.12em; color:var(--ink-2)}
+.pill b{font:600 19px/1.1 var(--font-mono); font-variant-numeric:tabular-nums}
+.pill b.neg{color:var(--coral)}
+.pill.grow{flex:1}
+.pill .hand{font:400 19px/1.05 var(--font-hand); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.scene{border:2px solid var(--ink); border-radius:6px 9px 7px 10px; overflow:hidden; box-shadow:var(--shadow); background:#A9C6C0}
+.scene svg{display:block; width:100%; height:auto}
+.office .room, .office .jobboard{cursor:pointer}
+.office .room.affordable > rect:first-child{stroke:#E7B84F; stroke-width:4}
+.room-prev{border:2px solid var(--ink); background:#A9C6C0; border-radius:4px}
+.room-prev svg{display:block; width:100%; height:auto}
+.job{display:grid; grid-template-columns:64px 1fr; gap:4px 12px; align-items:center; padding:10px; background:var(--paper); border:2px solid var(--ink); border-radius:5px 7px 6px 8px; box-shadow:var(--shadow)}
+.job:disabled{opacity:.55; box-shadow:none}
+.job .jpic{grid-row:1 / span 3; width:64px; height:52px; background:#FFE7A3; border:1.5px solid var(--edge); display:grid; place-items:center}
+.job .jpic svg{width:80%}
+.job b{font:400 19px/1.1 var(--font-hand)}
+.job span{font-size:12.5px; color:var(--ink-2)}
+.job .jstars{display:flex; gap:2px}
+.job .jstars svg{width:16px; height:16px}
+
+/* ---------- shoot ---------- */
+.daybar{position:relative; height:10px; border:2px solid var(--ink); border-radius:3px; background:var(--card); margin-bottom:10px}
+.daybar i{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--sage)}
+.daybar.ot i{background:var(--coral)}
+.daybar .wm{position:absolute; top:-5px; bottom:-5px; width:3px; background:var(--ink)}
+.daybar .wm span{position:absolute; top:13px; left:50%; transform:translateX(-50%); font:700 9px var(--font-ui); letter-spacing:.1em; white-space:nowrap}
+.clock.warn{color:var(--coral)}
+.sq{width:44px; height:auto; min-height:44px; display:grid; place-items:center; border:2px solid var(--ink); border-radius:7px; background:var(--card); box-shadow:var(--shadow); flex:none}
+.set-wrap{position:relative; border:2px solid var(--ink); border-radius:6px 9px 7px 10px; overflow:hidden; box-shadow:var(--shadow); background:var(--slate)}
+.set{display:block; width:100%; height:auto; touch-action:manipulation; user-select:none; -webkit-user-select:none}
+.onstage{position:absolute; left:8px; top:8px; background:var(--card); border:2px solid var(--ink); padding:2px 8px; font:400 15px var(--font-hand); transform:rotate(-2deg); max-width:56%}
+.onstage small{display:block; font:700 9px var(--font-ui); letter-spacing:.12em; color:var(--ink-2)}
+.clapbtn{position:absolute; right:8px; top:8px; width:31%; max-width:132px; display:flex; flex-direction:column; align-items:stretch; gap:4px; text-align:center}
+.clapbtn svg{display:block; width:100%; height:auto; filter:grayscale(.85) brightness(.85); transition:filter .2s}
+.clapbtn .cap{background:var(--card); border:2px solid var(--ink); border-radius:3px; font:700 10.5px/1.2 var(--font-ui); padding:3px 4px}
+.clapbtn.on svg{filter:none; animation:wiggle 1.1s steps(2) infinite}
+.clapbtn.on .cap{background:var(--coral); color:#fff; border-color:var(--ink)}
+.clapbtn.rolling svg{filter:none}
+.clapbtn.rolling .clap-stick{transform-box:fill-box; transform-origin:0% 100%; transform:rotate(-14deg)}
+.clapbtn.rolling .cap{background:var(--ink); color:#fff}
+.clapbtn.rolling .cap::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:#FF4B3A; margin-right:5px; animation:blink 1s steps(2) infinite}
+.ribbon{display:flex; align-items:center; gap:8px; min-height:44px; margin-top:-4px; background:var(--card); border:2px solid var(--ink); border-radius:4px; padding:6px 10px; font-size:13.5px; font-weight:700; box-shadow:var(--shadow)}
+.ribbon.bad{background:#FFE3DC; border-color:var(--coral)}
+.ribbon span{flex:1; min-width:0}
+.flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none}
+.flash.go{animation:flash .5s ease-out}
+.shotcard{padding:6px 10px; display:flex; flex-direction:column}
+.srow{display:grid; grid-template-columns:22px minmax(0,1fr) auto; align-items:center; gap:8px; min-height:44px; border-bottom:1.5px dashed var(--edge)}
+.srow:last-child{border-bottom:0}
+.srow .sg{width:20px; height:20px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center; font:700 11px var(--font-ui)}
+.srow.done .sg{background:var(--ok); border-color:var(--ok); color:#fff}
+.srow.stage .sg{background:var(--mustard)}
+.srow .sn{font:400 16px/1.1 var(--font-hand); min-width:0; display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.srow .sn small{font:600 11px var(--font-mono); color:var(--ink-2)}
+.srow.done .sn{text-decoration:line-through; text-decoration-thickness:2px; color:var(--ink-2)}
+.srow.stage{background:linear-gradient(90deg,#FFF3D6,transparent); margin-inline:-10px; padding-inline:10px}
+.srow .mvup{font:700 11px var(--font-ui); color:var(--slate); text-decoration:underline; text-underline-offset:2px; padding:4px 0}
+.icons{display:flex; gap:5px; align-items:center}
+.ti{position:relative; width:34px; height:34px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center;
+  background:conic-gradient(var(--dc) calc(var(--p,0) * 1turn), var(--card) 0)}
+.ti svg{width:16px; height:16px; position:relative}
+.ti::after{content:""; position:absolute; inset:5px; border-radius:50%; background:var(--card); opacity:.0}
+.ti.optl{border-style:dashed}
+.ti.waiting{opacity:.45}
+.ti.done{background:var(--dc)}
+.ti.working{box-shadow:0 0 0 2px var(--card), 0 0 0 4px var(--ink); animation:bob .5s steps(2) infinite}
+.ti.blocked{border-color:var(--coral); background:#FFE3DC}
+.ti.skipped{opacity:.3}
+.ti .bd{position:absolute; right:-5px; top:-5px; width:15px; height:15px; border-radius:50%; font:700 10px/15px var(--font-ui); text-align:center; color:#fff; display:none}
+.ti.done .bd{display:block; background:var(--ok)}
+.ti.done .bd::before{content:"✓"}
+.ti.blocked .bd{display:block; background:var(--coral)}
+.ti.blocked .bd::before{content:"!"}
+.ti.fresh .bd{display:block; background:var(--mustard); color:var(--ink)}
+.ti.fresh .bd::before{content:"~"}
+.ti.manualtag{outline:2px dashed var(--slate); outline-offset:2px}
+body.picking .ti:not(.done):not(.skipped){outline:2px dashed var(--slate); outline-offset:2px; opacity:1}
+.stamp-q{font:400 15px var(--font-hand); color:var(--ok); border:2px solid var(--ok); padding:0 6px; transform:rotate(-5deg); background:#fff}
+.dept-grip{--dc:var(--d-grip)} .dept-lighting{--dc:var(--d-lighting)} .dept-camera{--dc:var(--d-camera)} .dept-art{--dc:var(--d-art)}
+.crewbar{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px}
+.cb{position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 4px 9px; background:var(--card); border:2px solid var(--ink); border-radius:5px 8px 6px 7px; min-width:0; text-align:center; overflow:hidden; box-shadow:var(--shadow)}
+.cb.sel{background:#FFF3D6; box-shadow:0 0 0 3px var(--coral)}
+.cb svg{width:44px; height:44px}
+.cb .nm{font:400 15px/1 var(--font-hand)}
+.cb .tx{font-size:11px; line-height:1.15; color:var(--ink-2); height:26px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
+.cb .dotst{position:absolute; top:6px; left:6px; width:10px; height:10px; border-radius:50%; border:1.5px solid var(--ink)}
+.cb .dotst.WORKING{background:var(--ok)} .cb .dotst.WAITING{background:var(--mustard)} .cb .dotst.BLOCKED{background:var(--coral)}
+.cb .bar{position:absolute; left:0; right:0; bottom:0; height:5px; background:var(--paper-2)}
+.cb .bar i{display:block; height:100%; width:0; background:var(--ok)}
+.cb .man{position:absolute; top:4px; right:5px; font:700 8px var(--font-ui); color:var(--slate)}
+.hint{font-size:12.5px; color:var(--ink-2); text-align:center}
+
+/* SVG set animation */
+.pup{transition:transform .9s steps(7,end)}
+.pup .bodyg{transform-box:fill-box}
+.pup.working .bodyg{animation:bob .44s steps(2) infinite}
+.pup.working .arm{transform-box:fill-box; transform-origin:50% 8%; animation:hammer .36s steps(2) infinite}
+.pup .selring{display:none}
+.pup.sel .selring{display:inline}
+.station-hit{fill:transparent; cursor:pointer}
+body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:1.5; stroke-dasharray:4 3}
+.steam path{animation:steam 1.2s steps(3) infinite}
+.clap{opacity:0}
+.clap.go{animation:clapIn .9s steps(6,end)}
+.clap.go .stick{animation:clapStick .9s steps(4,end); transform-box:fill-box; transform-origin:0% 100%}
+.pour{stroke-dasharray:4 4; animation:pour .4s linear infinite}
+
+@keyframes bob{50%{transform:translateY(-1.6px) rotate(-2deg)}}
+@keyframes wiggle{50%{transform:rotate(-2deg)}}
+@keyframes hammer{50%{transform:rotate(-38deg)}}
+@keyframes blink{50%{opacity:.15}}
+@keyframes flash{0%{opacity:.85}100%{opacity:0}}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(216,107,86,.35), var(--shadow)}}
+@keyframes steam{33%{transform:translateY(-2px)}66%{transform:translateY(-4px); opacity:.4}}
+@keyframes clapIn{0%,100%{opacity:0}10%,80%{opacity:1}}
+@keyframes clapStick{0%{transform:rotate(-28deg)}50%,100%{transform:rotate(0)}}
+@keyframes pour{to{stroke-dashoffset:-8}}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed; inset:0; z-index:20; display:flex; overflow:auto; background:rgba(242,233,216,.82);
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{margin:auto; width:100%; max-width:420px; padding:16px; display:flex; flex-direction:column; gap:12px}
+.chaos-h{display:flex; align-items:center; gap:10px; background:var(--coral); color:#fff; margin:-16px -16px 0; padding:12px 16px; border-bottom:2px solid var(--ink)}
+.chaos-h .bang{width:34px; height:34px; border-radius:50%; background:#fff; color:var(--coral); display:grid; place-items:center; font:400 24px var(--font-hand)}
+.chaos-h b{font:400 30px var(--font-hand)}
+.chaos-t{font:400 22px/1.15 var(--font-hand)}
+.opt{display:grid; grid-template-columns:34px 1fr; gap:2px 10px; align-items:center; padding:10px; border:2px solid var(--ink); border-radius:5px 7px 6px 8px; background:var(--paper); box-shadow:var(--shadow)}
+.opt svg{grid-row:1 / span 2}
+.opt b{font-size:15px}
+.opt span{font-size:13px; color:var(--ink-2)}
+.opt span strong{color:var(--ok)}
+.stars{display:flex; gap:8px; justify-content:center}
+.stars svg{width:46px; height:46px}
+.report{display:grid; grid-template-columns:22px 1fr auto; gap:7px 8px; align-items:center; font-size:15px}
+.report .ck{width:20px; height:20px; border-radius:50%; display:grid; place-items:center; color:#fff; font:700 12px var(--font-ui)}
+.report .ck.y{background:var(--ok)} .report .ck.n{background:var(--coral)} .report .ck.i{background:var(--ink-2)}
+.report b{font:600 14px var(--font-mono); text-align:right}
+.quote{font:400 18px/1.25 var(--font-hand); background:#FFF3D6; padding:10px 12px; border:2px solid var(--ink); transform:rotate(-1deg)}
+.reveal{font-size:13px; color:var(--ink-2); display:flex; flex-direction:column; gap:3px}
+.reveal b{color:var(--ink)}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.seg{display:flex; border:2px solid var(--ink); border-radius:6px; overflow:hidden; align-self:flex-start}
+.seg button{padding:7px 14px; font:700 13px var(--font-mono); background:var(--card)}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+
+@media (prefers-reduced-motion:reduce){
+  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working{animation:none}
+}
+</style>
+
+<div id="defs"></div>
+<div id="screen-title" class="app title" hidden></div>
+<div id="screen-office" class="app" hidden></div>
+<div id="screen-hire" class="app" hidden></div>
+<div id="screen-shoot" class="app" hidden></div>
+<div id="overlay" class="overlay" hidden><div id="modal" class="modal paper"></div></div>
+
+<script>
+/* data/burger-job.js */
+/*
+  THE BURGER JOB level data.
+  Edit freely: durations are in seconds, money in dollars, every number is a tuning value.
+
+  Task fields
+    id        unique id, "shot.task"
+    dept      grip | lighting | camera | art  (who does it at full speed)
+    label     shown to the player
+    dur       seconds of work for one full-speed crew member
+    needs     task ids in the same shot that must be done first
+    stage     true = happens on the tabletop stage, so only the shot holding the stage can do it
+    optional  true = ACTION is allowed without it, at a quality cost of `weight` points
+    perishable/freshFor/redoDur
+              goes bad freshFor seconds after it's done (until the shot is captured),
+              then needs redoDur seconds of work again
+
+  Crew fields (hiring candidates)
+    rate         day rate, paid from the budget when hired
+    speed        work speed, 1 = normal
+    reliability  chance a finished task is right the first time (a miss means half of it is redone, once per task)
+    perks        quickRoll (DP: ACTION rolls in 3s), spareBulb (Gaffer: fixes a dead light fast),
+                 foodWhisperer (Art: perishables stay fresh 60% longer)
+    network      yours | fof (friend of a friend) | board (crew job board)
+    booked       on another job, can't be hired
+*/
+(function (root) {
+  const burgerJob = {
+    id: 'burger-job',
+    title: 'The Burger Job',
+    client: 'Big Bun Burgers',
+    brief: 'Three tabletop shots for a 15-second spot. Client note: "Make it pop."',
+    budget: 7000,          // everything comes out of this: crew, rentals, overtime. What's left is your profit
+    timeLimit: 120,        // seconds before overtime starts
+    overtimeRate: 150,     // dollars per second past the time limit
+    hardStop: 200,         // the client pulls the plug here
+    qualityTarget: 90,     // average quality needed for the third star
+    actionDuration: 5,     // seconds of rolling after ACTION
+    crossDeptRate: 0.5,    // speed when someone works outside their department
+
+    // Default crew for tests and quick starts (the "solid" hire in every role)
+    crew: [
+      { id: 'dp',     name: 'Mika', role: 'DP',     dept: 'camera' },
+      { id: 'gaffer', name: 'Ro',   role: 'Gaffer', dept: 'lighting' },
+      { id: 'grip',   name: 'Dani', role: 'Grip',   dept: 'grip' },
+      { id: 'art',    name: 'Lu',   role: 'Art',    dept: 'art' },
+    ],
+
+    hiring: [
+      {
+        dept: 'camera', role: 'DP',
+        candidates: [
+          { id: 'ines',  name: 'Inés', tier: 'Veteran', rate: 2600, speed: 1.3, reliability: 0.98, perks: ['quickRoll'], network: 'yours',
+            blurb: 'Shot two Super Bowl spots. Gets it in one.', look: { skin: '#B9805A', hair: '#1E1A17', top: 'beret', glasses: true } },
+          { id: 'mika',  name: 'Mika', tier: 'Solid',   rate: 1700, speed: 1.0, reliability: 0.9, network: 'yours',
+            blurb: 'Shot your last three spots. No surprises.', look: { skin: '#E1B48E', hair: '#3A2A1E', top: 'beanie' } },
+          { id: 'sam',   name: 'Sam',  tier: 'Newbie',  rate: 950,  speed: 0.8, reliability: 0.75, network: 'yours',
+            blurb: 'Hungry. Owns a lot of lenses, knows some of them.', look: { skin: '#F0C9A6', hair: '#C9852E', top: 'none', glasses: true } },
+        ],
+      },
+      {
+        dept: 'lighting', role: 'Gaffer',
+        candidates: [
+          { id: 'bo',    name: 'Bo',   tier: 'Veteran', rate: 2200, speed: 1.3, reliability: 0.97, perks: ['spareBulb'], network: 'yours', booked: true,
+            blurb: 'Carries a spare everything.', look: { skin: '#8A5A3C', hair: '#111', top: 'cap', beard: true } },
+          { id: 'ro',    name: 'Ro',   tier: 'Solid',   rate: 1500, speed: 1.0, reliability: 0.9, perks: ['spareBulb'], network: 'yours',
+            blurb: 'Keeps a spare bulb in the truck. Usually.', look: { skin: '#D9A07A', hair: '#2B2016', top: 'cap', beard: true } },
+          { id: 'lee',   name: 'Lee',  tier: 'Newbie',  rate: 800,  speed: 0.75, reliability: 0.72, network: 'yours',
+            blurb: 'Just bought a light meter. Very excited about it.', look: { skin: '#F2D0B0', hair: '#6B4A2E', top: 'none' } },
+        ],
+      },
+      {
+        dept: 'grip', role: 'Grip',
+        candidates: [
+          { id: 'max',   name: 'Max',  tier: 'Veteran', rate: 1900, speed: 1.3, reliability: 0.97, network: 'yours',
+            blurb: 'Can rig a burger to a ceiling fan.', look: { skin: '#C48B63', hair: '#4A3020', top: 'cap', beard: true } },
+          { id: 'dani',  name: 'Dani', tier: 'Solid',   rate: 1300, speed: 1.0, reliability: 0.9, network: 'yours',
+            blurb: 'Fast, tidy, brings snacks.', look: { skin: '#E4B892', hair: '#5A3A22', top: 'cap', mustache: true } },
+          { id: 'chuy',  name: 'Chuy', tier: 'Newbie',  rate: 700,  speed: 0.8, reliability: 0.75, network: 'yours',
+            blurb: 'Strong. Enthusiastic. Sandbags are a mystery.', look: { skin: '#B07A52', hair: '#1A1410', top: 'beanie' } },
+        ],
+      },
+      {
+        dept: 'art', role: 'Art',
+        dryNote: 'Vera and Lu are both on other jobs this week. Your art network is dry.',
+        candidates: [
+          { id: 'vera',  name: 'Vera', tier: 'Veteran', rate: 2000, speed: 1.3, reliability: 0.98, perks: ['foodWhisperer'], network: 'yours', booked: true,
+            blurb: 'Food stylist for every burger chain you know.', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } },
+          { id: 'lu',    name: 'Lu',   tier: 'Solid',   rate: 1300, speed: 1.0, reliability: 0.9, network: 'yours', booked: true,
+            blurb: 'Reliable. Brings her own tweezers.', look: { skin: '#EAC3A0', hair: '#1E1612', top: 'bun', earring: true } },
+          { id: 'paz',   name: 'Paz',  tier: 'Vouched', rate: 1600, speed: 1.1, reliability: 0.94, perks: ['foodWhisperer'], network: 'fof', via: 'Mika',
+            blurb: '"She saved my yogurt shoot." (Mika)', look: { skin: '#C99070', hair: '#7A2E1E', top: 'bun', earring: true } },
+          { id: 'theo',  name: 'Theo', tier: 'Vouched', rate: 1100, speed: 0.9, reliability: 0.85, network: 'fof', via: 'Ro',
+            blurb: '"My roommate. He\'s fine. Probably." (Ro)', look: { skin: '#F1CDA9', hair: '#B98A4A', top: 'beanie', glasses: true } },
+          { id: 'kit',   name: 'Kit',  tier: 'Unknown', rate: 650,  speed: 0.7, reliability: 0.7, network: 'board',
+            blurb: '"Food stylist / DJ / available now."', look: { skin: '#E8B993', hair: '#2E7D6B', top: 'none', earring: true } },
+          { id: 'jules', name: 'Jules', tier: 'Unknown', rate: 800, speed: 1.2, reliability: 0.9, network: 'board',
+            blurb: '"Just moved here from Chicago. Did a lot of pizza."', look: { skin: '#9C6644', hair: '#1A1310', top: 'cap', glasses: true } },
+        ],
+      },
+    ],
+
+    // Chaos: one scripted event
+    events: [
+      {
+        id: 'keylight',
+        trigger: { type: 'stageClaim', shot: 'cheese' },
+        title: 'The key light just died!',
+        blockText: 'Key light is dead',
+        blocks: ['cheese.light', 'cheese.frame'],
+        options: [
+          { id: 'fix',    kind: 'task',    label: 'Fix it', dept: 'lighting', taskLabel: 'Fix key light', dur: 12, perk: 'spareBulb', perkDur: 5 },
+          { id: 'rent',   kind: 'wait',    label: 'Rent a backup', cost: 400, secs: 6, waitText: 'Backup light on the way' },
+          { id: 'bounce', kind: 'penalty', label: 'Bounce card and keep shooting', penalty: 30 },
+        ],
+      },
+    ],
+
+    shots: [
+      {
+        id: 'hero',
+        name: 'Hero Burger',
+        tasks: [
+          { id: 'hero.set',   dept: 'grip',     label: 'Build tabletop',   dur: 14, stage: true },
+          { id: 'hero.style', dept: 'art',      label: 'Style burger',     dur: 18 },
+          { id: 'hero.place', dept: 'art',      label: 'Place burger',     dur: 4,  stage: true, needs: ['hero.set', 'hero.style'] },
+          { id: 'hero.light', dept: 'lighting', label: 'Light the burger', dur: 14, stage: true, needs: ['hero.set'], optional: true, weight: 30 },
+          { id: 'hero.frame', dept: 'camera',   label: 'Frame hero',       dur: 8,  stage: true, needs: ['hero.place'] },
+        ],
+      },
+      {
+        id: 'cheese',
+        name: 'Cheese Pull',
+        tasks: [
+          { id: 'cheese.rig',   dept: 'grip',     label: 'Rig the pull',   dur: 10, stage: true },
+          { id: 'cheese.melt',  dept: 'art',      label: 'Melt cheese',    dur: 14, perishable: true, freshFor: 25, redoDur: 6 },
+          { id: 'cheese.light', dept: 'lighting', label: 'Re-aim lights',  dur: 8,  stage: true, needs: ['cheese.rig'], optional: true, weight: 25 },
+          { id: 'cheese.frame', dept: 'camera',   label: 'Frame macro',    dur: 7,  stage: true, needs: ['cheese.rig', 'cheese.melt'] },
+        ],
+      },
+      {
+        id: 'sauce',
+        name: 'Sauce Pour',
+        tasks: [
+          { id: 'sauce.mount', dept: 'grip',     label: 'Mount bottle',   dur: 10, stage: true },
+          { id: 'sauce.prep',  dept: 'art',      label: 'Prep sauce',     dur: 10 },
+          { id: 'sauce.light', dept: 'lighting', label: 'Add backlight',  dur: 10, stage: true, needs: ['sauce.mount'], optional: true, weight: 25 },
+          { id: 'sauce.frame', dept: 'camera',   label: 'Frame pour',     dur: 8,  stage: true, needs: ['sauce.mount', 'sauce.prep'] },
+        ],
+      },
+    ],
+  };
+
+  // Your production company: office rooms bought with profit. Each one changes shoot day.
+  //   speed      all crew work faster (multiplier)
+  //   artSpeed   art department works faster (multiplier)
+  //   fresh      perishables last longer (multiplier)
+  //   backupLight  a dead light becomes a free 2-second swap
+  //   post       quality points added to every shot ("we'll fix it in post")
+  const company = {
+    name: 'Take One Productions',
+    rooms: [
+      { id: 'craft',   name: 'Craft Services', cost: 800,  effect: { speed: 1.08 },
+        blurb: 'Coffee, donuts, a sad fruit plate. Everyone works 8% faster.' },
+      { id: 'kitchen', name: 'Prep Kitchen',   cost: 1200, effect: { fresh: 1.4, artSpeed: 1.15 },
+        blurb: 'A real stove. Food stays fresh 40% longer and art works 15% faster.' },
+      { id: 'gear',    name: 'Gear Cage',      cost: 1500, effect: { backupLight: true },
+        blurb: 'Your own backup lights. A dead light becomes a free 2-second swap.' },
+      { id: 'edit',    name: 'Edit Bay',       cost: 2000, effect: { post: 10 },
+        blurb: '"We\'ll fix it in post." Every shot gets +10 quality.' },
+    ],
+    jobs: [
+      { id: 'burger-job', title: 'The Burger Job', client: 'Big Bun Burgers', kind: 'Tabletop', playable: true },
+      { id: 'taco-truck', title: 'Taco Truck Takeover', client: 'El Gordo Tacos', kind: 'Location', playable: false, note: 'Location shoots coming soon' },
+    ],
+  };
+
+  const LEVELS = { burgerJob, company };
+  if (typeof module === 'object' && module.exports) module.exports = LEVELS;
+  else root.LEVELS = LEVELS;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+/* src/sim.js */
+/*
+  That's a Wrap! simulation core.
+  Pure game logic with no DOM, so it runs the same in the browser and in Node tests.
+
+  Time runs in fixed ticks (10 per second). Same level + same crew + same seed + same commands
+  at the same ticks always gives the same result.
+
+  Each tick:
+    1. Assignment: every crew member keeps their task, follows a manual override,
+       or picks the best eligible task in their own department.
+    2. Stage claim: the first stage task started locks the stage to that shot. Chaos events can fire here.
+    3. Work: tasks gain progress from everyone on them (speed x 1 in their dept, x crossDeptRate outside).
+       A finished task can be botched by an unreliable crew member: half of it is redone, once per task.
+    4. Perishables: finished perishable tasks go bad after freshFor seconds.
+    5. Waits: rentals on the way count down.
+    6. Capture: a running ACTION counts down and wraps the shot.
+    7. Money and clock: overtime costs money; the client pulls the plug at hardStop.
+  While a chaos decision is pending, the clock is frozen.
+*/
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.WrapSim = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const TPS = 10;                 // ticks per second
+  const EPS = 1e-6;
+  const DEFAULT_WEIGHT = 20;
+
+  /* ---------- Level validation ---------- */
+
+  function validateLevel(level) {
+    const errors = [];
+    if (!level || !Array.isArray(level.shots) || !Array.isArray(level.crew)) return ['Level needs shots and crew arrays'];
+    const seen = new Set();
+    const crewDepts = new Set(level.crew.map(c => c.dept));
+    for (const shot of level.shots) {
+      const local = new Map(shot.tasks.map(t => [t.id, t]));
+      for (const t of shot.tasks) {
+        if (seen.has(t.id)) errors.push(`Duplicate task id "${t.id}"`);
+        seen.add(t.id);
+        if (!(t.dur > 0)) errors.push(`Task "${t.id}" needs a positive dur`);
+        if (!crewDepts.has(t.dept)) errors.push(`Task "${t.id}" is ${t.dept} work, but no crew member is in ${t.dept}`);
+        for (const d of t.needs || []) {
+          if (!local.has(d)) errors.push(`Task "${t.id}" needs "${d}", which is not a task in shot "${shot.id}"`);
+        }
+        if (t.perishable && !(t.freshFor > 0)) errors.push(`Perishable task "${t.id}" needs a positive freshFor`);
+      }
+      if (!shot.tasks.some(t => t.stage && !t.optional)) {
+        errors.push(`Shot "${shot.id}" needs at least one required stage task, or ACTION could fire with nothing on stage`);
+      }
+      const mark = {};
+      const visit = (id, path) => {
+        if (mark[id] === 2) return;
+        if (mark[id] === 1) { errors.push(`Dependency cycle in shot "${shot.id}": ${path.concat(id).join(' -> ')}`); return; }
+        mark[id] = 1;
+        for (const d of local.get(id).needs || []) if (local.has(d)) visit(d, path.concat(id));
+        mark[id] = 2;
+      };
+      for (const t of shot.tasks) visit(t.id, []);
+    }
+    for (const ev of level.events || []) {
+      for (const b of ev.blocks || []) if (!seen.has(b)) errors.push(`Event "${ev.id}" blocks unknown task "${b}"`);
+      if (!ev.options || !ev.options.length) errors.push(`Event "${ev.id}" needs at least one option`);
+    }
+    return errors;
+  }
+
+  /* ---------- Hiring ---------- */
+
+  // picks: { dept: candidate } -> cost and what's missing
+  function hireCheck(level, picks) {
+    const roles = level.hiring || [];
+    const missing = roles.filter(r => !picks[r.dept]).map(r => r.role);
+    const cost = Object.values(picks).reduce((a, c) => a + (c ? c.rate : 0), 0);
+    return { cost, left: level.budget - cost, missing, ok: !missing.length && cost <= level.budget };
+  }
+
+  /* ---------- Company upgrades ---------- */
+
+  const BASE_MODS = { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 };
+
+  // Combine the effects of owned office rooms into shoot-day modifiers.
+  function companyMods(rooms, owned) {
+    const m = Object.assign({}, BASE_MODS);
+    for (const r of rooms || []) {
+      if (!owned || !owned.includes(r.id)) continue;
+      const e = r.effect || {};
+      if (e.speed) m.speed *= e.speed;
+      if (e.artSpeed) m.artSpeed *= e.artSpeed;
+      if (e.fresh) m.fresh *= e.fresh;
+      if (e.backupLight) m.backupLight = true;
+      if (e.post) m.post += e.post;
+    }
+    return m;
+  }
+
+  /* ---------- Setup ---------- */
+
+  function createGame(level, opts) {
+    opts = opts || {};
+    const errors = validateLevel(level);
+    if (errors.length) throw new Error('Invalid level:\n' + errors.join('\n'));
+    const src = opts.crew || level.crew;
+    const crew = src.map((c, i) => ({
+      id: opts.crew ? c.dept : c.id, name: c.name, role: c.role, dept: c.dept,
+      speed: c.speed || 1, reliability: c.reliability != null ? c.reliability : 1,
+      perks: (c.perks || []).slice(), rate: c.rate || 0, look: c.look || null, tier: c.tier || '',
+      task: null, override: null, order: i,
+    }));
+    const tasks = {};
+    const shots = {};
+    let order = 0;
+    for (const s of level.shots) {
+      shots[s.id] = { id: s.id, name: s.name, taskIds: s.tasks.map(t => t.id), captured: false, capturedAt: null, quality: null, skipped: [], penalty: 0 };
+      for (const t of s.tasks) {
+        if (!crew.some(c => c.dept === t.dept)) throw new Error(`No crew member for ${t.dept}`);
+        tasks[t.id] = makeTask(t, s.id, order++);
+      }
+    }
+    const crewCost = crew.reduce((a, c) => a + c.rate, 0);
+    return {
+      level, seed: (opts.seed >>> 0) || 1,
+      mods: Object.assign({}, BASE_MODS, opts.mods || {}),
+      ticks: 0, acc: 0, paused: false, over: false, endReason: null,
+      priority: level.shots.map(s => s.id),
+      stageShot: null, capture: null,
+      tasks, shots, crew,
+      budget: level.budget - crewCost, crewCost, extraCost: 0, overtimeCost: 0,
+      pending: null, fired: {}, chosen: {}, blocks: {}, blockText: {}, waits: [], flubbed: {},
+      log: [],
+    };
+  }
+
+  function makeTask(t, shot, order) {
+    return {
+      id: t.id, shot, dept: t.dept, label: t.label,
+      dur: t.dur, needs: (t.needs || []).slice(),
+      stage: !!t.stage, optional: !!t.optional, weight: t.weight != null ? t.weight : DEFAULT_WEIGHT,
+      perishable: !!t.perishable, freshFor: t.freshFor || 0, redoDur: t.redoDur || t.dur,
+      order,
+      need: Math.round(t.dur * TPS), progress: 0, done: false, doneAt: null, spoiled: 0,
+    };
+  }
+
+  /* ---------- Helpers ---------- */
+
+  const seconds = st => st.ticks / TPS;
+  const shotIndex = (st, id) => st.priority.indexOf(id);
+  const crewById = (st, id) => st.crew.find(c => c.id === id);
+  const taskList = st => Object.values(st.tasks);
+  const eventById = (st, id) => (st.level.events || []).find(e => e.id === id);
+  const hasPerk = (st, perk) => st.crew.some(c => c.perks.includes(perk));
+  const workRate = (st, c, t) => (c.dept === t.dept ? 1 : st.level.crossDeptRate) * c.speed * st.mods.speed * (c.dept === 'art' ? st.mods.artSpeed : 1);
+
+  function log(st, type, text, extra) {
+    st.log.push(Object.assign({ tick: st.ticks, type, text }, extra || {}));
+  }
+
+  // Deterministic 0..1 roll from the run seed and a key.
+  function roll(st, key) {
+    let h = 2166136261 ^ st.seed;
+    for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+    h += 0x6D2B79F5;
+    let x = h;
+    x = Math.imul(x ^ (x >>> 15), x | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  }
+
+  function freshFor(st, t) {
+    return t.freshFor * (hasPerk(st, 'foodWhisperer') ? 1.6 : 1) * st.mods.fresh;
+  }
+
+  function actionTicks(st) {
+    return Math.round((hasPerk(st, 'quickRoll') ? 3 : st.level.actionDuration) * TPS);
+  }
+
+  function stageCandidate(st) {
+    if (st.stageShot) return st.stageShot;
+    for (const id of st.priority) if (!st.shots[id].captured) return id;
+    return null;
+  }
+
+  function shotLocked(st, t) {
+    const s = st.shots[t.shot];
+    return s.captured || (!!st.capture && st.capture.shot === t.shot);
+  }
+
+  function workersOn(st, taskId, except) {
+    return st.crew.filter(c => c !== except && c.task === taskId);
+  }
+
+  // Why this task can't be worked right now, or null if it can.
+  // manual = a player override, which may start perishables early.
+  function blockReason(st, t, manual) {
+    if (t.done) return 'Already done';
+    if (shotLocked(st, t)) return `${st.shots[t.shot].name} is already shot`;
+    if (st.blocks[t.id]) return st.blockText[st.blocks[t.id]] || eventById(st, st.blocks[t.id]).blockText;
+    const missing = t.needs.filter(d => !st.tasks[d].done);
+    if (missing.length) return `Needs ${st.tasks[missing[0]].label}`;
+    const cand = stageCandidate(st);
+    if (t.stage && cand !== t.shot) {
+      return st.stageShot ? `Stage busy with ${st.shots[st.stageShot].name}` : `${st.shots[cand].name} goes first`;
+    }
+    if (t.perishable && !manual && cand !== t.shot) return `Holding until ${st.shots[t.shot].name} is on stage`;
+    return null;
+  }
+
+  function chainLen(st, t, memo) {
+    memo = memo || {};
+    if (memo[t.id] != null) return memo[t.id];
+    const own = t.done ? 0 : t.need - t.progress;
+    let tail = 0;
+    for (const id of st.shots[t.shot].taskIds) {
+      const d = st.tasks[id];
+      if (!d.done && d.needs.includes(t.id)) tail = Math.max(tail, chainLen(st, d, memo));
+    }
+    return (memo[t.id] = own + tail);
+  }
+
+  function lexLess(a, b) {
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] < b[i];
+    return false;
+  }
+
+  function pickAuto(st, c) {
+    let best = null, bestKey = null;
+    const memo = {};
+    for (const t of taskList(st)) {
+      if (t.dept !== c.dept) continue;
+      if (blockReason(st, t, false)) continue;
+      if (workersOn(st, t.id, c).length) continue;
+      const key = [shotIndex(st, t.shot), -chainLen(st, t, memo), t.order];
+      if (!best || lexLess(key, bestKey)) { best = t; bestKey = key; }
+    }
+    return best ? best.id : null;
+  }
+
+  function spend(st, amount, kind) {
+    st.budget -= amount;
+    if (kind === 'overtime') st.overtimeCost += amount;
+    else st.extraCost += amount;
+  }
+
+  /* ---------- Chaos ---------- */
+
+  function fireEvents(st) {
+    for (const ev of st.level.events || []) {
+      if (st.fired[ev.id]) continue;
+      if (ev.trigger.type === 'stageClaim' && st.stageShot === ev.trigger.shot) {
+        st.fired[ev.id] = true;
+        st.pending = ev.id;
+        for (const tid of ev.blocks) st.blocks[tid] = ev.id;
+        for (const c of st.crew) if (c.task && st.blocks[c.task]) { c.task = null; if (c.override && st.blocks[c.override]) c.override = null; }
+        log(st, 'chaos', ev.title, { event: ev.id });
+        return;
+      }
+    }
+  }
+
+  // An option as it plays out with this company (owning backup lights changes renting into a free swap).
+  function resolveOption(st, o) {
+    if (o.kind === 'wait' && st.mods.backupLight) {
+      return Object.assign({}, o, { label: 'Grab our backup light', cost: 0, secs: 2, waitText: 'Grabbing the backup from the cage', owned: true });
+    }
+    return o;
+  }
+
+  function unblock(st, evId) {
+    for (const tid of Object.keys(st.blocks)) if (st.blocks[tid] === evId) delete st.blocks[tid];
+  }
+
+  // What each option will cost with this crew, for the choice card.
+  function eventOptions(st, evId) {
+    const ev = eventById(st, evId);
+    return ev.options.map(o0 => {
+      const o = resolveOption(st, o0);
+      const out = { id: o.id, label: o.label, kind: o.kind, cost: o.cost || 0, owned: !!o.owned };
+      if (o.kind === 'task') {
+        const perk = o.perk && hasPerk(st, o.perk);
+        const fixer = st.crew.find(c => c.dept === o.dept);
+        const dur = perk ? o.perkDur : o.dur;
+        out.secs = Math.ceil(dur / (fixer ? fixer.speed * st.mods.speed : 1));
+        out.who = fixer ? fixer.name : '';
+        out.perk = perk;
+      } else if (o.kind === 'wait') out.secs = o.secs;
+      else if (o.kind === 'penalty') out.penalty = o.penalty;
+      return out;
+    });
+  }
+
+  /* ---------- Simulation ---------- */
+
+  function tick(st) {
+    if (st.over || st.pending) return;
+    st.ticks++;
+
+    // 1. Assignment
+    for (const c of st.crew) {
+      const before = c.task;
+      if (c.override) {
+        if (blockReason(st, st.tasks[c.override], true)) { c.override = null; c.task = null; }
+        else { c.task = c.override; continue; }
+      }
+      if (c.task && !blockReason(st, st.tasks[c.task], false)) continue;
+      c.task = pickAuto(st, c);
+      if (c.task && c.task !== before) log(st, 'start', `${c.name} starts ${st.tasks[c.task].label}`, { crew: c.id, task: c.task });
+    }
+
+    // 2. Stage claim + chaos triggers
+    if (!st.stageShot) {
+      for (const c of st.crew) {
+        const t = c.task && st.tasks[c.task];
+        if (t && t.stage) { st.stageShot = t.shot; log(st, 'stage', `${st.shots[t.shot].name} takes the stage`, { shot: t.shot }); break; }
+      }
+    }
+    fireEvents(st);
+    if (st.pending) return;
+
+    // 3. Work
+    const rates = {};
+    for (const c of st.crew) {
+      if (!c.task) continue;
+      const t = st.tasks[c.task];
+      rates[t.id] = (rates[t.id] || 0) + workRate(st, c, t);
+    }
+    for (const id of Object.keys(rates)) {
+      const t = st.tasks[id];
+      t.progress += rates[id];
+      if (t.progress < t.need - EPS) continue;
+      const workers = workersOn(st, id);
+      const weakest = workers.reduce((a, c) => (!a || c.reliability < a.reliability ? c : a), null);
+      if (weakest && !st.flubbed[id] && roll(st, id) > weakest.reliability) {
+        st.flubbed[id] = weakest.id;
+        t.progress = Math.round(t.need * 0.5);
+        log(st, 'flub', `${weakest.name} botched ${t.label}. Half of it needs redoing`, { crew: weakest.id, task: id });
+        continue;
+      }
+      t.progress = t.need; t.done = true; t.doneAt = st.ticks;
+      log(st, 'done', `${t.label} done`, { task: t.id });
+      for (const c of st.crew) {
+        if (c.task === id) c.task = null;
+        if (c.override === id) c.override = null;
+      }
+    }
+
+    // 4. Perishables
+    for (const t of taskList(st)) {
+      if (t.perishable && t.done && !shotLocked(st, t) && st.ticks - t.doneAt >= freshFor(st, t) * TPS) {
+        t.done = false; t.doneAt = null; t.progress = 0; t.need = Math.round(t.redoDur * TPS); t.spoiled++;
+        log(st, 'spoiled', `${t.label} went bad. Redo needed`, { task: t.id });
+      }
+    }
+
+    // 5. Waits
+    for (const w of st.waits.slice()) {
+      if (--w.left <= 0) {
+        st.waits.splice(st.waits.indexOf(w), 1);
+        unblock(st, w.event);
+        log(st, 'arrived', w.doneText || 'Delivery arrived', { event: w.event });
+      }
+    }
+
+    // 6. Capture
+    if (st.capture) {
+      st.capture.left--;
+      if (st.capture.left <= 0) {
+        const s = st.shots[st.capture.shot];
+        s.captured = true; s.capturedAt = st.ticks;
+        st.capture = null; st.stageShot = null;
+        log(st, 'captured', `${s.name} is in the can`, { shot: s.id, quality: s.quality });
+        if (Object.values(st.shots).every(x => x.captured)) {
+          st.over = true; st.endReason = 'wrap';
+          log(st, 'wrap', "That's a wrap");
+          return;
+        }
+      }
+    }
+
+    // 7. Money and clock
+    if (st.ticks > st.level.timeLimit * TPS) spend(st, st.level.overtimeRate / TPS, 'overtime');
+    if (st.level.hardStop && st.ticks >= st.level.hardStop * TPS) {
+      st.over = true; st.endReason = 'pulled';
+      log(st, 'pulled', 'The client pulled the plug');
+    }
+  }
+
+  function stepTicks(st, n) { for (let i = 0; i < n && !st.over && !st.pending; i++) tick(st); }
+
+  function advance(st, secs) {
+    if (st.paused || st.over || st.pending) return;
+    st.acc += secs * TPS;
+    while (st.acc >= 1 && !st.over && !st.pending) { tick(st); st.acc -= 1; }
+    if (st.pending) st.acc = 0;
+  }
+
+  /* ---------- Queries ---------- */
+
+  function readiness(st, shotId) {
+    const s = st.shots[shotId];
+    const tasks = s.taskIds.map(i => st.tasks[i]);
+    const missingRequired = tasks.filter(t => !t.done && !t.optional);
+    const missingOptional = tasks.filter(t => !t.done && t.optional);
+    const quality = Math.min(100, Math.max(0, 100 - s.penalty - missingOptional.reduce((a, t) => a + t.weight, 0)) + st.mods.post);
+    let reason = null;
+    if (s.captured) reason = 'Wrapped';
+    else if (st.capture) reason = st.capture.shot === shotId ? 'Rolling' : `Rolling on ${st.shots[st.capture.shot].name}`;
+    else if (stageCandidate(st) !== shotId) reason = st.stageShot ? `Stage busy with ${st.shots[st.stageShot].name}` : `${st.shots[stageCandidate(st)].name} goes first`;
+    else if (missingRequired.length) reason = 'Needs ' + missingRequired.map(t => t.label).join(', ');
+    return {
+      ready: !reason, reason,
+      quality: s.captured ? s.quality : quality,
+      missingRequired, missingOptional,
+      done: tasks.filter(t => t.done).length, total: tasks.length,
+    };
+  }
+
+  function crewStatus(st, c) {
+    if (typeof c === 'string') c = crewById(st, c);
+    if (c.task) {
+      const t = st.tasks[c.task];
+      return {
+        state: 'WORKING', task: t.id, text: t.label, shot: st.shots[t.shot].name,
+        pct: t.progress / t.need, manual: !!c.override, cross: c.dept !== t.dept,
+      };
+    }
+    if (st.over) return { state: 'WAITING', text: 'Wrapped' };
+    if (st.capture) return { state: 'WAITING', text: 'Quiet on set. Rolling' };
+    const own = taskList(st)
+      .filter(t => t.dept === c.dept && !t.done && !shotLocked(st, t))
+      .sort((a, b) => shotIndex(st, a.shot) - shotIndex(st, b.shot) || a.order - b.order);
+    if (!own.length) return { state: 'WAITING', text: `No ${c.role} work left` };
+    const blocked = own.find(t => st.blocks[t.id] && stageCandidate(st) === t.shot);
+    if (blocked) return { state: 'BLOCKED', task: blocked.id, text: blockReason(st, blocked, false) };
+    const t = own[0];
+    const others = workersOn(st, t.id, c);
+    const why = blockReason(st, t, false) || (others.length ? `${others[0].name} has ${t.label}` : null);
+    const cand = stageCandidate(st);
+    if (cand && t.shot !== cand && readiness(st, cand).ready) return { state: 'WAITING', task: t.id, text: 'Shot is ready. Call ACTION' };
+    return { state: 'WAITING', task: t.id, text: why || 'Finding work' };
+  }
+
+  function taskStatus(st, id) {
+    const t = st.tasks[id];
+    const s = st.shots[t.shot];
+    const workers = workersOn(st, id);
+    const pct = t.progress / t.need;
+    if (t.done) {
+      if (t.perishable && !shotLocked(st, t)) {
+        const ff = freshFor(st, t);
+        const left = Math.max(0, ff - (st.ticks - t.doneAt) / TPS);
+        return { state: 'done', text: `Fresh ${Math.ceil(left)}s`, pct: 1, fresh: left / ff };
+      }
+      return { state: 'done', text: 'Done', pct: 1 };
+    }
+    if (s.captured || (st.capture && st.capture.shot === t.shot)) return { state: 'skipped', text: 'Skipped', pct };
+    if (st.blocks[id]) return { state: 'blocked', text: blockReason(st, t, false), pct };
+    if (workers.length) {
+      const rate = workers.reduce((a, c) => a + workRate(st, c, t), 0);
+      const left = (t.need - t.progress) / TPS / rate;
+      return { state: 'working', text: workers.map(c => c.name).join(' + ') + ` · ${Math.ceil(left)}s`, pct, workers: workers.map(c => c.id) };
+    }
+    const why = blockReason(st, t, false);
+    if (why) return { state: 'waiting', text: t.spoiled && !why.startsWith('Needs') ? `Went bad. ${why}` : why, pct };
+    return { state: 'open', text: st.flubbed[id] ? 'Botched. Redo' : (t.spoiled ? 'Went bad. Redo' : 'Up next'), pct };
+  }
+
+  function score(st) {
+    const lv = st.level;
+    const shots = Object.values(st.shots);
+    const wrapped = shots.filter(s => s.captured);
+    const avg = Math.round(wrapped.reduce((a, s) => a + s.quality, 0) / shots.length);
+    const time = st.ticks / TPS;
+    const allShots = wrapped.length === shots.length;
+    const onTime = allShots && time <= lv.timeLimit;
+    const quality = allShots && avg >= lv.qualityTarget;
+    const profit = Math.round(st.budget);
+    const inBudget = profit >= 0;
+    const third = quality && inBudget;
+    return {
+      stars: allShots ? 1 + (onTime ? 1 : 0) + (third ? 1 : 0) : 0,
+      allShots, onTime, quality, inBudget, third,
+      shotsDone: wrapped.length, shotsTotal: shots.length,
+      avgQuality: avg, time, profit,
+      crewCost: st.crewCost, extraCost: st.extraCost, overtimeCost: Math.round(st.overtimeCost),
+    };
+  }
+
+  /* ---------- Commands ---------- */
+
+  const ok = (message) => ({ ok: true, message: message || '' });
+  const fail = (message) => ({ ok: false, message });
+
+  function command(st, cmd) {
+    switch (cmd.type) {
+      case 'assign': {
+        if (st.over) return fail('The shoot is wrapped');
+        if (st.pending) return fail('Deal with the problem first');
+        const c = crewById(st, cmd.crew);
+        const t = st.tasks[cmd.task];
+        if (!c || !t) return fail('Unknown crew member or task');
+        if (c.override === t.id) return ok(`${c.name} is already on ${t.label}`);
+        const why = blockReason(st, t, true);
+        if (why) return fail(why);
+        c.override = t.id;
+        c.task = t.id;
+        if (t.stage && !st.stageShot) { st.stageShot = t.shot; log(st, 'stage', `${st.shots[t.shot].name} takes the stage`, { shot: t.shot }); }
+        const msg = `${c.name} on ${t.label}` + (c.dept !== t.dept ? ' at half speed' : '');
+        log(st, 'assign', msg, { crew: c.id, task: t.id });
+        return ok(msg);
+      }
+      case 'release': {
+        const c = crewById(st, cmd.crew);
+        if (!c) return fail('Unknown crew member');
+        if (!c.override) return ok(`${c.name} is already on auto`);
+        c.override = null; c.task = null;
+        log(st, 'release', `${c.name} back on auto`, { crew: c.id });
+        return ok(`${c.name} back on auto`);
+      }
+      case 'move': {
+        const i = st.priority.indexOf(cmd.shot);
+        const j = i + cmd.dir;
+        if (i < 0 || j < 0 || j >= st.priority.length) return fail('Cannot move that shot');
+        const p = st.priority.slice();
+        [p[i], p[j]] = [p[j], p[i]];
+        st.priority = p;
+        log(st, 'priority', `Shot order: ${p.map(id => st.shots[id].name).join(', ')}`);
+        return ok(st.stageShot ? `Order changed. ${st.shots[st.stageShot].name} stays on stage until it's shot` : 'Shot order changed');
+      }
+      case 'setPriority': {
+        const order = cmd.order || [];
+        const ids = Object.keys(st.shots);
+        if (order.length !== ids.length || !ids.every(id => order.includes(id))) return fail('Priority must list every shot once');
+        st.priority = order.slice();
+        return ok('Shot order changed');
+      }
+      case 'action': {
+        if (st.over) return fail('The shoot is wrapped');
+        if (st.pending) return fail('Deal with the problem first');
+        if (st.capture) return fail('Already rolling');
+        const id = stageCandidate(st);
+        if (!id) return fail('Nothing left to shoot');
+        const r = readiness(st, id);
+        if (!r.ready) return fail(r.reason);
+        const s = st.shots[id];
+        s.quality = r.quality;
+        s.skipped = r.missingOptional.map(t => t.id);
+        st.capture = { shot: id, left: actionTicks(st), total: actionTicks(st) };
+        for (const c of st.crew) {
+          if (c.task && st.tasks[c.task].shot === id) c.task = null;
+          if (c.override && st.tasks[c.override].shot === id) c.override = null;
+        }
+        log(st, 'action', `ACTION on ${s.name}` + (s.skipped.length ? ` without ${s.skipped.map(x => st.tasks[x].label).join(', ')}` : ''), { shot: id, quality: s.quality });
+        return ok(`Rolling on ${s.name}`);
+      }
+      case 'choose': {
+        if (!st.pending) return fail('Nothing to decide');
+        const ev = eventById(st, st.pending);
+        const o0 = ev.options.find(x => x.id === cmd.option);
+        if (!o0) return fail('Unknown option');
+        const o = resolveOption(st, o0);
+        const shot = ev.trigger.shot;
+        if (o.cost) spend(st, o.cost, 'extra');
+        if (o.kind === 'task') {
+          const dur = o.perk && hasPerk(st, o.perk) ? o.perkDur : o.dur;
+          const id = `${ev.id}.fix`;
+          st.tasks[id] = makeTask({ id, dept: o.dept, label: o.taskLabel, dur, stage: true }, shot, 1000);
+          st.shots[shot].taskIds.push(id);
+          for (const tid of ev.blocks) st.tasks[tid].needs.push(id);
+          unblock(st, ev.id);
+        } else if (o.kind === 'wait') {
+          st.blockText[ev.id] = o.waitText;
+          st.waits.push({ event: ev.id, left: Math.round(o.secs * TPS), total: Math.round(o.secs * TPS), doneText: o.owned ? 'Backup light is up' : 'Backup light arrived' });
+        } else if (o.kind === 'penalty') {
+          st.shots[shot].penalty += o.penalty;
+          unblock(st, ev.id);
+        }
+        st.pending = null;
+        st.chosen[ev.id] = o.id;
+        log(st, 'choice', `${o.label}` + (o.cost ? ` (-$${o.cost})` : ''), { event: ev.id, option: o.id });
+        return ok(o.label);
+      }
+      case 'pause': {
+        st.paused = cmd.value != null ? !!cmd.value : !st.paused;
+        return ok(st.paused ? 'Paused' : 'Resumed');
+      }
+      default:
+        return fail(`Unknown command "${cmd.type}"`);
+    }
+  }
+
+  /* ---------- Debug ---------- */
+
+  function snapshot(st) {
+    return JSON.stringify({
+      ticks: st.ticks, over: st.over, priority: st.priority, stageShot: st.stageShot, capture: st.capture,
+      tasks: st.tasks, shots: st.shots, crew: st.crew, budget: st.budget, blocks: st.blocks, waits: st.waits, flubbed: st.flubbed,
+    });
+  }
+
+  function anyAvailableWork(st) {
+    return st.crew.some(c => !c.task && pickAuto(st, c));
+  }
+
+  function fmtTime(secs) {
+    const s = Math.max(0, Math.floor(secs));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function fmtMoney(n) {
+    const v = Math.round(n);
+    return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-US');
+  }
+
+  return {
+    TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
+    readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score,
+    snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
+  };
+});
+
+</script>
+<script>
+/* src/art.js */
+/*
+  Placeholder art, drawn in code: crew puppets, props, the tabletop set and the production office.
+  Everything returns SVG markup strings. Swap these for real paper-cut art later.
+  Shared filters and patterns live once in globalDefs(), injected at boot.
+*/
+(function (root) {
+  'use strict';
+  const INK = '#22262B';
+  const DEPT_COLOR = { grip: '#8EA3C2', lighting: '#E7B84F', camera: '#8FB1A3', art: '#E59380' };
+  const HAND = `font-family="Permanent Marker, Marker Felt, cursive"`;
+  const UI = `font-family="Atkinson Hyperlegible, system-ui, sans-serif"`;
+  const S = (w) => `stroke="${INK}" stroke-width="${w || 1.5}" stroke-linejoin="round"`;
+
+  function globalDefs() {
+    return `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+      <filter id="cut" x="-10%" y="-10%" width="120%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feDropShadow in="d" dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
+      </filter>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="1.2" dy="1.6" stdDeviation="0.7" flood-color="#2A1E12" flood-opacity=".35"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+      <pattern id="corr" width="4" height="10" patternUnits="userSpaceOnUse"><rect width="4" height="10" fill="#C79A64"/><rect width="1.8" height="10" fill="#B5864D"/></pattern>
+      <pattern id="corrDark" width="5" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#2E4664"/><rect width="2" height="10" fill="#29405C"/></pattern>
+      <pattern id="mesh" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#5C6470"/><path d="M0 0 L7 7 M7 0 L0 7" stroke="#8D95A1" stroke-width=".9"/></pattern>
+      <pattern id="brick" width="26" height="14" patternUnits="userSpaceOnUse"><rect width="26" height="14" fill="#D9785F"/><path d="M0 7 H26 M0 14 H26 M13 0 V7 M0 7 V14 M26 7 V14" stroke="#C4644D" stroke-width="1.2"/></pattern>
+      <pattern id="tile" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#F2E9D8"/><path d="M0 0 H12 V12" fill="none" stroke="#D8CBB0" stroke-width="1"/></pattern>
+    </defs></svg>`;
+  }
+
+  /* ---------- Puppets (feet at 0,0, about 48 units tall) ---------- */
+
+  function puppet(c) {
+    const L = c.look || {};
+    const skin = L.skin || '#E1B48E';
+    const hair = L.hair || '#2A1D14';
+    const body = c.color || DEPT_COLOR[c.dept] || '#ccc';
+    const s = `stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"`;
+    const hairCap = `<path d="M-8.6 -35 q0 -10.5 8.6 -10.5 q8.6 0 8.6 10.5 q-2.5 -5 -8.6 -5 q-6.1 0 -8.6 5z" fill="${hair}" ${s}/>`;
+    let top = '';
+    switch (L.top) {
+      case 'cap': top = `<path d="M-9 -37.5 q0 -9.5 9 -9.5 q9 0 9 9.5z" fill="#9AA6D6" ${s}/><path d="M3 -38.6 h10.5 q1.6 .3 0 2 h-10.5z" fill="#7F8BC0" ${s}/>`; break;
+      case 'beanie': top = `<path d="M-9.2 -36.5 q0 -12 9.2 -12 q9.2 0 9.2 12z" fill="#E7B84F" ${s}/><rect x="-9.8" y="-38.8" width="19.6" height="4" rx="1.5" fill="#D29C2E" ${s}/>`; break;
+      case 'bun': top = hairCap + `<circle cx="1" cy="-46.5" r="4.3" fill="${hair}" ${s}/>`; break;
+      case 'beret': top = hairCap + `<ellipse cx="-1.5" cy="-43.5" rx="9.8" ry="3.8" fill="#D86B56" ${s}/><circle cx="-1" cy="-47.6" r="1.2" fill="${INK}"/>`; break;
+      case 'slick': top = `<path d="M-8.8 -35 q-1 -12 9.5 -11 q8 1 8 10 q-6 -6 -17.5 1z" fill="${hair}" ${s}/>`; break;
+      default: top = hairCap + `<path d="M-6 -44 l2 -4 l2 3 l2 -4 l2 3 l2 -4 l1 5" fill="${hair}" ${s}/>`;
+    }
+    const face =
+      `<circle cx="-3" cy="-35" r="1.15" fill="${INK}"/><circle cx="3.2" cy="-35" r="1.15" fill="${INK}"/>` +
+      (L.beard ? `<path d="M-7.6 -33.5 q0 10 7.6 10 q7.6 0 7.6 -10 q-3 3.4 -7.6 3.4 q-4.6 0 -7.6 -3.4z" fill="${hair}" ${s}/>` : '') +
+      `<circle cx="1.6" cy="-32.2" r="2" fill="#D86B56" ${s} stroke-width=".8"/>` +
+      (L.mustache ? `<path d="M-4.5 -30.2 q2.2 -2.2 4.5 0 q2.3 -2.2 4.5 0 q-2.2 1.8 -4.5 .6 q-2.3 1.2 -4.5 -.6z" fill="${hair}"/>` : '') +
+      (L.glasses ? `<g fill="none" stroke="${INK}" stroke-width="1"><circle cx="-3.1" cy="-35.3" r="2.7"/><circle cx="3.3" cy="-35.3" r="2.7"/><path d="M-.4 -35.5h1"/></g>` : '') +
+      (L.earring ? `<circle cx="-8.7" cy="-30.6" r="1.5" fill="#E7B84F" stroke="${INK}" stroke-width=".7"/>` : '');
+    const tie = L.tie ? `<path d="M0 -26 l-1.6 2 l1.6 9 l1.6 -9z" fill="${L.tie}" stroke="${INK}" stroke-width=".7"/>` : '';
+    const prop = L.prop === 'latte' ? `<g transform="translate(11 -15)"><rect x="-2.5" y="-5" width="5" height="6" rx="1" fill="#F2E9D8" ${s} stroke-width=".8"/><rect x="-2.6" y="-3" width="5.2" height="2" fill="#8B5A3C"/></g>`
+      : L.prop === 'mug' ? `<g transform="translate(11 -15)"><rect x="-2.6" y="-4.5" width="5.2" height="5.5" rx="1" fill="#D86B56" ${s} stroke-width=".8"/></g>` : '';
+    return (
+      `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
+      `<g class="bodyg">` +
+      `<rect x="-6.5" y="-13" width="5" height="13" rx="1.6" fill="#2F3440"/><rect x="1.5" y="-13" width="5" height="13" rx="1.6" fill="#2F3440"/>` +
+      `<rect x="-9.4" y="-24.5" width="4.2" height="12" rx="2" fill="${body}" ${s} stroke-width="1"/>` +
+      `<path d="M-9.5 -12 L-8.6 -25.5 Q0 -30.5 8.6 -25.5 L9.5 -12 Z" fill="${body}" ${s}/>` + tie +
+      `<circle cx="0" cy="-35" r="8.6" fill="${skin}" ${s}/>` + top + face +
+      `<rect class="arm" x="6.6" y="-25" width="4.2" height="12.5" rx="2" fill="${body}" ${s} stroke-width="1"/>` + prop +
+      `</g>`
+    );
+  }
+
+  function faceSVG(c, cls) {
+    return `<svg class="${cls || ''}" viewBox="-13.5 -51 27 30" aria-hidden="true">${puppet(c)}</svg>`;
+  }
+
+  /* ---------- Props (local box 0..60 x 0..40) ---------- */
+
+  function burger(lift, opts) {
+    lift = lift || 0;
+    opts = opts || {};
+    const s = `stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"`;
+    const strands = opts.strands
+      ? `<g stroke="#F2C14E" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M17 ${18 - lift} q3 ${lift / 2} 0 ${lift + 3}"/><path d="M29 ${18 - lift} q-3 ${lift / 2} 1 ${lift + 3}"/><path d="M41 ${18 - lift} q3 ${lift / 2} -1 ${lift + 3}"/></g>`
+      : '';
+    const sauce = opts.sauce ? `<path d="M18 9 q6 -5 14 -3 q8 1 9 6 q-3 3 -6 1 q-2 4 -5 1 q-4 3 -6 -1 q-4 1 -6 -4z" fill="#C8452F" ${s} stroke-width=".9"/>` : '';
+    return (
+      `<path d="M7 30 h46 l-2.5 4.5 q-1 1.5 -3 1.5 h-35 q-2 0 -3 -1.5z" fill="#D9963F" ${s}/>` +
+      `<rect x="6.5" y="23.5" width="47" height="7" rx="3.5" fill="#5B3A29" ${s}/>` +
+      `<path d="M5.5 21.5 h49 l-4 5.5 l-4 -3.3 l-5 5 l-4 -4.2 l-6 5 l-5 -5 l-5 4.4 l-5 -4.4 l-4 3.3z" fill="#F2C14E" ${s} stroke-width="1"/>` +
+      `<path d="M5 21 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 v2.5 h-48z" fill="#7FB069" ${s} stroke-width="1"/>` +
+      strands +
+      `<g transform="translate(0 ${-lift})"><path d="M7.5 19 q0 -15 22.5 -15 q22.5 0 22.5 15 z" fill="#E3A85A" ${s}/>` +
+      `<g fill="#FFF4D6"><ellipse cx="20" cy="10" rx="1.5" ry=".8"/><ellipse cx="28" cy="7.5" rx="1.5" ry=".8"/><ellipse cx="36" cy="9.5" rx="1.5" ry=".8"/><ellipse cx="43" cy="13" rx="1.5" ry=".8"/><ellipse cx="15" cy="14" rx="1.5" ry=".8"/></g>` +
+      sauce + `</g>`
+    );
+  }
+
+  function propInner(shotId, state) {
+    state = state || {};
+    if (shotId === 'cheese') return burger(state.lift != null ? state.lift : 12, { strands: true });
+    if (shotId === 'sauce') return burger(0, { sauce: true });
+    return burger(0);
+  }
+
+  function propSVG(shotId) {
+    return `<svg viewBox="0 -8 60 46" aria-hidden="true">${propInner(shotId)}</svg>`;
+  }
+
+  // Burger stack on the art cart: n of 5 layers, bottom up
+  function cartBurger(n) {
+    const layers = [
+      '<path d="M7 30 h46 l-2.5 4.5 q-1 1.5 -3 1.5 h-35 q-2 0 -3 -1.5z" fill="#D9963F"/>',
+      '<rect x="6.5" y="23.5" width="47" height="7" rx="3.5" fill="#5B3A29"/>',
+      '<path d="M5.5 21.5 h49 l-4 5.5 l-4 -3.3 l-5 5 l-4 -4.2 l-6 5 l-5 -5 l-5 4.4 l-5 -4.4 l-4 3.3z" fill="#F2C14E"/>',
+      '<path d="M5 21 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 q4 -4.5 8 0 v2.5 h-48z" fill="#7FB069"/>',
+      '<path d="M7.5 19 q0 -15 22.5 -15 q22.5 0 22.5 15 z" fill="#E3A85A"/>',
+    ];
+    return `<g stroke="${INK}" stroke-width="1.6">${layers.slice(0, n).join('')}</g>`;
+  }
+
+  /* ---------- Set scene: viewBox x 0..360, y -70..340 ---------- */
+
+  const STATIONS = {
+    table:  { x: 184, y: 216 },
+    light:  { x: 104, y: 210 },
+    camera: { x: 330, y: 214 },
+    cart:   { x: 50,  y: 228 },
+  };
+  // Idle crew hang out at the craft table
+  const IDLE = {
+    grip:     { x: 136, y: 328 },
+    lighting: { x: 28,  y: 330 },
+    camera:   { x: 178, y: 332 },
+    art:      { x: 80,  y: 334 },
+  };
+
+  const CLIENT = { name: 'Client', color: '#344F70', look: { skin: '#E8C2A0', hair: '#8A8A8A', top: 'slick', glasses: true, tie: '#D86B56' } };
+  const AGENCY = { name: 'Agency', color: '#2F3440', look: { skin: '#C9946E', hair: '#151515', top: 'beret', prop: 'latte' } };
+
+  function setMarkup() {
+    const s = S();
+    return `
+<svg class="set" id="setSvg" viewBox="0 -70 360 410" role="img" aria-label="The tabletop set">
+  <rect x="0" y="-70" width="360" height="410" fill="#344F70"/>
+  <path d="M0 -70 H130 L122 150 H0Z" fill="#3B5878"/>
+
+  <!-- Ceiling grid with hanging practicals and a flag -->
+  <g stroke="#1C2C42" stroke-width="3.2" stroke-linecap="round"><path d="M-4 -54 H364"/><path d="M-4 -36 H364" opacity=".55"/></g>
+  <g filter="url(#cut)">
+    <path d="M58 -54 V-28" ${s} stroke-width="1.6"/><path d="M46 -16 L52 -30 H64 L70 -16Z" fill="#D86B56" ${s}/>
+    <path d="M306 -54 V-26" ${s} stroke-width="1.6"/><path d="M294 -14 L300 -28 H312 L318 -14Z" fill="#7D9E91" ${s}/>
+    <path d="M192 -54 V-46" ${s} stroke-width="1.6"/><rect x="170" y="-46" width="44" height="26" fill="#22262B"/>
+  </g>
+  <ellipse cx="58" cy="-8" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>
+  <ellipse cx="306" cy="-6" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>
+
+  <rect x="284" y="10" width="68" height="128" fill="url(#corrDark)" filter="url(#cut)"/>
+  <g filter="url(#cut)" transform="rotate(-5 42 36)">
+    <rect x="18" y="16" width="50" height="38" fill="#F2E9D8"/>
+    <text x="43" y="32" text-anchor="middle" ${HAND} font-size="10" fill="#D86B56">BIG</text>
+    <text x="43" y="46" text-anchor="middle" ${HAND} font-size="10" fill="#D86B56">BUN</text>
+  </g>
+  <rect x="35" y="12" width="16" height="6" fill="#E7B84F" opacity=".85" transform="rotate(-8 43 15)"/>
+
+  <!-- Floor -->
+  <path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
+  <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
+  <path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
+  <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>
+  <g stroke="#E7B84F" stroke-width="3" stroke-linecap="round" opacity=".9"><path d="M176 230 l10 6 M186 230 l-10 6"/><path d="M322 232 l9 5 M331 232 l-9 5"/><path d="M98 226 l9 5 M107 226 l-9 5"/></g>
+  <path d="M74 198 q30 16 70 8 t90 6 q30 4 60 -2 q20 30 -40 70" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".6"/>
+
+  <!-- Hero set build pieces: legs, tabletop, sweep, flag -->
+  <g id="pc-sweep" filter="url(#cut)"><path id="sweep" d="M126 30 H234 V124 Q234 136 247 137.5 H113 Q126 136 126 124Z" fill="#E7B84F" ${s}/></g>
+  <g id="pc-flag" filter="url(#cut)"><path d="M262 200 V64" ${s} stroke-width="2"/><rect x="250" y="62" width="25" height="44" fill="${INK}"/><path d="M256 200 h12" ${s} stroke-width="3"/></g>
+  <g id="pc-legs" filter="url(#cut)"><rect x="120" y="150" width="7" height="48" fill="#8B6A43" ${s}/><rect x="233" y="150" width="7" height="48" fill="#8B6A43" ${s}/><rect x="150" y="150" width="6" height="42" fill="#7A5A35" ${s}/><rect x="205" y="150" width="6" height="42" fill="#7A5A35" ${s}/></g>
+  <g id="pc-top" filter="url(#cut)"><rect x="112" y="137" width="136" height="7" fill="#C2915A" ${s}/><rect x="114" y="144" width="132" height="10" fill="url(#corr)" ${s}/></g>
+
+  <!-- Rig for cheese pull / sauce pour -->
+  <g id="rig" filter="url(#cut)">
+    <g id="rig-pole"><path d="M292 202 V54" ${s} stroke-width="2.4"/><path d="M282 202 l10 -14 l10 14" fill="none" ${s} stroke-width="2"/></g>
+    <g id="rig-arm"><path d="M292 58 H196" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/></g>
+    <g id="rig-fork"><path d="M197 58 V74" ${s} stroke-width="2"/><path d="M191 74 h12 M193 74 v8 M197 74 v8 M201 74 v8" ${s} stroke-width="1.4"/></g>
+    <g id="rig-bottle"><path d="M197 58 V66" ${s} stroke-width="2"/><g transform="rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
+  </g>
+
+  <polygon id="beam" points="96,78 76,94 154,136 222,136" fill="#FFE7A3" opacity="0"/>
+  <g id="prop" transform="translate(150 94)" filter="url(#cut)"></g>
+  <path id="pour" class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
+  <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0">
+    <path d="M146 92 v-8 h10"/><path d="M214 92 v-8 h-10"/><path d="M146 132 v8 h10"/><path d="M214 132 v8 h-10"/>
+  </g>
+
+  <!-- Light stand -->
+  <g filter="url(#cut)">
+    <path d="M58 200 L72 158 L86 200 M72 158 V200" fill="none" ${s} stroke-width="2"/>
+    <path d="M72 158 V76" ${s} stroke-width="2.4"/>
+    <g transform="rotate(20 72 76)">
+      <polygon points="52,58 92,58 100,92 44,92" fill="#F4EEDF" ${s}/>
+      <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>
+    </g>
+  </g>
+  <g id="dead" opacity="0">
+    <g stroke="#D86B56" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M98 64 l7 -4 l-2 6 l8 -3"/><path d="M48 60 l-6 -6 l1 6 l-7 -3"/></g>
+    <circle cx="88" cy="48" r="9" fill="#D86B56" stroke="${INK}" stroke-width="1.5"/><text x="88" y="53" text-anchor="middle" ${HAND} font-size="13" fill="#fff">!</text>
+  </g>
+
+  <!-- Camera on sticks -->
+  <g filter="url(#cut)">
+    <path d="M290 204 L304 152 L318 204 M304 152 V204" fill="none" ${s} stroke-width="2"/>
+    <rect x="288" y="126" width="36" height="24" rx="3" fill="#3B4048" ${s}/>
+    <rect x="270" y="131" width="19" height="14" rx="2" fill="${INK}"/>
+    <rect x="296" y="119" width="16" height="8" rx="2" fill="#3B4048" ${s}/>
+    <circle id="recDot" cx="318" cy="132" r="2.6" fill="#5A2A24"/>
+  </g>
+
+  <!-- Art cart -->
+  <g filter="url(#cut)">
+    <rect x="10" y="172" width="70" height="8" fill="#F2E9D8" ${s}/>
+    <path d="M16 180 V206 M74 180 V206 M16 196 H74" ${s} stroke-width="2"/>
+    <circle cx="16" cy="209" r="3.5" fill="${INK}"/><circle cx="74" cy="209" r="3.5" fill="${INK}"/>
+  </g>
+  <g id="cartBurger" transform="translate(12 150) scale(.42)"></g>
+  <g id="pot" transform="translate(44 156)">
+    <g class="steam" id="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0"><path d="M4 -2 q-2 -4 0 -7"/><path d="M10 -2 q2 -4 0 -7"/></g>
+    <path d="M0 2 h16 l-1.5 13 h-13z" fill="#7A7F88" stroke="${INK}" stroke-width="1.3"/>
+    <rect id="potCheese" x="1" y="2" width="14" height="0" fill="#F2C14E"/>
+    <path d="M-2 2 h20" stroke="${INK}" stroke-width="1.6"/>
+  </g>
+  <g id="bowl" transform="translate(62 162)">
+    <path d="M0 2 h16 q0 9 -8 9 q-8 0 -8 -9z" fill="#F2E9D8" stroke="${INK}" stroke-width="1.3"/>
+    <path id="bowlSauce" d="M2 4 h12 q-1 4 -6 4 q-5 0 -6 -4z" fill="#C8452F" opacity="0"/>
+  </g>
+
+  <!-- Craft table (idle crew hang out here) -->
+  <g filter="url(#cut)">
+    <rect x="14" y="282" width="150" height="8" fill="#F2E9D8" ${s}/>
+    <path d="M22 290 V318 M156 290 V318" ${s} stroke-width="2.2"/>
+    <rect x="22" y="258" width="18" height="24" rx="3" fill="#9AA0A8" ${s}/><rect x="40" y="268" width="5" height="3" fill="${INK}"/>
+    <path d="M58 276 h40 l-3 6 h-34z" fill="#F4B6C2" ${s}/><rect x="56" y="262" width="44" height="14" fill="#F4B6C2" ${s} transform="skewX(-10)"/>
+    <g fill="#E3A85A" ${s} stroke-width="1"><circle cx="66" cy="274" r="4"/><circle cx="76" cy="274" r="4"/><circle cx="86" cy="274" r="4"/></g>
+    <g fill="#F2E9D8" ${s} stroke-width="1"><rect x="112" y="272" width="7" height="10" rx="1"/><rect x="122" y="272" width="7" height="10" rx="1"/><rect x="132" y="272" width="7" height="10" rx="1"/></g>
+  </g>
+  <text x="90" y="303" text-anchor="middle" ${HAND} font-size="9" fill="${INK}" opacity=".7">CRAFTY</text>
+
+  <!-- Video village: monitor, client and agency -->
+  <g filter="url(#cut)">
+    <path d="M224 334 V276 M212 334 h24" ${s} stroke-width="2.2"/>
+    <rect x="194" y="236" width="60" height="40" rx="3" fill="#2F3440" ${s}/>
+    <rect x="198" y="240" width="52" height="32" fill="#151820"/>
+  </g>
+  <g id="monView" transform="translate(208 243) scale(.53)"></g>
+  <circle id="monRec" cx="245" cy="245" r="2.4" fill="#FF4B3A" opacity="0"/>
+  <g transform="translate(286 318)" filter="url(#shadow)"><g transform="scale(1.2)">${puppet(CLIENT)}</g></g>
+  <g transform="translate(334 320)" filter="url(#shadow)"><g transform="scale(1.2)">${puppet(AGENCY)}</g></g>
+  <g filter="url(#cut)">
+    <path d="M270 340 l8 -24 M302 340 l-8 -24 M318 340 l8 -24 M350 340 l-8 -24" ${s} stroke-width="2"/>
+    <rect x="268" y="296" width="36" height="16" fill="#D86B56" ${s}/><text x="286" y="308" text-anchor="middle" ${UI} font-weight="700" font-size="7.5" fill="#fff">CLIENT</text>
+    <rect x="316" y="298" width="36" height="16" fill="#22262B" ${s}/><text x="334" y="310" text-anchor="middle" ${UI} font-weight="700" font-size="7.5" fill="#fff">AGENCY</text>
+  </g>
+  <g id="clientBub" opacity="0">
+    <path d="M232 228 h108 a4 4 0 0 1 4 4 v20 a4 4 0 0 1 -4 4 h-46 l-8 8 l-1 -8 h-53 a4 4 0 0 1 -4 -4 v-20 a4 4 0 0 1 4 -4z" fill="#fff" ${s} stroke-width="1.3"/>
+    <text id="clientText" x="286" y="245" text-anchor="middle" ${UI} font-weight="700" font-size="8.5" fill="${INK}"></text>
+  </g>
+
+  <!-- Tap targets for stations -->
+  <rect class="station-hit" data-station="light" x="36" y="44" width="78" height="168" rx="6"/>
+  <rect class="station-hit" data-station="table" x="118" y="28" width="138" height="178" rx="6"/>
+  <rect class="station-hit" data-station="camera" x="264" y="112" width="92" height="104" rx="6"/>
+  <rect class="station-hit" data-station="cart" x="4" y="146" width="84" height="80" rx="6"/>
+
+  <g id="crewLayer"></g>
+
+  <!-- Clapper for ACTION -->
+  <g id="clap" class="clap" transform="translate(146 30)">
+    <rect x="0" y="12" width="68" height="40" rx="2" fill="${INK}" stroke="#fff" stroke-width="1.5"/>
+    <text x="34" y="37" text-anchor="middle" ${HAND} font-size="8.5" fill="#fff" id="clapText">TAKE 1</text>
+    <g class="stick"><rect x="0" y="2" width="68" height="10" fill="#fff" stroke="${INK}" stroke-width="1.5"/>
+      <g fill="${INK}"><path d="M6 2 h8 l-6 10 h-8z"/><path d="M22 2 h8 l-6 10 h-8z"/><path d="M38 2 h8 l-6 10 h-8z"/><path d="M54 2 h8 l-6 10 h-8z"/></g></g>
+  </g>
+</svg>`;
+  }
+
+  /* ---------- Production office: viewBox 0 0 360 470 ---------- */
+
+  const ROOMS = {
+    edit:    { x: 24,  y: 56,  w: 152, h: 112 },
+    craft:   { x: 184, y: 56,  w: 152, h: 112 },
+    gear:    { x: 24,  y: 176, w: 152, h: 112 },
+    kitchen: { x: 184, y: 176, w: 152, h: 112 },
+  };
+
+  function roomFurniture(id) {
+    const s = S(1.3);
+    if (id === 'edit') return `
+      <rect x="20" y="62" width="112" height="8" fill="#8B6A43" ${s}/><path d="M28 70 V96 M124 70 V96" ${s} stroke-width="2"/>
+      <rect x="30" y="30" width="44" height="30" rx="2" fill="#22262B" ${s}/><rect x="78" y="30" width="44" height="30" rx="2" fill="#22262B" ${s}/>
+      <g><rect x="34" y="34" width="36" height="16" fill="#344F70"/><rect x="82" y="44" width="10" height="3" fill="#E7B84F"/><rect x="94" y="44" width="16" height="3" fill="#D86B56"/><rect x="84" y="49" width="20" height="3" fill="#7D9E91"/><rect x="104" y="49" width="12" height="3" fill="#8EA3C2"/><path d="M98 36 V58" stroke="#fff" stroke-width="1"/></g>
+      <g transform="translate(76 96) scale(1.15)">${puppet({ color: '#5E5A52', look: { skin: '#E0B08A', hair: '#2A1D14', top: 'none', glasses: true } })}</g>
+      <rect x="62" y="72" width="28" height="22" rx="3" fill="#2F3440" ${s}/>`;
+    if (id === 'craft') return `
+      <rect x="14" y="58" width="124" height="38" fill="#E59380" ${s}/><rect x="10" y="54" width="132" height="6" fill="#F2E9D8" ${s}/>
+      <rect x="20" y="28" width="20" height="26" rx="3" fill="#9AA0A8" ${s}/><rect x="40" y="40" width="6" height="3" fill="#22262B"/>
+      <path d="M56 54 h36 l-3 -10 h-30z" fill="#F4B6C2" ${s}/><g fill="#E3A85A" ${s} stroke-width="1"><circle cx="64" cy="48" r="4"/><circle cx="74" cy="48" r="4"/><circle cx="84" cy="48" r="4"/></g>
+      <g fill="#D86B56" ${s} stroke-width="1"><rect x="100" y="44" width="8" height="10" rx="1.5"/><rect x="112" y="44" width="8" height="10" rx="1.5"/></g>
+      <path d="M128 54 q0 -18 6 -26 q4 10 0 26z" fill="#7FB069" ${s}/>
+      <text x="76" y="80" text-anchor="middle" ${HAND} font-size="10" fill="#fff">CRAFTY</text>`;
+    if (id === 'gear') return `
+      <rect x="8" y="8" width="136" height="88" fill="url(#mesh)"/>
+      <path d="M12 44 H140 M12 74 H140" ${s} stroke-width="2.4"/>
+      <g fill="#F4EEDF" ${s}><polygon points="20,26 40,26 44,42 16,42"/><polygon points="52,26 72,26 76,42 48,42"/></g>
+      <g fill="#22262B"><rect x="88" y="28" width="22" height="16" rx="2"/><rect x="114" y="32" width="20" height="12" rx="2"/></g>
+      <g fill="#E7B84F" ${s} stroke-width="1"><ellipse cx="26" cy="68" rx="10" ry="5"/><ellipse cx="46" cy="68" rx="10" ry="5"/></g>
+      <path d="M100 96 V52 M90 96 l10 -10 l10 10 M100 54 H128" ${s} stroke-width="2"/>`;
+    if (id === 'kitchen') return `
+      <rect x="10" y="58" width="96" height="38" fill="#F2E9D8" ${s}/><rect x="10" y="54" width="96" height="6" fill="#8B6A43" ${s}/>
+      <rect x="18" y="44" width="32" height="10" fill="#22262B"/><path d="M24 44 h20 l-2 -12 h-16z" fill="#7A7F88" ${s}/>
+      <g class="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M30 28 q-2 -4 0 -8"/><path d="M38 28 q2 -4 0 -8"/></g>
+      <g transform="translate(58 30) scale(.4)">${burger(0)}</g>
+      <rect x="112" y="16" width="30" height="80" rx="3" fill="#E6E9EE" ${s}/><path d="M112 44 H142 M136 26 V36 M136 52 V64" ${s} stroke-width="1.6"/>`;
+    return '';
+  }
+
+  function room(id, def, owned, affordable, cost) {
+    const r = ROOMS[id];
+    const wall = owned ? { edit: '#3E4C63', craft: '#F2D7A6', gear: '#D8D2C4', kitchen: '#CFE0D6' }[id] : '#4A4743';
+    const floor = owned ? '#B98552' : '#3A3734';
+    const s = S(1.6);
+    const body = owned ? roomFurniture(id) :
+      `<path d="M30 30 h92 v40 h-92z" fill="#5E5A52" opacity=".5"/>
+       <g transform="rotate(-4 76 50)"><rect x="34" y="30" width="84" height="40" fill="#F2E9D8" ${s}/>
+       <text x="76" y="48" text-anchor="middle" ${HAND} font-size="13" fill="#D86B56">FOR RENT</text>
+       <text x="76" y="63" text-anchor="middle" ${UI} font-weight="700" font-size="9.5" fill="${INK}">$${cost.toLocaleString('en-US')}</text></g>
+       ${affordable ? `<circle cx="132" cy="22" r="9" fill="#E7B84F" ${s}/><text x="132" y="26" text-anchor="middle" ${HAND} font-size="11" fill="${INK}">!</text>` : ''}`;
+    return `<g class="room ${owned ? 'owned' : 'locked'}${affordable ? ' affordable' : ''}" data-room="${id}" transform="translate(${r.x} ${r.y})">
+      <rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>
+      ${owned ? `<ellipse cx="${r.w / 2}" cy="6" rx="34" ry="10" fill="#FFE7A3" opacity=".45" filter="url(#glow)"/>` : ''}
+      <rect y="${r.h - 14}" width="${r.w}" height="14" fill="${floor}" ${s}/>
+      <g filter="url(#cut)">${body}</g>
+      <g transform="translate(6 -6) rotate(-2)"><rect width="${def.name.length * 5.6 + 14}" height="15" fill="${owned ? '#F2E9D8' : '#CDBFA5'}" ${s} stroke-width="1.2"/>
+      <text x="7" y="11" ${UI} font-weight="700" font-size="9" fill="${INK}">${def.name.toUpperCase()}</text></g>
+      <rect width="${r.w}" height="${r.h}" fill="transparent"/>
+    </g>`;
+  }
+
+  // A built room on its own, for the room card
+  function roomPreview(def) {
+    const r = ROOMS[def.id];
+    return `<svg viewBox="${r.x - 4} ${r.y - 12} ${r.w + 8} ${r.h + 16}" aria-hidden="true">${room(def.id, def, true, false, def.cost)}</svg>`;
+  }
+
+  function officeMarkup(company, owned, bank) {
+    const s = S();
+    const rooms = company.rooms.map(r => room(r.id, r, owned.includes(r.id), !owned.includes(r.id) && bank >= r.cost, r.cost)).join('');
+    const name = company.name.toUpperCase();
+    return `
+<svg class="office" viewBox="0 0 360 470" role="img" aria-label="${company.name} office">
+  <rect width="360" height="470" fill="#A9C6C0"/>
+  <circle cx="318" cy="34" r="20" fill="#E7B84F" filter="url(#cut)"/>
+  <g fill="#F2E9D8" filter="url(#cut)"><path d="M20 30 q8 -14 22 -6 q10 -10 22 0 q12 0 10 10 h-56z"/><path d="M250 70 q6 -10 16 -4 q8 -8 16 0 q8 0 8 8 h-42z" opacity=".8"/></g>
+
+  <!-- Building -->
+  <rect x="12" y="44" width="336" height="340" fill="url(#brick)" ${s} filter="url(#cut)"/>
+  <rect x="8" y="40" width="344" height="10" fill="#C4644D" ${s}/>
+  <g filter="url(#cut)">
+    <rect x="70" y="6" width="220" height="34" fill="#22262B" ${s}/>
+    <text x="180" y="30" text-anchor="middle" ${HAND} font-size="15" fill="#E7B84F">${name}</text>
+    <g fill="#FFE7A3">${Array.from({ length: 12 }, (_, i) => `<circle cx="${78 + i * 18.6}" cy="10" r="1.7"/><circle cx="${78 + i * 18.6}" cy="36" r="1.7"/>`).join('')}</g>
+    <path d="M100 40 V44 M260 40 V44" ${s}/>
+  </g>
+  ${rooms}
+
+  <!-- Lobby: job board, door, front desk -->
+  <rect x="24" y="296" width="312" height="84" fill="#F2E9D8" ${S(1.6)}/>
+  <rect x="24" y="366" width="312" height="14" fill="url(#tile)" ${S(1.2)}/>
+  <g class="jobboard" data-jobs="1" filter="url(#cut)">
+    <rect x="34" y="304" width="116" height="58" fill="#B98552" ${S(1.6)}/>
+    <rect x="38" y="308" width="108" height="50" fill="#C79A64"/>
+    <g transform="rotate(-4 64 332)"><rect x="44" y="312" width="44" height="40" fill="#fff" ${S(1)}/><text x="66" y="324" text-anchor="middle" ${UI} font-weight="700" font-size="6.5" fill="${INK}">BURGER JOB</text><g transform="translate(51 326) scale(.5)">${burger(0)}</g><circle cx="66" cy="313" r="2.2" fill="#D86B56"/></g>
+    <g transform="rotate(5 118 332)"><rect x="96" y="312" width="44" height="40" fill="#F2E9D8" ${S(1)}/><text x="118" y="324" text-anchor="middle" ${UI} font-weight="700" font-size="6.5" fill="${INK}">TACO TRUCK</text><text x="118" y="340" text-anchor="middle" ${HAND} font-size="8" fill="#D86B56">SOON</text><circle cx="118" cy="313" r="2.2" fill="#7D9E91"/></g>
+    <rect x="34" y="304" width="116" height="58" fill="transparent"/>
+  </g>
+  <text x="92" y="376" text-anchor="middle" ${UI} font-weight="700" font-size="8" fill="${INK}">JOB BOARD</text>
+  <g filter="url(#cut)">
+    <rect x="160" y="310" width="40" height="56" fill="#344F70" ${S(1.6)}/><circle cx="192" cy="340" r="2" fill="#E7B84F"/>
+    <rect x="164" y="314" width="32" height="20" fill="#A9C6C0" opacity=".6"/>
+  </g>
+  <g filter="url(#cut)">
+    <rect x="232" y="334" width="80" height="32" fill="#7D9E91" ${S(1.6)}/><rect x="228" y="330" width="88" height="6" fill="#F2E9D8" ${S(1.2)}/>
+    <path d="M322 366 q0 -30 6 -42 q6 12 0 42z" fill="#7FB069" ${S(1.2)}/><rect x="316" y="356" width="14" height="10" fill="#D86B56" ${S(1.2)}/>
+  </g>
+  <g transform="translate(272 334) scale(1.1)" filter="url(#shadow)">${puppet({ color: '#E7B84F', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } })}</g>
+
+  <!-- Street and van -->
+  <rect x="0" y="384" width="360" height="26" fill="#CFC4B0"/>
+  <path d="M0 384 H360" ${S(1.2)}/>
+  <rect x="0" y="410" width="360" height="60" fill="#5E5A52"/>
+  <g stroke="#F2E9D8" stroke-width="3" stroke-dasharray="16 12"><path d="M0 446 H360"/></g>
+  <g filter="url(#cut)">
+    <path d="M190 432 V398 q0 -6 6 -6 h96 q8 0 14 8 l14 16 q4 4 4 10 v6z" fill="#F2E9D8" ${S(1.6)}/>
+    <path d="M296 398 h8 l14 18 h-22z" fill="#A9C6C0" ${S(1.2)}/>
+    <rect x="190" y="414" width="134" height="8" fill="#D86B56"/>
+    <text x="242" y="410" text-anchor="middle" ${HAND} font-size="9" fill="${INK}">GRIP + ELECTRIC</text>
+    <circle cx="216" cy="434" r="9" fill="${INK}"/><circle cx="216" cy="434" r="3.5" fill="#9AA0A8"/>
+    <circle cx="300" cy="434" r="9" fill="${INK}"/><circle cx="300" cy="434" r="3.5" fill="#9AA0A8"/>
+  </g>
+</svg>`;
+  }
+
+  /* ---------- Icons ---------- */
+
+  const DEPT_ICON = {
+    grip: '<path d="M4 20l9-9M14 4l6 6-3 3-6-6z"/>',
+    lighting: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z"/>',
+    camera: '<rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/>',
+    art: '<path d="M4 20c4 0 6-2 6-5l7-7a2 2 0 0 0-3-3l-7 7c-3 0-3 4-3 8z"/>',
+    fix: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  };
+  function deptIcon(key, size) {
+    return `<svg width="${size || 16}" height="${size || 16}" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DEPT_ICON[key] || ''}</svg>`;
+  }
+
+  const ICON = {
+    fix: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DEPT_ICON.fix}</svg>`,
+    rent: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16V7h12v9M14 10h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/></svg>`,
+    bounce: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`,
+  };
+
+  function starSVG(on) {
+    return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.7-.8z" fill="${on ? '#E7B84F' : '#E6D8BE'}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+  }
+
+  function clapperSVG() {
+    return `<svg viewBox="0 0 100 70" aria-hidden="true">
+      <rect x="4" y="22" width="92" height="44" rx="3" fill="#22262B" stroke="#F2E9D8" stroke-width="2"/>
+      <g class="clap-stick"><rect x="4" y="8" width="92" height="13" fill="#F2E9D8" stroke="#22262B" stroke-width="2"/>
+      <g fill="#22262B"><path d="M12 8h10l-7 13H5z"/><path d="M34 8h10l-7 13H27z"/><path d="M56 8h10l-7 13H49z"/><path d="M78 8h10l-7 13H71z"/></g></g>
+      <text x="50" y="50" text-anchor="middle" ${HAND} font-size="17" fill="#F2E9D8">ACTION</text>
+    </svg>`;
+  }
+
+  root.WrapArt = {
+    DEPT_COLOR, STATIONS, IDLE, CLIENT, AGENCY,
+    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger,
+    deptIcon, ICON, starSVG, clapperSVG,
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+/* src/ui.js */
+/*
+  Screens: title -> office -> (job board) -> hire -> shoot -> wrap -> office.
+  All game rules live in sim.js and all drawing in art.js. This file builds screens, saves progress and forwards taps.
+*/
+(function () {
+  'use strict';
+  const S = window.WrapSim;
+  const A = window.WrapArt;
+  const LEVEL = window.LEVELS.burgerJob;
+  const CO = window.LEVELS.company;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = S.fmtMoney;
+
+  const PERKS = {
+    quickRoll: 'Rolls in 3s, not 5',
+    spareBulb: 'Spare bulb: fixes dead lights fast',
+    foodWhisperer: 'Food stays fresh 60% longer',
+  };
+  const SHOT_COLOR = { hero: '#E7B84F', cheese: '#D86B56', sauce: '#7D9E91' };
+  const CLIENT_LINES = ['Can it pop more?', 'Is that the hero burger?', 'Love it. One tiny note...', 'More cheese?', 'Legal wants the bun moved.', 'Can we see it bigger?'];
+
+  /* ================= Save (this device only) ================= */
+
+  const SAVE_KEY = 'thats-a-wrap-save-v1';
+  function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0 }; }
+  function loadSave() {
+    try { const v = JSON.parse(localStorage.getItem(SAVE_KEY)); if (v && typeof v.bank === 'number') return Object.assign(freshSave(), v); } catch (e) { /* storage blocked */ }
+    return freshSave();
+  }
+  function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* storage blocked */ } }
+  let save = loadSave();
+
+  /* ================= State ================= */
+
+  let screen = 'title';
+  const picks = {};
+  const revealed = {};
+  let st = null;
+  let selected = null;
+  let speed = 1;
+  let last = 0;
+  let toast = null;
+  let tipUntil = 0;
+  let modal = null;
+  let lastCapture = null;
+  let banked = false;
+  let clientLine = { text: '', until: 0, next: 0, i: 0 };
+  const view = {};
+
+  function resetView() {
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {} });
+  }
+
+  /* ================= Helpers ================= */
+
+  function candidate(dept, id) {
+    const role = LEVEL.hiring.find(r => r.dept === dept);
+    const c = role.candidates.find(x => x.id === id);
+    return c && Object.assign({ role: role.role, dept }, c);
+  }
+  function chosenMap() {
+    const m = {};
+    for (const d in picks) if (picks[d]) m[d] = candidate(d, picks[d]);
+    return m;
+  }
+  function show(name) {
+    screen = name;
+    for (const n of ['title', 'office', 'hire', 'shoot']) $('screen-' + n).hidden = n !== name;
+    window.scrollTo(0, 0);
+  }
+  function openModal(kind, html) { modal = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
+  function closeModal() { modal = null; $('overlay').hidden = true; }
+  function say(text, bad) { toast = { text, bad: !!bad, until: performance.now() + 2600 }; }
+  const setText = (el, t) => { if (el && el._t !== t) { el._t = t; el.textContent = t; } };
+  const setW = (el, p) => { const v = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; if (el._w !== v) { el._w = v; el.style.width = v; } };
+  const setAttr = (el, k, v) => { if (el && el.getAttribute(k) !== String(v)) el.setAttribute(k, v); };
+  const pct = id => { const t = st.tasks[id]; return !t ? 0 : t.done ? 1 : t.progress / t.need; };
+  const isDone = id => !!(st.tasks[id] && st.tasks[id].done);
+  const starsRow = n => [0, 1, 2].map(i => A.starSVG(i < n)).join('');
+
+  /* ================= Title ================= */
+
+  function renderTitle() {
+    const lineup = LEVEL.hiring.map((r, i) => {
+      const c = r.candidates.find(x => x.tier === 'Solid') || r.candidates[0];
+      return `<g transform="translate(${34 + i * 44} 74) scale(1.15)">${A.puppet({ dept: r.dept, look: c.look })}</g>`;
+    }).join('');
+    $('screen-title').innerHTML = `
+      <h1>That's<span>a wrap!</span></h1>
+      <p class="tagline">Build the crew. Run the shoot. Get the shot.</p>
+      <svg class="title-art" viewBox="0 0 200 84" aria-hidden="true">${lineup}</svg>
+      <button class="btn go" type="button" data-go="office">${save.runs ? 'Back to the office' : 'Open your production company'}</button>
+      <p class="hint">Prototype build with placeholder art. Progress saves on this device.</p>`;
+  }
+
+  /* ================= Office ================= */
+
+  function renderOffice() {
+    $('screen-office').innerHTML = `
+      <div class="topbar">
+        <div class="pill paper grow"><span>YOUR COMPANY</span><b class="hand">${esc(CO.name)}</b></div>
+        <div class="pill paper"><span>BANK</span><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b></div>
+        <button class="sq" type="button" data-officemenu aria-label="Office menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      </div>
+      <div class="scene">${A.officeMarkup(CO, save.owned, save.bank)}</div>
+      <button class="btn go" type="button" data-jobs>Check the job board</button>
+      <p class="hint">Tap a room to build it. Every room changes how your shoots go. Profit from each job lands in the bank.</p>`;
+  }
+
+  function showRoom(id) {
+    const r = CO.rooms.find(x => x.id === id);
+    const owned = save.owned.includes(id);
+    const short = r.cost - save.bank;
+    openModal('room', `
+      <div class="chaos-h" style="background:var(--slate)"><b>${esc(r.name)}</b></div>
+      <div class="room-prev">${A.roomPreview(r)}</div>
+      <p>${esc(r.blurb)}</p>
+      ${owned ? '<p class="note"><b>Built.</b> It helps on every shoot.</p>' :
+        `<button class="btn go" type="button" data-build="${id}" ${short > 0 ? 'disabled' : ''}>${short > 0 ? `Need ${money(short)} more` : `Build for ${money(r.cost)}`}</button>`}
+      <button class="btn" type="button" data-close>Back to the office</button>`);
+  }
+
+  function showJobs() {
+    const jobs = CO.jobs.map(j => {
+      const best = save.best[j.id] || 0;
+      return `<button class="job" type="button" ${j.playable ? `data-book="${j.id}"` : 'disabled'}>
+        <span class="jpic">${j.id === 'burger-job' ? A.propSVG('hero') : A.deptIcon('camera', 28)}</span>
+        <b>${esc(j.title)}</b>
+        <span>${esc(j.client)} · ${esc(j.kind)}${j.playable ? ` · ${money(LEVEL.budget)}` : ''}</span>
+        <span>${j.playable ? `<span class="jstars">${starsRow(best)}</span>` : esc(j.note)}</span>
+      </button>`;
+    }).join('');
+    openModal('jobs', `<span class="label">Job board</span>${jobs}<button class="btn" type="button" data-close>Back to the office</button>`);
+  }
+
+  function showBrief() {
+    openModal('brief', `
+      <div class="chaos-h" style="background:var(--mustard); color:var(--ink)"><b>${esc(LEVEL.title)}</b></div>
+      <span class="eyebrow">${esc(LEVEL.client)} · tabletop</span>
+      <p>${esc(LEVEL.brief)}</p>
+      <div class="facts"><span>3 shots</span><span>Budget ${money(LEVEL.budget)}</span><span>Wrap by ${S.fmtTime(LEVEL.timeLimit)}</span><span>Overtime ${money(LEVEL.overtimeRate)}/s</span></div>
+      <p class="note">The budget pays your crew, rentals and overtime. Whatever's left is profit for the bank.</p>
+      <button class="btn go" type="button" data-hire-screen>Book the crew</button>
+      <button class="btn" type="button" data-close>Not yet</button>`);
+  }
+
+  function showOfficeMenu() {
+    openModal('menu', `
+      <span class="label">Office</span>
+      <p>${save.runs} job${save.runs === 1 ? '' : 's'} wrapped. ${save.owned.length} of ${CO.rooms.length} rooms built.</p>
+      <button class="btn" type="button" data-go="title">Title screen</button>
+      <button class="btn" type="button" data-resetask>Start the company over</button>
+      <button class="btn go" type="button" data-close>Back to the office</button>`);
+  }
+
+  /* ================= Hire ================= */
+
+  function speedWord(v) { return v >= 1.25 ? 'very fast' : v >= 1.05 ? 'quick' : v >= 0.95 ? 'steady' : v >= 0.8 ? 'a bit slow' : 'slow'; }
+  function relWord(v) { return v >= 0.95 ? 'rock solid' : v >= 0.88 ? 'dependable' : v >= 0.8 ? 'mostly fine' : 'messy'; }
+
+  function statRow(label, v, word) {
+    return v != null
+      ? `<span class="stat"><span>${label}</span><b style="--v:${Math.min(1, v).toFixed(2)}"></b></span>`
+      : `<span class="stat"><span>${label}</span><em>${esc(word)}</em></span>`;
+  }
+
+  function candCard(r, c) {
+    const net = c.network;
+    const known = net === 'yours';
+    const sp = known ? statRow('Speed', c.speed / 1.4) : net === 'fof' ? statRow('Speed', null, `"${speedWord(c.speed)}"`) : statRow('Speed', null, '?');
+    const rel = known ? statRow('Reliable', c.reliability) : net === 'fof' ? statRow('Reliable', null, `"${relWord(c.reliability)}"`) : statRow('Reliable', null, '?');
+    const perk = (c.perks || []).length && net !== 'board' ? `<span class="perk">${esc(PERKS[c.perks[0]])}</span>` : '';
+    const tag = net === 'fof' ? ` via ${esc(c.via)}` : net === 'board' ? ' · crew board' : '';
+    return `<button class="cand" type="button" data-hire="${r.dept}:${c.id}" aria-pressed="${picks[r.dept] === c.id}" ${c.booked ? 'disabled' : ''}>
+      ${A.faceSVG({ dept: r.dept, look: c.look }, 'face')}
+      <span class="cand-name">${esc(c.name)}<span class="rate">${money(c.rate)}</span></span>
+      <span class="tier ${c.tier}">${c.tier}${tag}</span>
+      ${sp}${rel}${perk}
+      <span class="blurb">${esc(c.blurb)}</span>
+      ${c.booked ? '<span class="stamp">BOOKED</span>' : ''}
+      <span class="cta">${c.booked ? 'On another job' : picks[r.dept] === c.id ? 'Hired' : 'Hire'}</span>
+    </button>`;
+  }
+
+  function renderHire() {
+    let html = `<div class="hire-h"><span class="label">Assemble crew</span><h2>Who's on the call sheet?</h2>
+      <p class="note">Better people work faster and botch less, but cost more. What's left of ${money(LEVEL.budget)} covers surprises and overtime. The rest is profit.</p></div>`;
+    for (const r of LEVEL.hiring) {
+      const rev = revealed[r.dept] || {};
+      const dry = r.candidates.filter(c => c.network === 'yours').every(c => c.booked);
+      const list = r.candidates.filter(c => c.network === 'yours' || rev[c.network]);
+      html += `<section class="role"><div class="role-h"><span class="tab" style="background:${A.DEPT_COLOR[r.dept]}"></span><h3>${esc(r.role)}</h3><span class="picked" data-picked="${r.dept}"></span></div>`;
+      if (dry) {
+        const btns = (!rev.fof ? `<button class="btn small" type="button" data-net="${r.dept}:fof">Ask a friend of a friend</button>` : '') +
+          (!rev.board ? `<button class="btn small" type="button" data-net="${r.dept}:board">Post on the crew board</button>` : '');
+        html += `<div class="dry"><b>${esc(r.dryNote)}</b><span>Friends of friends come vouched for. The crew board is cheaper, but you won't know what you got until the shoot.</span>${btns ? `<div class="dry-actions">${btns}</div>` : ''}</div>`;
+      }
+      html += `<div class="cands" data-cands="${r.dept}">${list.map(c => candCard(r, c)).join('')}</div></section>`;
+    }
+    html += `<div class="hire-foot">
+      <div class="money"><span>Budget<b>${money(LEVEL.budget)}</b></span><span>Crew<b id="mCrew">$0</b></span><span>Left<b id="mLeft">$0</b></span></div>
+      <div class="mbar" id="mBar"><i></i></div>
+      <div class="foot-note" id="mNote"></div>
+      <button class="btn go" type="button" id="startBtn">Start the shoot</button>
+    </div>`;
+    const keep = {};
+    document.querySelectorAll('[data-cands]').forEach(el => { keep[el.dataset.cands] = el.scrollLeft; });
+    $('screen-hire').innerHTML = html;
+    document.querySelectorAll('[data-cands]').forEach(el => { if (keep[el.dataset.cands]) el.scrollLeft = keep[el.dataset.cands]; });
+    updateHire();
+  }
+
+  function updateHire() {
+    document.querySelectorAll('[data-hire]').forEach(b => {
+      const [dept, id] = b.dataset.hire.split(':');
+      const on = picks[dept] === id;
+      b.setAttribute('aria-pressed', String(on));
+      if (!b.disabled) b.querySelector('.cta').textContent = on ? 'Hired' : 'Hire';
+    });
+    document.querySelectorAll('[data-picked]').forEach(el => {
+      const c = picks[el.dataset.picked] && candidate(el.dataset.picked, picks[el.dataset.picked]);
+      el.textContent = c ? `${c.name} · ${money(c.rate)}` : 'nobody yet';
+    });
+    const chk = S.hireCheck(LEVEL, chosenMap());
+    $('mCrew').textContent = money(chk.cost);
+    $('mLeft').textContent = money(chk.left);
+    $('mLeft').classList.toggle('neg', chk.left < 0);
+    $('mBar').classList.toggle('over', chk.left < 0);
+    $('mBar').firstElementChild.style.width = Math.min(100, chk.cost / LEVEL.budget * 100) + '%';
+    let note;
+    if (chk.missing.length) note = `Still need: ${chk.missing.join(', ')}`;
+    else if (chk.left < 0) note = `Over budget by ${money(-chk.left)}. Swap someone cheaper.`;
+    else if (chk.left < 800) note = `Only ${money(chk.left)} left for surprises and overtime. Tight.`;
+    else note = `${money(chk.left)} left for surprises, overtime and profit.`;
+    $('mNote').textContent = note;
+    $('startBtn').disabled = !chk.ok;
+  }
+
+  /* ================= Shoot: build ================= */
+
+  function startShoot() {
+    const map = chosenMap();
+    const crew = LEVEL.hiring.map(r => map[r.dept]);
+    st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: S.companyMods(CO.rooms, save.owned) });
+    selected = null; lastCapture = null; toast = null; banked = false;
+    clientLine = { text: '', until: 0, next: performance.now() + 9000, i: Math.floor(Math.random() * CLIENT_LINES.length) };
+    tipUntil = performance.now() + 7000;
+    buildShoot();
+    closeModal();
+    show('shoot');
+  }
+
+  function buildShoot() {
+    resetView();
+    const perks = save.owned.map(id => CO.rooms.find(r => r.id === id).name);
+    $('screen-shoot').innerHTML = `
+      <div class="topbar">
+        <div class="pill paper grow"><b class="hand">${esc(LEVEL.title)}</b><span><span id="shotCount">0/3 SHOTS</span> · <span class="clock" id="clock">0:00</span></span></div>
+        <div class="pill paper"><span>CASH LEFT</span><b id="budget">$0</b></div>
+        <button class="sq" type="button" id="pauseBtn" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
+      </div>
+      <div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>
+      <div class="set-wrap">
+        ${A.setMarkup()}
+        <div class="onstage"><small>ON STAGE</small><span id="onstage"></span></div>
+        <button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="ribbon" id="ribbon"><span id="ribbonText"></span><button class="btn small" type="button" id="autoBtn" hidden>Back to auto</button></div>
+      <div class="shotcard paper" id="shotcard"></div>
+      <div class="crewbar" id="crewbar"></div>
+      ${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
+
+    const layer = $('crewLayer');
+    const bar = $('crewbar');
+    for (const c of st.crew) {
+      const idle = A.IDLE[c.dept];
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'pup');
+      g.setAttribute('data-crew', c.id);
+      g.style.transform = `translate(${idle.x}px, ${idle.y}px)`;
+      g.innerHTML =
+        `<ellipse class="selring" cx="0" cy="0" rx="19" ry="6" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="3 2"/>` +
+        `<g class="flip"><g transform="scale(1.25)" filter="url(#shadow)">${A.puppet(c)}</g></g>` +
+        `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>` +
+        `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
+        `<rect x="-18" y="-66" width="36" height="72" fill="transparent"/>`;
+      layer.appendChild(g);
+      view.pups[c.id] = { g, flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
+      view.pos[c.id] = { x: idle.x, y: idle.y };
+
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cb';
+      b.dataset.crew = c.id;
+      b.innerHTML = `<span class="dotst"></span>${A.faceSVG(c)}<span class="nm">${esc(c.name)}</span><span class="tx"></span><span class="bar"><i></i></span><span class="man" hidden>MANUAL</span>`;
+      bar.appendChild(b);
+      view.cb[c.id] = { el: b, dot: b.querySelector('.dotst'), tx: b.querySelector('.tx'), bar: b.querySelector('.bar i'), man: b.querySelector('.man') };
+    }
+  }
+
+  /* ================= Shoot: input ================= */
+
+  function stationOf(t) {
+    if (t.dept === 'lighting') return 'light';
+    if (t.dept === 'camera') return 'camera';
+    if (t.dept === 'art' && !t.stage) return 'cart';
+    return 'table';
+  }
+
+  function selectCrew(id) {
+    if (st.over || modal) return;
+    const other = st.crew.find(c => c.id === id);
+    if (selected && selected !== id && other.task) {
+      const helper = st.crew.find(c => c.id === selected);
+      const r = S.command(st, { type: 'assign', crew: selected, task: other.task });
+      say(r.ok ? `${helper.name} helps ${other.name}: ${r.message}` : r.message, !r.ok);
+      if (r.ok) selected = null;
+      return;
+    }
+    selected = selected === id ? null : id;
+  }
+
+  function assignTo(taskId) {
+    if (!selected) {
+      const ts = S.taskStatus(st, taskId);
+      say(`${st.tasks[taskId].label}: ${ts.text}. Tap a crew member first to reassign.`);
+      return;
+    }
+    const r = S.command(st, { type: 'assign', crew: selected, task: taskId });
+    say(r.message, !r.ok);
+    if (r.ok) selected = null;
+  }
+
+  function assignStation(station) {
+    if (!selected) { say('Tap a crew member first, then a spot on the set.'); return; }
+    const cand = S.stageCandidate(st);
+    const list = Object.values(st.tasks)
+      .filter(t => !t.done && stationOf(t) === station && !st.shots[t.shot].captured)
+      .sort((a, b) => (a.shot === cand ? 0 : 1) - (b.shot === cand ? 0 : 1) || st.priority.indexOf(a.shot) - st.priority.indexOf(b.shot) || a.order - b.order);
+    if (!list.length) { say('Nothing left to do there.', true); return; }
+    const workable = list.find(t => !S.blockReason(st, t, true));
+    assignTo((workable || list[0]).id);
+  }
+
+  function pressAction() {
+    const r = S.command(st, { type: 'action' });
+    if (!r.ok) { say(r.message, true); return; }
+    setText($('clapText'), `SCENE ${st.priority.indexOf(st.capture.shot) + 1} · TAKE 1`);
+    const clap = $('clap');
+    clap.classList.remove('go'); void clap.getBBox(); clap.classList.add('go');
+    const fl = $('flash');
+    setTimeout(() => { fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); }, 420);
+    clientLine = Object.assign(clientLine, { text: 'Ooooh.', until: performance.now() + 3000 });
+    say(r.message);
+  }
+
+  /* ================= Shoot: render ================= */
+
+  function displayShot() {
+    if (st.capture) return st.capture.shot;
+    if (st.stageShot) return st.stageShot;
+    return lastCapture || S.stageCandidate(st) || st.priority[0];
+  }
+
+  function renderSet(now) {
+    const disp = displayShot();
+    const show = (id, on) => setAttr($(id), 'display', on ? 'inline' : 'none');
+    const captured = st.shots[disp] && st.shots[disp].captured;
+    const rolling = st.capture && st.capture.shot === disp;
+
+    const n = isDone('hero.set') ? 4 : Math.floor(pct('hero.set') * 4);
+    show('pc-legs', n >= 1); show('pc-top', n >= 2); show('pc-sweep', n >= 3); show('pc-flag', n >= 4);
+    setAttr($('sweep'), 'fill', SHOT_COLOR[disp] || '#E7B84F');
+
+    const rigTask = disp === 'cheese' ? 'cheese.rig' : disp === 'sauce' ? 'sauce.mount' : null;
+    const rn = !rigTask ? 0 : (isDone(rigTask) || captured) ? 3 : Math.floor(pct(rigTask) * 3);
+    show('rig-pole', rn >= 1); show('rig-arm', rn >= 2);
+    show('rig-fork', disp === 'cheese' && rn >= 3); show('rig-bottle', disp === 'sauce' && rn >= 3);
+
+    const dead = !!st.pending || Object.values(st.blocks).includes('keylight');
+    const lp = captured ? 1 : pct(`${disp}.light`);
+    setAttr($('beam'), 'opacity', dead ? 0 : (0.5 * lp).toFixed(2));
+    setAttr($('lightFace'), 'fill', dead ? '#3A3631' : lp > 0 ? '#FFE7A3' : '#7A7468');
+    setAttr($('dead'), 'opacity', dead ? 1 : 0);
+
+    let key = 'none', inner = '';
+    if (disp === 'hero' && (isDone('hero.place') || captured || rolling)) { key = 'hero'; inner = A.propInner('hero'); }
+    else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
+      const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
+      const lift = rolling ? 10 + Math.round((1 - st.capture.left / st.capture.total) * 10) : ready ? 10 : 0;
+      key = 'cheese' + lift; inner = ready ? A.propInner('cheese', { lift }) : A.propInner('hero');
+    } else if (disp === 'sauce' && (st.stageShot === 'sauce' || captured || rolling)) {
+      const sauced = rolling ? st.capture.left < st.capture.total * 0.6 : captured;
+      key = 'sauce' + sauced; inner = sauced ? A.propInner('sauce') : A.propInner('hero');
+    }
+    if (key !== view.propKey) { view.propKey = key; $('prop').innerHTML = inner; }
+    setAttr($('pour'), 'opacity', disp === 'sauce' && rolling ? 1 : 0);
+
+    // Framing marks on set, and the live monitor at video village
+    const fp = captured ? 1 : pct(`${disp}.frame`);
+    setAttr($('frameMarks'), 'opacity', (fp * 0.95).toFixed(2));
+    setAttr($('recDot'), 'fill', st.capture ? '#FF4B3A' : '#5A2A24');
+    const monKey = fp > 0 ? key + ':' + (fp >= 1 ? 'f' : 'p') : 'bars';
+    if (monKey !== view.monKey) {
+      view.monKey = monKey;
+      $('monView').innerHTML = fp > 0 && inner
+        ? `<rect x="-4" y="-6" width="98" height="60" fill="${SHOT_COLOR[disp]}"/><g transform="translate(16 8)">${inner}</g>`
+        : `<g opacity=".7"><rect x="-4" y="-6" width="14" height="60" fill="#E6E6E6"/><rect x="10" y="-6" width="14" height="60" fill="#E7B84F"/><rect x="24" y="-6" width="14" height="60" fill="#7FB0C9"/><rect x="38" y="-6" width="14" height="60" fill="#7FB069"/><rect x="52" y="-6" width="14" height="60" fill="#C77FC0"/><rect x="66" y="-6" width="14" height="60" fill="#D86B56"/><rect x="80" y="-6" width="14" height="60" fill="#344F70"/></g>`;
+    }
+    setAttr($('monRec'), 'opacity', st.capture ? 1 : 0);
+
+    // Art cart
+    const cn = isDone('hero.place') || st.shots.hero.captured ? 0 : isDone('hero.style') ? 5 : Math.floor(pct('hero.style') * 5);
+    if (cn !== view.cartN) { view.cartN = cn; $('cartBurger').innerHTML = A.cartBurger(cn); }
+    const melt = st.tasks['cheese.melt'];
+    const mp = st.shots.cheese.captured ? 0 : pct('cheese.melt');
+    setAttr($('potCheese'), 'height', (12 * mp).toFixed(1));
+    setAttr($('potCheese'), 'y', (14 - 12 * mp).toFixed(1));
+    setAttr($('potCheese'), 'fill', melt.spoiled && !melt.done ? '#B9A15A' : '#F2C14E');
+    setAttr($('steam'), 'opacity', melt.done && !st.shots.cheese.captured ? 1 : 0);
+    setAttr($('bowlSauce'), 'opacity', st.shots.sauce.captured ? 0 : pct('sauce.prep').toFixed(2));
+
+    // Client notes from video village
+    if (!modal && !st.over) {
+      if (now > clientLine.next && now > clientLine.until) {
+        clientLine.text = CLIENT_LINES[clientLine.i++ % CLIENT_LINES.length];
+        clientLine.until = now + 3500;
+        clientLine.next = now + 14000;
+      }
+    }
+    const talking = now < clientLine.until;
+    setAttr($('clientBub'), 'opacity', talking ? 1 : 0);
+    if (talking) setText($('clientText'), clientLine.text);
+
+    // Crew puppets
+    const at = {};
+    const targets = {};
+    for (const c of st.crew) {
+      let p;
+      if (c.task) {
+        const stn = stationOf(st.tasks[c.task]);
+        at[stn] = (at[stn] || 0) + 1;
+        const base = A.STATIONS[stn];
+        p = { x: base.x - (at[stn] - 1) * 28, y: base.y + (at[stn] - 1) * 5 };
+      } else p = A.IDLE[c.dept];
+      targets[c.id] = p;
+      const v = view.pups[c.id];
+      const prev = view.pos[c.id];
+      if (prev.x !== p.x || prev.y !== p.y) {
+        if (p.x !== prev.x) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
+        v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
+        view.pos[c.id] = { x: p.x, y: p.y };
+      }
+      const cs = S.crewStatus(st, c);
+      v.g.classList.toggle('working', cs.state === 'WORKING');
+      v.g.classList.toggle('sel', selected === c.id);
+      if (cs.state === 'WORKING') {
+        setAttr(v.ring, 'opacity', 1);
+        setAttr(v.rp, 'stroke-dasharray', `${(cs.pct * 44).toFixed(1)} 44`);
+        setAttr(v.bub, 'opacity', 0);
+      } else {
+        setAttr(v.ring, 'opacity', 0);
+        let txt = '...', fill = '#fff', col = '#22262B';
+        let showBub = true;
+        if (cs.state === 'BLOCKED') { txt = '!'; fill = '#D86B56'; col = '#fff'; }
+        else if (/ACTION/.test(cs.text)) txt = 'ACTION?';
+        else if (/^No /.test(cs.text) || cs.text === 'Wrapped' || /Rolling/.test(cs.text) || /Holding|goes first|Stage busy/.test(cs.text)) showBub = false;
+        setAttr(v.bub, 'opacity', showBub ? 1 : 0);
+        setAttr(v.bb, 'fill', fill);
+        setAttr(v.bt, 'fill', col);
+        setText(v.bt, txt);
+      }
+    }
+    const order = st.crew.slice().sort((a, b) => targets[a.id].y - targets[b.id].y).map(c => c.id);
+    const depth = order.join();
+    if (depth !== view.depth) { view.depth = depth; for (const id of order) $('crewLayer').appendChild(view.pups[id].g); }
+  }
+
+  function renderHud(now) {
+    const t = S.seconds(st);
+    setText($('clock'), S.fmtTime(t));
+    $('clock').classList.toggle('warn', t > LEVEL.timeLimit);
+    setText($('budget'), money(st.budget));
+    $('budget').classList.toggle('neg', st.budget < 0);
+    const wrapped = Object.values(st.shots).filter(s => s.captured).length;
+    setText($('shotCount'), `${wrapped}/3 SHOTS`);
+    setW($('dayFill'), t / LEVEL.hardStop);
+    $('daybar').classList.toggle('ot', t > LEVEL.timeLimit);
+
+    const cand = S.stageCandidate(st);
+    setText($('onstage'), st.capture ? st.shots[st.capture.shot].name : st.stageShot ? st.shots[st.stageShot].name : (cand ? st.shots[cand].name : 'Wrapped'));
+
+    // Clapper ACTION button
+    const r = cand && S.readiness(st, cand);
+    const ab = $('actionBtn');
+    const ready = !!(r && r.ready && !st.capture && !st.pending);
+    ab.classList.toggle('on', ready);
+    ab.classList.toggle('rolling', !!st.capture);
+    let cap;
+    if (st.capture) cap = 'ROLLING';
+    else if (ready) cap = `READY · ${r.quality}%`;
+    else if (r) cap = `${r.missingRequired.length} to go · ${r.quality}%`;
+    else cap = 'wrapped';
+    setText($('actionCap'), cap);
+
+    // Crew bar
+    for (const c of st.crew) {
+      const v = view.cb[c.id];
+      const cs = S.crewStatus(st, c);
+      v.dot.className = 'dotst ' + cs.state;
+      setText(v.tx, cs.state === 'WORKING' ? cs.text + (cs.cross ? ' (half speed)' : '') : cs.text);
+      setW(v.bar, cs.state === 'WORKING' ? cs.pct : 0);
+      v.man.hidden = !c.override;
+      v.el.classList.toggle('sel', selected === c.id);
+    }
+    document.body.classList.toggle('picking', !!selected);
+
+    // Ribbon
+    const rb = $('ribbon');
+    let text = '', bad = false;
+    if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
+    else if (selected) { const c = st.crew.find(x => x.id === selected); text = `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
+    else if (now < tipUntil) text = 'Your crew start on their own. Tap a person to give them a different job.';
+    else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set.`;
+    else if (r && r.ready) text = r.missingOptional.length ? `Ready! Call ACTION now, or wait for ${r.missingOptional.map(x => x.label.toLowerCase()).join(', ')}.` : 'Ready! Everything is done. Call ACTION.';
+    else if (r) text = `${st.shots[cand].name} needs: ${r.missingRequired.map(x => x.label.toLowerCase()).join(', ')}.`;
+    else text = "That's a wrap.";
+    rb.classList.toggle('bad', bad);
+    setText($('ribbonText'), text);
+    const sc = selected && st.crew.find(x => x.id === selected);
+    $('autoBtn').hidden = !(sc && sc.override);
+
+    renderShotCard(cand);
+  }
+
+  function iconKey(t) { return t.id === 'keylight.fix' ? 'fix' : t.dept; }
+
+  function renderShotCard(cand) {
+    const rowsKey = st.priority.map(id => id + (st.shots[id].captured ? 'c' + st.shots[id].quality : '') + (st.stageShot === id ? 's' : '') + st.shots[id].taskIds.length).join() + '|' + cand;
+    if (rowsKey !== view.rowsKey) {
+      view.rowsKey = rowsKey;
+      $('shotcard').innerHTML = st.priority.map((id, i) => {
+        const s = st.shots[id];
+        const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
+        const cls = s.captured ? 'done' : (cand === id ? 'stage' : '');
+        const right = s.captured
+          ? `<span class="stamp-q">${s.quality}%</span>`
+          : `<span class="icons">${s.taskIds.map(tid => {
+              const t = st.tasks[tid];
+              return `<button class="ti dept-${t.dept}${t.optional ? ' optl' : ''}" type="button" data-task="${tid}" aria-label="${esc(t.label)}">${A.deptIcon(iconKey(t))}<i class="bd"></i></button>`;
+            }).join('')}</span>`;
+        return `<div class="srow ${cls}"><span class="sg">${s.captured ? '✓' : i + 1}</span>
+          <span class="sn">${esc(s.name)}${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</span>${right}</div>`;
+      }).join('');
+      view.icons = {};
+      document.querySelectorAll('#shotcard [data-task]').forEach(el => { view.icons[el.dataset.task] = el; });
+    }
+    for (const id in view.icons) {
+      const el = view.icons[id];
+      const t = st.tasks[id];
+      const ts = S.taskStatus(st, id);
+      const p = ts.fresh != null ? 1 : ts.pct;
+      const v = p.toFixed(3);
+      if (el._p !== v) { el._p = v; el.style.setProperty('--p', v); }
+      const cls = `ti dept-${t.dept}${t.optional ? ' optl' : ''} ${ts.state}${ts.fresh != null ? ' fresh' : ''}`;
+      if (el.className !== cls) el.className = cls;
+      const label = `${t.label}: ${ts.text}`;
+      if (el._l !== label) { el._l = label; el.setAttribute('aria-label', label); el.title = label; }
+    }
+  }
+
+  /* ================= Modals ================= */
+
+  function showChaos() {
+    const ev = LEVEL.events.find(e => e.id === st.pending);
+    const opts = S.eventOptions(st, ev.id);
+    const line = o => {
+      if (o.kind === 'task') return `${esc(o.who)} fixes it, about ${o.secs}s. Free.` + (o.perk ? ' <strong>Spare bulb in the truck!</strong>' : '');
+      if (o.kind === 'wait') return o.owned ? `Free from your gear cage. Up in ${o.secs}s. <strong>Owned!</strong>` : `${money(o.cost)}. Arrives in ${o.secs}s. Nobody stops working.`;
+      return `No wait, no cost. This shot loses ${o.penalty} quality.`;
+    };
+    openModal('chaos', `
+      <div class="chaos-h"><span class="bang">!</span><b>Chaos!</b></div>
+      <p class="chaos-t">${esc(ev.title)}</p>
+      <p class="note">Re-aiming the lights and framing the macro are on hold until it's sorted.</p>
+      ${opts.map(o => `<button class="opt" type="button" data-choose="${o.id}">${A.ICON[o.id] || ''}<b>${esc(o.label)}</b><span>${line(o)}</span></button>`).join('')}`);
+  }
+
+  function showPause() {
+    st.paused = true;
+    openModal('pause', `
+      <span class="label">Paused</span>
+      <p>${S.fmtTime(S.seconds(st))} on the clock. ${Object.values(st.shots).filter(s => s.captured).length} of 3 shots in the can.</p>
+      <div class="seg" role="group" aria-label="Game speed">
+        <button type="button" data-speed="1" aria-pressed="${speed === 1}">1x</button>
+        <button type="button" data-speed="2" aria-pressed="${speed === 2}">2x</button>
+      </div>
+      <button class="btn go" type="button" data-resume>Back to set</button>
+      <div class="row2"><button class="btn" type="button" data-again>Restart shoot</button><button class="btn" type="button" data-quit>Quit to office</button></div>`);
+  }
+
+  function showWrap() {
+    const sc = S.score(st);
+    if (!banked) {
+      banked = true;
+      save.bank += sc.profit;
+      save.runs += 1;
+      save.best[LEVEL.id] = Math.max(save.best[LEVEL.id] || 0, sc.stars);
+      persist();
+    }
+    const ck = ok => `<span class="ck ${ok ? 'y' : 'n'}">${ok ? '✓' : '✕'}</span>`;
+    const pulled = st.endReason === 'pulled';
+    let quote;
+    if (pulled) quote = '"We\'ll fix it in post." (They will not fix it in post.)';
+    else if (sc.stars === 3) quote = '"Looks great! Can we do one more take... just in case?"';
+    else if (!sc.onTime) quote = '"Overtime? Huh. Anyway, can the burger pop more?"';
+    else if (!sc.quality) quote = '"Love it. Can we fix the lighting in post?"';
+    else quote = '"Great work. Wait, why is the invoice so high?"';
+    const hired = chosenMap();
+    const reveals = st.crew.filter(c => hired[c.dept] && hired[c.dept].network !== 'yours').map(c => {
+      const flubs = st.log.filter(e => e.type === 'flub' && e.crew === c.id).length;
+      return `<span><b>${esc(c.name)}</b> turned out ${speedWord(c.speed)} and ${relWord(c.reliability)}${flubs ? `, botched ${flubs} task${flubs > 1 ? 's' : ''}` : ''}.</span>`;
+    });
+    const flubsAll = st.log.filter(e => e.type === 'flub').length;
+    const nextRoom = CO.rooms.filter(r => !save.owned.includes(r.id)).sort((a, b) => a.cost - b.cost)[0];
+    const roomNote = nextRoom ? (save.bank >= nextRoom.cost ? `You can afford the ${nextRoom.name} now.` : `${money(nextRoom.cost - save.bank)} more for the ${nextRoom.name}.`) : 'Every room is built.';
+    openModal('wrap', `
+      <div class="chaos-h" style="background:var(--slate)"><b>${pulled ? 'Plug pulled' : 'Wrap report'}</b></div>
+      <div class="stars" role="img" aria-label="${sc.stars} of 3 stars">${starsRow(sc.stars)}</div>
+      <div class="report">
+        ${ck(sc.allShots)}<span>Shots completed</span><b>${sc.shotsDone}/${sc.shotsTotal}</b>
+        ${ck(sc.onTime)}<span>Time (wrap by ${S.fmtTime(LEVEL.timeLimit)})</span><b>${S.fmtTime(sc.time)}</b>
+        ${ck(sc.quality)}<span>Quality (need ${LEVEL.qualityTarget}%)</span><b>${sc.avgQuality}%</b>
+        ${ck(sc.inBudget)}<span>Profit to the bank</span><b>${money(sc.profit)}</b>
+      </div>
+      <p class="note">Crew ${money(sc.crewCost)} · Rentals ${money(sc.extraCost)} · Overtime ${money(sc.overtimeCost)}${flubsAll ? ` · ${flubsAll} botched task${flubsAll > 1 ? 's' : ''}` : ''}</p>
+      ${reveals.length ? `<div class="reveal">${reveals.join('')}</div>` : ''}
+      <p class="quote">${esc(quote)}</p>
+      <p class="note"><b>Bank: ${money(save.bank)}.</b> ${esc(roomNote)}</p>
+      <div class="row2"><button class="btn go" type="button" data-go="office" style="font-size:18px">To the office</button><button class="btn" type="button" data-again>Same crew again</button></div>`);
+  }
+
+  /* ================= Events ================= */
+
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const go = t.closest('[data-go]');
+    if (go) {
+      closeModal();
+      if (go.dataset.go === 'office') { renderOffice(); show('office'); }
+      else { renderTitle(); show('title'); }
+      return;
+    }
+    if (t.closest('[data-close]')) { closeModal(); return; }
+    if (t.closest('[data-jobs]')) { showJobs(); return; }
+    if (t.closest('[data-book]')) { showBrief(); return; }
+    if (t.closest('[data-hire-screen]')) { closeModal(); renderHire(); show('hire'); return; }
+    if (t.closest('[data-officemenu]')) { showOfficeMenu(); return; }
+    if (t.closest('[data-resetask]')) {
+      openModal('reset', `<span class="label">Start over?</span><p>This empties the bank and tears down every room. It can't be undone.</p>
+        <div class="row2"><button class="btn" type="button" data-close>Keep my company</button><button class="btn go" type="button" data-reset style="font-size:18px">Start over</button></div>`);
+      return;
+    }
+    if (t.closest('[data-reset]')) { save = freshSave(); persist(); closeModal(); renderOffice(); return; }
+    const roomEl = t.closest('[data-room]');
+    if (roomEl && screen === 'office' && !modal) { showRoom(roomEl.dataset.room); return; }
+    const build = t.closest('[data-build]');
+    if (build && !build.disabled) {
+      const r = CO.rooms.find(x => x.id === build.dataset.build);
+      if (save.bank >= r.cost && !save.owned.includes(r.id)) {
+        save.bank -= r.cost;
+        save.owned.push(r.id);
+        persist();
+      }
+      closeModal(); renderOffice();
+      return;
+    }
+
+    const net = t.closest('[data-net]');
+    if (net) {
+      const [dept, n] = net.dataset.net.split(':');
+      revealed[dept] = Object.assign({}, revealed[dept], { [n]: true });
+      renderHire();
+      return;
+    }
+    const hire = t.closest('[data-hire]');
+    if (hire && !hire.disabled) {
+      const [dept, id] = hire.dataset.hire.split(':');
+      picks[dept] = picks[dept] === id ? null : id;
+      updateHire();
+      return;
+    }
+    if (t.closest('#startBtn')) { startShoot(); return; }
+
+    if (t.closest('[data-choose]')) {
+      const r = S.command(st, { type: 'choose', option: t.closest('[data-choose]').dataset.choose });
+      closeModal();
+      say(r.message);
+      return;
+    }
+    if (t.closest('[data-speed]')) {
+      speed = +t.closest('[data-speed]').dataset.speed;
+      document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.speed === speed)));
+      return;
+    }
+    if (t.closest('[data-resume]')) { st.paused = false; closeModal(); return; }
+    if (t.closest('[data-again]')) { startShoot(); return; }
+    if (t.closest('[data-quit]')) { closeModal(); renderOffice(); show('office'); return; }
+
+    if (screen !== 'shoot' || !st || modal) return;
+    if (t.closest('#pauseBtn')) { showPause(); return; }
+    if (t.closest('#actionBtn')) { pressAction(); return; }
+    if (t.closest('#autoBtn')) { const r = S.command(st, { type: 'release', crew: selected }); say(r.message); selected = null; return; }
+    const crew = t.closest('[data-crew]');
+    if (crew) { selectCrew(crew.dataset.crew); return; }
+    const task = t.closest('[data-task]');
+    if (task) { assignTo(task.dataset.task); return; }
+    const stn = t.closest('[data-station]');
+    if (stn) { assignStation(stn.dataset.station); return; }
+    const mv = t.closest('[data-move]');
+    if (mv) { const r = S.command(st, { type: 'move', shot: mv.dataset.move, dir: -1 }); say(r.message, !r.ok); }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && screen === 'shoot' && st && !st.over && !modal) showPause();
+  });
+
+  /* ================= Loop ================= */
+
+  function frame(now) {
+    const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+    last = now;
+    if (screen === 'shoot' && st) {
+      if (!modal) {
+        const before = st.capture && st.capture.shot;
+        S.advance(st, dt * speed);
+        if (before && !st.capture) lastCapture = before;
+        if (st.pending) showChaos();
+        else if (st.over) showWrap();
+      }
+      renderSet(now);
+      renderHud(now);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  $('defs').innerHTML = A.globalDefs();
+  resetView();
+  renderTitle();
+  show('title');
+  requestAnimationFrame(frame);
+})();
+
+</script>
+
+</body>
+</html>

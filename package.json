@@ -1,0 +1,10 @@
+{
+  "name": "thats-a-wrap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "That's a Wrap! production-management game prototype",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test"
+  }
+}
