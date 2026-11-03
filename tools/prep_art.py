@@ -42,6 +42,16 @@ for pid, p in spec['pieces'].items():
         sizes[state] = (w, h, os.path.getsize(os.path.join(out_dir, name)))
     cfg = dict(p.get('settings', {}))
     cfg['pivot'] = [round(p['pivot'][0] * k, 1), round(p['pivot'][1] * k, 1)]
+    if pid.split('.')[-1].startswith('leg-'):
+        # Where the sole meets the floor, so the walk can keep the planted boot flat on the ground
+        # The bottom outline of the boot, as a few points (image px): the lowest pixel of each column in the
+        # bottom 4 set units. The walk rolls the planted boot on this outline, so a rounded heel or toe stays down.
+        a = np.array(out)[..., 3] >= 128
+        bottom = int(np.where(a.any(1))[0].max())
+        cols = [x for x in range(a.shape[1]) if a[:, x].any() and np.where(a[:, x])[0].max() >= bottom - 4 * p['target']]
+        pts = [[x, int(np.where(a[:, x])[0].max()) + 1] for x in cols]
+        keep = sorted({0, len(pts) - 1, *range(0, len(pts), max(1, len(pts) // 8))})
+        cfg['sole'] = [pts[i] for i in keep]
     cfg['scale'] = p['target']
     json.dump(cfg, open(os.path.join(out_dir, pid + '.json'), 'w'), indent=2)
     open(os.path.join(out_dir, pid + '.json'), 'a').write('\n')

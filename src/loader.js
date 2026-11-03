@@ -115,6 +115,8 @@
       imgW: img.w, imgH: img.h, scale,
       w: img.w / scale, h: img.h / scale, px: pv[0] / scale, py: pv[1] / scale,
       ox: off[0] || 0, oy: off[1] || 0, shadow, tint, pivotPx: pv, flip: !!cfg.flip,
+      // sole: points along the bottom of a boot (image px), turned into units around the pivot (for the walk)
+      sole: Array.isArray(cfg.sole) ? cfg.sole.map(([x, y]) => [(x - pv[0]) / scale, (y - pv[1]) / scale]) : null,
     };
   }
 
@@ -276,11 +278,13 @@
       const def = slotOf(id);
       const show = states.includes('idle') ? 'idle' : states.includes('default') ? 'default' : states[0];
       const inner = states.map(st => useEl(id, st, def.anchor, st === show)).join('');
-      return `<g class="wl-pose wl-r-${role}" data-part="${id}" style="transform-origin:${f(def.anchor.x)}px ${f(def.anchor.y)}px">${inner}</g>`;
+      const so = role.startsWith('leg-') && (resolve(id, show) || {}).sole;
+      const soleAttr = so ? ` data-sole="${so.map(([x, y]) => f(x) + ',' + f(y)).join(' ')}"` : '';
+      return `<g class="wl-pose wl-r-${role}" data-part="${id}"${soleAttr} style="transform-origin:${f(def.anchor.x)}px ${f(def.anchor.y)}px">${inner}</g>`;
     };
     const hips = jointOf(ch, 'hips');
     return `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
-      `<g class="bodyg wl-rig" data-character="${ch}">` +
+      `<g class="bodyg wl-rig" data-character="${ch}" data-leg="${f(-jointOf(ch, 'hipFront').y)}">` +
       RIG_ORDER.legs.map(part).join('') +
       `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + RIG_ORDER.upper.map(part).join('') + `</g>` +
       `</g>`;

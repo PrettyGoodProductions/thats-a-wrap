@@ -22,7 +22,7 @@ const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xm
 const FILE = /^(.+?)(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
 const SEG = [/^[a-z0-9]+$/, /^[a-z0-9-]+$/, /^[a-z0-9_-]+$/, /^[a-z0-9_-]+$/];
 const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'note'];
-const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'states', 'note'];
+const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'sole', 'states', 'note'];
 
 // <dept>.<object>[.<state>], or for a fixed character crew.<character>.<part>[.<state>]. Returns null for a bad name.
 function parseName(name) {
@@ -92,6 +92,7 @@ function checkSettings(id, cfg, where, errors, warnings) {
   if (cfg.size !== undefined && !(Array.isArray(cfg.size) && cfg.size.length === 2 && cfg.size.some(n => typeof n === 'number' && n > 0))) errors.push(`${at}: size must be [width, height] in set units`);
   if (cfg.offset !== undefined && !isPair(cfg.offset)) errors.push(`${at}: offset must be [x, y] in set units`);
   if (cfg.flip !== undefined && typeof cfg.flip !== 'boolean') errors.push(`${at}: flip must be true or false`);
+  if (cfg.sole !== undefined && !(Array.isArray(cfg.sole) && cfg.sole.length >= 2 && cfg.sole.every(isPair))) errors.push(`${at}: sole must be a list of [x, y] points along the bottom of the boot, in image pixels`);
   if (cfg.tint !== undefined && cfg.tint !== false && !['skin', 'dept', 'hair'].includes(cfg.tint) && !Loader.normColor(cfg.tint)) errors.push(`${at}: tint must be "skin", "dept", "hair", a #hex color, or false`);
 }
 

@@ -241,15 +241,6 @@ with sync_playwright() as p:
             e.js(f"lab.freeze('ro',{i / n},{cycle_ms})")
             im = frame(); m, s = stats(im); frames.append((im, m, s))
         return frames
-    walk = run('walking', 560, 8)
-    wk = [f[2] for f in walk]
-    check('walk: one solid piece in all 8 frames', all(s['comps'] == 1 for s in wk), f"pieces per frame {[s['comps'] for s in wk]}")
-    lift = max(s['bottom'] for s in wk) - min(s['bottom'] for s in wk)
-    check('walk: feet stay near the ground (lift <= 4 units)', lift <= 4.0, f'lowest foot varies by {lift:.2f} units, from {min(s["bottom"] for s in wk):+.2f} to {max(s["bottom"] for s in wk):+.2f}')
-    bob = max(s['top'] for s in wk) - min(s['top'] for s in wk)
-    check('walk: head bob is small but visible (0.4 to 3 units)', 0.4 <= bob <= 3.0, f'{bob:.2f} units')
-    spread = max(s['x1'] - s['x0'] for s in wk) - min(s['x1'] - s['x0'] for s in wk)
-    check('walk: legs visibly swing (silhouette width changes >= 2 units)', spread >= 2.0, f'{spread:.2f} units')
     work = run('working', 1200, 12)
     ws = [f[2] for f in work]
     check('work: one solid piece in all 12 frames (arm stays attached at the shoulder)', all(s['comps'] == 1 for s in ws), f"pieces per frame {[s['comps'] for s in ws]}")
@@ -269,10 +260,86 @@ with sync_playwright() as p:
         sheet.save(os.path.join(out, name + '-strip.png'))
         small = [t.resize((t.width // 2, t.height // 2), Image.LANCZOS) for t in tiles]
         small[0].save(os.path.join(out, name + '.gif'), save_all=True, append_images=small[1:], duration=gif_ms, loop=0, optimize=False)
-    film([f[0] for f in walk], 'ro-walk', 70)
     film([f[0] for f in work], 'ro-work', 100)
     errs = e.errors
     check('lab page logged no errors', not errs, '; '.join(errs[:3]))
+    e.close()
+
+    # ---------------------------------------------------------------- 5b. walking across the real set
+    print('\n== 5b. Ro walking across the set, both directions, start and stop ==')
+    e = Env(p, 430, 3)
+    TRIPS = [((40, 334), (318, 300)), ((318, 300), (70, 250))]   # left to right along the front, then back up-left
+    def walk_trip(bg, start, end, measure):
+        e.mount(bg)
+        if measure: e.js("lab.iso('puppet')")
+        e.js(f"lab.addPuppet('ro',{{name:'Ro',dept:'lighting'}},{start[0]},{start[1]},false)")
+        frames = [(e.shot(), {'x': start[0], 'y': start[1], 'moving': False, 'step': None, 'planted': None})]
+        e.js(f"lab.walkTo('ro',{end[0]},{end[1]})")
+        for _ in range(4000):
+            st = e.js("lab.walkTick('ro', 1/60)")
+            if st['changed']: frames.append((e.shot(), st))
+            if not st['moving']: break
+        return frames
+    slides = []; bottoms = []; pops = []; spacing_bad = []; pieces_ok = True; per_step = []
+    for (a, b) in TRIPS:
+        fr = walk_trip('transparent', a, b, True)
+        D = math.hypot(b[0] - a[0], b[1] - a[1])
+        by_step = {}
+        moving = [f for f in fr if f[1].get('moving')]
+        for im, st in fr:
+            m = mask(im, 128)
+            if components(m) != 1: pieces_ok = False
+            ys, xs = np.where(m)
+            bottoms.append((ys.max() + 1) / e.k - 70 - st['y'])
+            if st.get('moving') and st.get('planted'):
+                sole = st['soles'][st['planted']]
+                by_step.setdefault(st['step'], []).append(sole['x'])
+        for k, xs_ in by_step.items():
+            if len(xs_) >= 2: slides.append(max(xs_) - min(xs_))
+        per_step.append(len(moving) / max(1, len(by_step) - 1))
+        pts = [(f[1]['x'], f[1]['y']) for f in fr[1:]]
+        gaps = [math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) for i in range(len(pts) - 1)]
+        spacing_bad.append(max(gaps) - min(gaps))
+        # starting and stopping: the change from standing to the first frame, and from the last frame to standing,
+        # is no bigger than an ordinary frame-to-frame change
+        def iou_shift(f0, f1):
+            dxp = (f1[1]['x'] - f0[1]['x']) * e.k; dyp = (f1[1]['y'] - f0[1]['y']) * e.k
+            M = np.float32([[1, 0, dxp], [0, 1, dyp]])
+            m0 = cv2.warpAffine(mask(f0[0]).astype(np.uint8), M, (f0[0].width, f0[0].height)) > 0
+            m1 = mask(f1[0])
+            return float((m0 & m1).sum() / (m0 | m1).sum())
+        seq = [iou_shift(fr[i], fr[i + 1]) for i in range(len(fr) - 1)]
+        pops.append((seq[0], seq[-1], float(np.percentile(seq[1:-1], 10))))
+        print(f'   trip {a} -> {b}: {D:.0f} units in {len(fr) - 1} frames, {len(by_step)} planted phases')
+    step_len = 12
+    check('walk: one solid piece in every frame of both trips', pieces_ok)
+    check('walk: the planted foot does not slide (sole center moves < 0.25 units while planted)', max(slides) < 0.25, f'worst {max(slides):.3f} set units, against a step of about {step_len}')
+    check('walk: feet on the floor in every frame (lowest point within 0.6 units of the mark)', max(abs(b) for b in bottoms) <= 0.6, f'{min(bottoms):+.2f} to {max(bottoms):+.2f} units')
+    check('walk: steps matched to travel (even spacing, 4 poses per step)', max(spacing_bad) < 0.01 and all(abs(x - 4) < 0.6 for x in per_step), f'spacing varies {max(spacing_bad):.4f} units, {", ".join(f"{x:.1f}" for x in per_step)} frames per step')
+    worst_pop = min(min(a_, b_) / p10 for a_, b_, p10 in pops)
+    check('walk: starts and stops without a pop (first and last change within the range of ordinary frames)', worst_pop >= 0.98, 'start/stop overlap vs the 10th percentile of ordinary frames: ' + '; '.join(f'{a_:.3f}/{b_:.3f} vs {p10:.3f}' for a_, b_, p10 in pops))
+    # evidence: both trips on the real set, as one GIF with holds at start and stop
+    gif = []
+    for (a, b) in TRIPS:
+        fr = walk_trip('set', a, b, False)
+        crop = (0, int((235 + 70) * e.k), int(360 * e.k), int((345 + 70) * e.k))
+        tiles = [im.convert('RGB').crop(crop) for im, _ in fr]
+        tiles = [tiles[0]] * 6 + tiles + [tiles[-1]] * 8
+        gif += tiles
+    small = [t.resize((t.width // 3, t.height // 3), Image.LANCZOS) for t in gif]
+    small[0].save(os.path.join(out, 'ro-walk-set.gif'), save_all=True, append_images=small[1:], duration=83, loop=0)
+    fr = walk_trip('transparent', (60, 330), (300, 330), True)
+    strip = [f[0] for f in fr[1:17]]
+    film_crop = None
+    tiles = []
+    for im in strip:
+        m = mask(im, 40); x0, y0, x1, y1 = bbox(m)
+        c = im.crop((int(x0 - 6 * e.k), int(y1 - 70 * e.k), int(x0 + 40 * e.k), int(y1 + 4 * e.k)))
+        bg_ = Image.new('RGBA', c.size, (233, 214, 170, 255)); bg_.alpha_composite(c); tiles.append(bg_.convert('RGB'))
+    sheet = Image.new('RGB', (sum(t.width for t in tiles), tiles[0].height), (233, 214, 170))
+    x = 0
+    for t in tiles: sheet.paste(t, (x, 0)); x += t.width
+    sheet.save(os.path.join(out, 'ro-walk-strip.png'))
     e.close()
 
     # ---------------------------------------------------------------- 6. whole set at phone scale

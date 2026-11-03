@@ -25,6 +25,7 @@
 <!-- inline:src/slots.js -->
 <!-- inline:src/loader.js -->
 <!-- inline:src/art.js -->
+<!-- inline:src/walk.js -->
 <script>
 /*
   Art lab. Drives the real set markup, loader and animation CSS from a script (tools/qa_pipeline.py), so the
@@ -37,6 +38,7 @@
   document.getElementById('defs').innerHTML = A.globalDefs();
   const NS = 'http://www.w3.org/2000/svg';
   const crew = {};
+  const walkers = {};
 
   const BG = { transparent: '', white: '#fff', black: '#000', mid: '#8a8a8a', magenta: '#ff00ff', checker: null, set: '#F6EFE0' };
   function mount(o) {
@@ -49,6 +51,7 @@
     const svg = $('setSvg');
     svg.insertAdjacentHTML('beforeend', '<g id="labCrew"></g>');
     for (const k of Object.keys(crew)) delete crew[k];
+    for (const k of Object.keys(walkers)) delete walkers[k];
     return { w: stage.getBoundingClientRect().width, h: stage.getBoundingClientRect().height, dpr: window.devicePixelRatio };
   }
   const iso = (mode) => { $('stage').classList.remove('iso-key', 'iso-platform', 'iso-puppet'); if (mode) $('stage').classList.add('iso-' + mode); };
@@ -69,6 +72,37 @@
     crew[id] = g;
     return g.getBoundingClientRect().toJSON();
   }
+  // Walk a puppet with the game's own walker, ticked by hand so every stop-motion frame can be captured
+  function walkTo(id, x, y) {
+    const g = crew[id];
+    if (!walkers[id]) { const m = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(g.style.transform); walkers[id] = window.WrapWalk.create(g, { x: +m[1], y: +m[2] }); }
+    walkers[id].goTo(x, y);
+    Ld.pose(g, 'walk');
+    return walkers[id].state();
+  }
+  // Tiny markers at each sole center, inside the leg groups, so a run can read where the feet really are on screen
+  function soleMarks(id) {
+    const g = crew[id];
+    const out = {};
+    for (const [name, sel] of [['front', '.wl-r-leg-front'], ['back', '.wl-r-leg-back']]) {
+      const leg = g.querySelector(sel);
+      if (!leg) continue;
+      let m = leg.querySelector('.lab-sole');
+      if (!m) {
+        const pts = (leg.getAttribute('data-sole') || '0,21').split(' ').map(q => q.split(',').map(Number));
+        const xs = pts.map(q => q[0]);
+        const c = (Math.min(...xs) + Math.max(...xs)) / 2, lg = Math.max(...pts.map(q => q[1]));   // as in walk.js makeLeg
+        const o = /transform-origin:\s*([-\d.]+)px\s+([-\d.]+)px/.exec(leg.getAttribute('style'));
+        leg.insertAdjacentHTML('beforeend', `<circle class="lab-sole" cx="${+o[1] + c}" cy="${+o[2] + lg}" r="0.4" fill="none"/>`);
+        m = leg.querySelector('.lab-sole');
+      }
+      const r = m.getBoundingClientRect(), st = $('stage').getBoundingClientRect();
+      const k = st.width / 360;
+      out[name] = { x: (r.left + r.width / 2 - st.left) / k, y: (r.top + r.height / 2 - st.top) / k - 70 };
+    }
+    return out;
+  }
+  function walkTick(id, dt) { const w = walkers[id]; const changed = w.tick(dt); if (!w.moving) Ld.pose(crew[id], 'idle'); return Object.assign({ changed, soles: soleMarks(id) }, w.state()); }
   const cls = (id, name) => { crew[id].classList.remove('walking', 'working'); if (name) crew[id].classList.add(name); crew[id].querySelectorAll('.wl-pose').forEach(() => 0); Ld.pose(crew[id], name === 'walking' ? 'walk' : name === 'working' ? 'work' : 'idle'); };
   // Stop every animation under a puppet at a point in its cycle (0..1), so a frame can be captured exactly
   function freeze(id, t, cycleMs) {
@@ -113,7 +147,7 @@
     return stage.getBoundingClientRect().toJSON();
   }
   const rect = (sel) => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); const s = $('stage').getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height }; };
-  window.lab = { mount, iso, key, addPuppet, cls, freeze, measure, images, portrait, rect, report: () => Ld.report(), pack: () => Ld.report(), unitsPerCss: () => 360 / $('stage').getBoundingClientRect().width };
+  window.lab = { mount, iso, key, addPuppet, cls, freeze, measure, images, portrait, walkTo, walkTick, rect, report: () => Ld.report(), pack: () => Ld.report(), unitsPerCss: () => 360 / $('stage').getBoundingClientRect().width };
 })();
 </script>
 </body>

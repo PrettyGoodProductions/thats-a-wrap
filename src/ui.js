@@ -7,6 +7,7 @@
   const S = window.WrapSim;
   const A = window.WrapArt;
   const Ld = window.WrapLoader; // delivered art: state swaps only, the simulation still decides every state
+  const Wk = window.WrapWalk;   // crew walk: steps fitted to the trip, stop-motion frames
   const LEVEL = window.LEVELS.burgerJob;
   const CO = window.LEVELS.company;
   const $ = id => document.getElementById(id);
@@ -52,7 +53,7 @@
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null, walkT: 0 });
   }
 
   /* ================= Helpers ================= */
@@ -342,6 +343,7 @@
       layer.appendChild(g);
       view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
       view.pos[c.id] = { x: idle.x, y: idle.y };
+      view.pups[c.id].walker = Wk.create(g, idle);
 
       const b = document.createElement('button');
       b.type = 'button';
@@ -707,6 +709,9 @@
     if (talking) setText($('clientText'), clientLine.text);
 
     // Crew puppets go to their station (the camera station follows the dolly)
+    const realDt = view.walkT ? Math.min(0.1, (now - view.walkT) / 1000) : 0;
+    view.walkT = now;
+    const walkDt = modal || st.paused ? 0 : realDt * speed;
     const at = {};
     const targets = {};
     for (const c of st.crew) {
@@ -720,17 +725,11 @@
       } else p = A.IDLE[c.dept];
       targets[c.id] = p;
       const v = view.pups[c.id];
-      const prev = view.pos[c.id];
-      if (prev.x !== p.x || prev.y !== p.y) {
-        if (Math.abs(p.x - prev.x) > 2) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
-        v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
-        view.pos[c.id] = { x: p.x, y: p.y };
-        // The walk animation runs for as long as the slide to the new spot takes (see .pup transition)
-        v.walking = true;
-        v.g.classList.add('walking');
-        clearTimeout(v.walkT);
-        v.walkT = setTimeout(() => { v.walking = false; v.g.classList.remove('walking'); }, 950);
-      }
+      // The walker steps the puppet to its spot at walking speed, in game time (pauses with the game, 2x walks faster)
+      v.walker.goTo(p.x, p.y);
+      v.walker.tick(walkDt);
+      view.pos[c.id] = { x: v.walker.x, y: v.walker.y };
+      v.walking = v.walker.moving;
       const cs = S.crewStatus(st, c);
       const asking = !!lab && !!S.idleWork(st, c); // standing around with work available, waiting for an order
       v.g.classList.toggle('working', cs.state === 'WORKING');
@@ -757,7 +756,7 @@
         setText(v.bt, txt);
       }
     }
-    const order = st.crew.slice().sort((a, b) => targets[a.id].y - targets[b.id].y).map(c => c.id);
+    const order = st.crew.slice().sort((a, b) => view.pos[a.id].y - view.pos[b.id].y).map(c => c.id); // live depth while walking
     const depth = order.join();
     if (depth !== view.depth) { view.depth = depth; for (const id of order) $('crewLayer').appendChild(view.pups[id].g); }
   }
