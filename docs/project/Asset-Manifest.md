@@ -142,7 +142,7 @@ The office is a cutaway building 360 x 470 units. Each room is a 152 x 112 box s
 
 ## First art pass, in priority order
 
-Start where the eye goes and where code-drawn shapes look weakest. When the first batch arrives, I'll add an asset loader that uses delivered files and keeps the temporary art for the rest, so each batch can ship on its own.
+Start where the eye goes and where code-drawn shapes look weakest. The asset loader uses delivered files and keeps the temporary art for the rest, so each batch can ship on its own.
 
 1. **One modular crew puppet** with all parts and the four work poses. This proves the rig before anyone draws 16 people.
 2. **The hero corner:** platform, sweep, burger in all states, burger-build layers.
