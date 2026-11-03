@@ -70,7 +70,7 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 
 - **Building:** Claude sessions like this one write the code, run the tests and publish a playable link. Tomás plays it on his phone and gives notes.
 - **Testing:** use the phone QA checklist in README.md, plus the automated sim tests (`node --test`).
-- **Code storage:** the workspace is temporary. **To do:** create a GitHub repo so the code persists between sessions. Until then, each session hands over a zip.
+- **Code storage:** https://github.com/PrettyGoodProductions/thats-a-wrap (private). This is the source of truth. Every session starts by attaching and cloning it, and ends by pushing. Owned by the PGP account. tomasPSAA, the GitHub login connected to claude.ai, is a collaborator, and the Claude GitHub App is installed on the repo.
 - **Code branches:** `master` is Milestone A. `wip/crew-depth` holds parked engine work: walking time, organization, leadership, chemistry, specialties, take review, the 8 AM to 6 PM day clock and the $28,000 economy.
 - **iOS path, later:** Apple Developer Program ($99/year), then Capacitor, Xcode, TestFlight beta, App Store.
 
