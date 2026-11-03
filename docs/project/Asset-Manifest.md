@@ -143,7 +143,7 @@ The office is a cutaway building 360 x 470 units. Each room is a 152 x 112 box s
 | --- | --- | --- | --- |
 | ui.logo | THAT'S A WRAP! sticker | 340 x 220 px at 1x | **In use now**, cut from the concept art. Needs a clean high-res version |
 | ui.shot-thumbs | Hero Burger, Cheese Pull, Sauce Pour polaroid photos | 120 x 105 px at 1x | **In use now**, cut from the concept art. Needs clean 3x versions without the polaroid border |
-| ui.paper-grain | Seamless paper fiber tile, neutral gray | 256 x 256 px | **In use now**, made from the concept art's foam board. A real seamless tile would remove the faint repeat |
+| ui.paper-grain | Seamless paper fiber tile, neutral gray | 256 x 256 px | **Retired as a whole-set overlay.** Each asset carries its own paper texture in its art. The tile is kept in `src/assets.js` but nothing draws it |
 | ui.card | Torn paper card frame, nine-slice | Corners 24 px | For panels, chaos card, wrap report |
 | ui.tape | Masking tape strip | 60 x 18 | Pinning labels |
 | ui.clapper | Clapperboard: board and hinged stick, separate | 100 x 70 | Stick pivot at its left hinge. Used for the ACTION button and the in-scene clap |

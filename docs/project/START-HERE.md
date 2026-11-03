@@ -22,7 +22,7 @@ A single-player mobile game about running a small video production company, made
 - **Playable link:** https://claude.ai/artifact/LPPVKvNVCANaQMEa72Uty8
 - **Flow:** title, office (rename the company, build rooms), job board, brief, hire crew, shoot, chaos card, wrap report.
 - **The set:** layered SVG objects driven by the simulation. The platform, sweep, flag, rigs, key light, fill light, backlight, camera dolly and lens all change state as the crew work, and the burger is built and then carried to the platform. Tapping a workstation shows its task, crew, progress and blocker.
-- **Concept art in use:** the logo, the shot thumbnails and a paper-grain texture, all cut from the concept image.
+- **Concept art in use:** the logo and the shot thumbnails, cut from the concept image. There is no shared paper texture over the set: each asset carries its own texture.
 - **Tests:** 33 automated simulation tests pass, including soft-lock fuzzing.
 - **Known gap:** the shoot plays itself. It takes 84 seconds, the crew pick all 14 tasks, the player makes 4 decisions and the crew are idle 57% of the time. The Active Play Proposal addresses this.
 
