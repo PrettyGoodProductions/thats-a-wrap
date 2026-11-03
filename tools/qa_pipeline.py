@@ -159,6 +159,16 @@ with sync_playwright() as p:
     check('platform is centered on its spot (x = 184, +-1.0)', abs(cx - 184) <= 1.0, f'center {cx:.2f}')
     check('platform footprint is within 15% of the manifest width (112 units)', abs(width - 112) / 112 <= 0.15, f'drawn {width:.1f} wide x {height:.1f} tall (manifest 112 x 60)')
     im.save(os.path.join(out, 'platform-iso.png'))
+    # the hero burger stands on the platform's contact point, and that point is on the lid
+    e.mount('transparent')
+    hs = e.js("(() => { document.getElementById('prop').innerHTML = WrapArt.propInner('hero'); const h = WrapArt.heroSpot(); const r = document.getElementById('prop').getBBox(); const m = document.getElementById('prop').getCTM(); return { h, x: m.e + (r.x + r.width / 2) * m.a, y: m.f + (r.y + r.height) * m.d, sx: m.a }; })()")
+    stage_w = e.w
+    # getCTM maps to the svg viewport in css px; convert to set units
+    bx = hs['x'] / e.unit; by = hs['y'] / e.unit - 70
+    check('hero burger base sits on the platform contact point (+-0.8 units)', abs(bx - hs['h']['x']) <= 0.8 and abs(by - hs['h']['y']) <= 0.8, f"base at {bx:.1f}, {by:.1f}; contact {hs['h']['x']:.1f}, {hs['h']['y']:.1f}; layout shift {hs['h']['dx']:+.1f}, {hs['h']['dy']:+.1f}")
+    cx, cy = e.px(hs['h']['x'], hs['h']['y'])
+    on_lid = np.array(im)[int(cy) - 2, int(cx), 3] > 200
+    check('the contact point is on the platform art (the lid), not in empty canvas', on_lid)
     e.close()
 
     # ---------------------------------------------------------------- 4. key light states
