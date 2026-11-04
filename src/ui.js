@@ -53,7 +53,7 @@
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null, walkT: 0, segKey: '', condKey: '', stars: -1 });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null, walkT: 0, beamKey: '', segKey: '', condKey: '', stars: -1 });
   }
 
   /* ================= Helpers ================= */
@@ -356,6 +356,7 @@
         </div>`
       : `${top}${daybar}${setBox}${ribbon}${shotcard}${crewbar}${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
     syncRot();
+    if (land) { fitWideSet(); requestAnimationFrame(fitWideSet); setTimeout(fitWideSet, 400); }
 
     const layer = $('crewLayer');
     const bar = $('crewbar');
@@ -389,6 +390,30 @@
 
   /* ================= Shoot: input ================= */
 
+
+  /*
+    Landscape safe area: the set's working frame (A.WIDE_VIEW) is fitted between the crew portraits on the left,
+    the status bar on top, the ACTION column on the right and a bottom margin, so no one you need to tap and no
+    foreground character sits under a control or off the edge. The paper flats and floor still fill the whole screen.
+  */
+  function fitWideSet() {
+    const svg = $('setSvg');
+    if (!svg || !svg.classList.contains('wide')) return;
+    const wrap = $('setWrap');
+    const W = wrap.offsetWidth, H = wrap.offsetHeight;
+    if (!W || !H) return;
+    const rail = document.querySelector('.crew-rail .crewbar'), hud = document.querySelector('.hud-top'), act = $('actionBtn');
+    const l = rail ? rail.parentElement.offsetLeft + rail.offsetWidth + 8 : 10;
+    const t = hud ? hud.offsetTop + hud.offsetHeight + 4 : 10;
+    const r = act ? W - act.offsetLeft + 8 : 10;
+    const b = 10;
+    const [vx, vy, vw, vh] = A.WIDE_VIEW;
+    const sw = Math.max(60, W - l - r), sh = Math.max(60, H - t - b);
+    const k = Math.min(sw / vw, sh / vh);
+    const x0 = vx - (l + (sw - vw * k) / 2) / k, y0 = vy - (t + (sh - vh * k) / 2) / k;
+    svg.setAttribute('viewBox', [x0, y0, W / k, H / k].map(n => n.toFixed(2)).join(' '));
+    svg.setAttribute('preserveAspectRatio', 'none');
+  }
 
   function setShots(open) {
     $('shotsPop').hidden = !open;
@@ -641,9 +666,21 @@
     const aimRange = KEY_AIM[disp] || [20, 20];
     const dl = captured || rolling ? 1 : pct(`${disp}.light`);
     const aimP = disp === 'hero' ? steps(seg(dl, 0.4, 0.8), 5) : steps(dl, 5);
-    setAttr($('keyHead'), 'transform', `rotate(${lerp(aimRange[0], aimRange[1], aimP).toFixed(1)} 72 76)`);
+    const aim = lerp(aimRange[0], aimRange[1], aimP);
+    setAttr($('keyHead'), 'transform', `rotate(${aim.toFixed(1)} 72 76)`);
+    // The beam starts at the lens, wherever the head points, and ends on the hero prop
+    const beamKey = `${aim.toFixed(1)}|${rollIn}`;
+    if (view.beamKey !== beamKey) {
+      view.beamKey = beamKey;
+      const [la, lb] = A.keyLens();
+      const r = aim * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r), rx = -44 * (1 - rollIn);
+      const turn = (p) => [72 + p[0] * c - p[1] * sn + rx, 76 + p[0] * sn + p[1] * c];
+      const hs = A.heroSpot();
+      const pts = [turn(la), turn(lb), [hs.x - 30, hs.y + 4], [hs.x + 30, hs.y + 2]];
+      setAttr($('beam'), 'points', pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' '));
+    }
     let beam = 0;
-    if (!dead) beam = disp === 'hero' ? 0.5 * steps(seg(dl, 0.8, 1), 3) : (rollIn >= 1 ? 0.28 + 0.22 * dl : 0);
+    if (!dead) beam = disp === 'hero' ? 0.4 * steps(seg(dl, 0.8, 1), 3) : (rollIn >= 1 ? 0.22 + 0.18 * dl : 0);
     setAttr($('beam'), 'opacity', beam.toFixed(2));
     setAttr($('lightFace'), 'fill', dead ? '#3A3631' : beam > 0 ? '#FFE7A3' : '#7A7468');
     Ld.state('elec.keylight-head', dead ? 'dead' : beam > 0 ? 'on' : 'off');
@@ -697,7 +734,7 @@
     setAttr($('monRec'), 'opacity', st.capture ? 1 : 0);
 
     // Rolling: house lights down, spotlight on the burger, camera pushes in
-    setAttr($('dim'), 'opacity', st.capture ? 0.55 : 0);
+    setAttr($('dim'), 'opacity', st.capture ? 0.5 : 0);
     $('setWrap').classList.toggle('pushin', !!st.capture);
 
     // Art table: the burger stack builds up while styling, then leaves with the art crew
@@ -726,14 +763,22 @@
       b.classList.toggle('open', view.stCard === stn);
     }
 
-    // Lab: while someone is selected, each station shows what it would do for them (green full speed, amber half speed, red can't)
-    if (lab) {
-      if (!view.hits) view.hits = [...document.querySelectorAll('.station-hit')];
-      for (const el of view.hits) {
-        const k = selected ? 'hit-' + S.canAssign(st, selected, el.getAttribute('data-station')).state : '';
-        const cls = 'station-hit' + (k ? ' ' + k : '');
-        if (el.getAttribute('class') !== cls) el.setAttribute('class', cls);
-      }
+    // While someone is selected, each station's badge gets a small marker for what it would do for them (green full
+    // speed, amber half speed, red can't), and only the best spot gets a light outline, so the set stays readable
+    if (!view.hits) view.hits = [...document.querySelectorAll('.station-hit')];
+    const states = {};
+    for (const el of view.hits) { const sn = el.getAttribute('data-station'); states[sn] = selected ? S.canAssign(st, selected, sn).state : ''; }
+    let pick = null;
+    if (selected) {
+      const ns = S.nextStep(st);
+      pick = ns && ns.crew === selected && states[ns.station] === 'go' ? ns.station : Object.keys(states).find(k => states[k] === 'go') || Object.keys(states).find(k => states[k] === 'slow') || null;
+    }
+    for (const el of view.hits) {
+      const sn = el.getAttribute('data-station');
+      const cls = 'station-hit' + (states[sn] ? ' hit-' + states[sn] : '') + (sn === pick ? ' hit-pick' : '');
+      if (el.getAttribute('class') !== cls) el.setAttribute('class', cls);
+      const b = $('badge-' + sn);
+      if (b) for (const k of ['go', 'slow', 'no', 'busy']) b.classList.toggle('mk-' + k, states[sn] === k);
     }
 
     // Client notes from video village
@@ -754,6 +799,7 @@
     const walkDt = modal || st.paused ? 0 : realDt * speed;
     const qs = lab && lab.layout === 'land' && S.nextStep(st);
     const questCrew = qs && qs.crew;
+    const landHud = !!lab && lab.layout === 'land';
     const at = {};
     const targets = {};
     for (const c of st.crew) {
@@ -793,6 +839,9 @@
         else if (cs.state === 'BLOCKED') { txt = '!'; fill = '#D86B56'; col = '#fff'; }
         else if (/ACTION/.test(cs.text)) txt = 'ACTION?';
         else if (/^No /.test(cs.text) || cs.text === 'Wrapped' || /Rolling/.test(cs.text) || /Holding|goes first|Stage busy/.test(cs.text)) showBub = false;
+        // Landscape keeps the set quiet: one "?" for the person the next step needs, "!" for anyone blocked, no idle
+        // chatter. Everyone else waiting still pulses on their crew card.
+        if (landHud && showBub && !(cs.state === 'BLOCKED' || (asking && questCrew === c.id))) showBub = false;
         setAttr(v.bub, 'opacity', showBub ? 1 : 0);
         setAttr(v.bb, 'fill', fill);
         setAttr(v.bt, 'fill', col);
@@ -1183,7 +1232,7 @@
     if (t.closest('#setWrap') || !t.closest('button')) { selected = null; view.stCard = null; }
   });
 
-  window.addEventListener('resize', syncRot);
+  window.addEventListener('resize', () => { syncRot(); fitWideSet(); });
   window.addEventListener('orientationchange', syncRot);
 
   document.addEventListener('visibilitychange', () => {

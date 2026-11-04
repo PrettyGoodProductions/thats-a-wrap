@@ -236,7 +236,14 @@ button.pill{text-align:left}
 .pup .selring{display:none}
 .pup.sel .selring{display:inline}
 .station-hit{fill:transparent; cursor:pointer}
-body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:1.5; stroke-dasharray:4 3}
+/* Picking a spot for someone: a small marker on each station badge, a light outline on the best spot only */
+body.picking .station-hit{fill:transparent; stroke:none}
+body.picking .station-hit.hit-pick{stroke:#FFF6E0; stroke-width:1.6; stroke-dasharray:5 4; stroke-opacity:.95}
+.sbadge .bmk{fill:none; stroke:none}
+body.picking .sbadge.mk-go .bmk{fill:#4E8A62; stroke:#fff}
+body.picking .sbadge.mk-slow .bmk{fill:#E7B84F; stroke:#fff}
+body.picking .sbadge.mk-no .bmk{fill:#B5472F; stroke:#fff; opacity:.75}
+body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 .steam path{animation:steam 1.2s steps(3) infinite}
 .clap{opacity:0}
 .clap.go{animation:clapIn .9s steps(6,end)}
@@ -283,10 +290,6 @@ body.picking .station-hit{fill:rgba(255,255,255,.12); stroke:#fff; stroke-width:
 
 /* ---------- layout lab (Milestone B experiment) ---------- */
 /* Station highlights while a crew member is selected: green = full speed, amber = half speed, red = can't, with the reason on tap */
-body.picking .station-hit.hit-go{fill:rgba(78,138,98,.30); stroke:#2F6B45; stroke-width:2.5; stroke-dasharray:none}
-body.picking .station-hit.hit-slow{fill:rgba(231,184,79,.32); stroke:#B98A1E; stroke-width:2.5; stroke-dasharray:6 3}
-body.picking .station-hit.hit-no{fill:rgba(216,107,86,.22); stroke:#B5472F; stroke-width:2; stroke-dasharray:2 4}
-body.picking .station-hit.hit-busy{fill:rgba(255,255,255,.10); stroke:#fff; stroke-width:1.5; stroke-dasharray:4 3}
 /* Idle crew who have work available ask for orders */
 .pup.ask .bb{animation:askpulse .6s steps(2) infinite}
 .cb.ask{animation:pulse 1s steps(2) infinite}
@@ -306,6 +309,7 @@ body.picking .station-hit.hit-busy{fill:rgba(255,255,255,.10); stroke:#fff; stro
 .land-stage{position:absolute; inset:0}
 .land .set-wrap{position:absolute; inset:0; border:0; border-radius:0; box-shadow:none; background:none; overflow:hidden}
 .land .set{display:block; width:100%; height:100%}
+.land .set-wrap.pushin .set{transform:none} /* no push-in in landscape: it would crop the safe area */
 .land .onstage, .land .daybar{display:none}
 .land .stcard{left:auto; right:max(10px,env(safe-area-inset-right,0px)); bottom:96px; width:min(280px,40%); font-size:12px; z-index:6}
 .land :is(.hud-top,.crew-rail,.shots-tab,.shots-pop,.quest,.clapbtn){position:absolute; z-index:5}

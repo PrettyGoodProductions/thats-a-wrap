@@ -321,7 +321,7 @@ with sync_playwright() as p:
         seq = [iou_shift(fr[i], fr[i + 1]) for i in range(len(fr) - 1)]
         pops.append((seq[0], seq[-1], float(np.percentile(seq[1:-1], 10))))
         print(f'   trip {a} -> {b}: {D:.0f} units in {len(fr) - 1} frames, {len(by_step)} planted phases')
-    step_len = 12
+    step_len = 10
     check('walk: one solid piece in every frame of both trips', pieces_ok)
     check('walk: the planted foot does not slide (sole center moves < 0.25 units while planted)', max(slides) < 0.25, f'worst {max(slides):.3f} set units, against a step of about {step_len}')
     check('walk: feet on the floor in every frame (lowest point within 0.6 units of the mark)', max(abs(b) for b in bottoms) <= 0.6, f'{min(bottoms):+.2f} to {max(bottoms):+.2f} units')

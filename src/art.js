@@ -186,6 +186,14 @@
     return { x: at.x, y: at.y, dx, dy, prop: { x: PROP_ORIGIN.x + dx, y: PROP_ORIGIN.y + dy } };
   }
 
+  // The key light's lens, relative to where the head turns on its stand (set units, head not rotated). Delivered
+  // head art names it with the points lensA and lensB; the code-drawn head shines from its bottom edge.
+  function keyLens() {
+    const L = loader();
+    const a = L && L.point('elec.keylight-head', 'lensA'), b = L && L.point('elec.keylight-head', 'lensB');
+    return a && b ? [[a.x - 72, a.y - 76], [b.x - 72, b.y - 76]] : [[24, 16], [-24, 16]];
+  }
+
   /* ---------- Set scene: viewBox x 0..360, y -70..340 ---------- */
 
   const STATIONS = {
@@ -211,6 +219,7 @@
       <circle class="bring" r="11.5" fill="none" stroke="#4E8A62" stroke-width="3.4" stroke-dasharray="0 73" transform="rotate(-90)"/>
       <circle r="8.6" fill="${DEPT_COLOR[dept]}" stroke="${INK}" stroke-width="1.4"/>
       <g transform="translate(-6 -6) scale(.5)" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${DEPT_ICON[dept]}</g>
+      <circle class="bmk" cx="9" cy="-9" r="4.2" stroke="#fff" stroke-width="1.4"/>
     </g>`;
   }
 
@@ -223,10 +232,11 @@
   */
   const WIDE_VIEW = [-150, -40, 660, 336];
   const IDLE_WIDE = {
-    lighting: { x: 336, y: 286 },
-    art:      { x: 366, y: 288 },
-    grip:     { x: 396, y: 286 },
-    camera:   { x: 426, y: 288 },
+    // spread along the craft table and staggered in depth, so people and their pop-ups do not pile up
+    lighting: { x: 322, y: 282 },
+    art:      { x: 364, y: 267 },
+    grip:     { x: 406, y: 284 },
+    camera:   { x: 448, y: 269 },
   };
   const WIDE_VILLAGE = 'translate(-300 -48)';
   const WIDE_CRAFTY = 'translate(300 -44)';
@@ -244,7 +254,9 @@
   <defs>
     <pattern id="corrRed" width="5" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#D7705A"/><rect width="2" height="10" fill="#C2604B"/></pattern>
     <mask id="spotMask" maskUnits="userSpaceOnUse" x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}">
-      <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask>
+      <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#fff"/><ellipse cx="${h.x}" cy="${h.y - 16}" rx="52" ry="38" fill="url(#spotGrad)"/></mask>
+    <radialGradient id="spotGrad"><stop offset="0" stop-color="#000"/><stop offset=".5" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient>
+    <filter id="beamSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4.5"/></filter>
   </defs>
 
   <!-- Back wall: layered paper flats -->
@@ -296,7 +308,7 @@
   <!-- Floor -->
   ${wide ? `<path d="M-600 158 L0 152 L360 145 L960 139 L960 600 L-600 600Z" fill="#D8C29C"/>
   <path d="M-600 158 L0 152 L360 145 L960 139" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
-  <path d="M-600 236 q160 -8 330 2 t330 -2 t330 4 t300 -4 V300 H-600Z" fill="#CFB78F" opacity=".45"/>` : `<path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
+  <path d="M-600 236 q160 -8 330 2 t330 -2 t330 4 t300 -4 V600 H-600Z" fill="#CFB78F" opacity=".45"/>` : `<path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
   <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>`}
   ${wide ? '' : `<path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
   <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>`}
@@ -327,12 +339,12 @@
     <g id="rig-bottle"><path d="M197 58 V${66 + h.dy}" ${s} stroke-width="2"/><g transform="${moved ? `translate(0 ${h.dy}) ` : ''}rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
   </g>
 
-  <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0"/>
+  <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
   <g id="fillLight" opacity="0" filter="url(#cut)">
     <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
     <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>
   </g>
-  <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0"/>
+  <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
   <g id="backLight" opacity="0">
     <path d="M214 -54 V-34" ${s} stroke-width="1.6"/><rect x="204" y="-34" width="20" height="12" rx="2" fill="#F4EEDF" ${s}/>
     <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>
@@ -604,7 +616,7 @@
   }
 
   root.WrapArt = {
-    DEPT_COLOR, heroSpot, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
+    DEPT_COLOR, heroSpot, keyLens, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };

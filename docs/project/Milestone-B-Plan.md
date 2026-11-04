@@ -45,6 +45,13 @@ Task prompts pop up on the set: a "?" over anyone waiting for orders, bouncing o
 
 **Walk fix.** If a crew member's mark changed to a spot within a nudge of where a walk had reached, the walker snapped there but stayed "moving" and crashed on the next frame (about 1 run in 6 with stand-in art). It now ends the walk. A regression test covers it. A second walk built in parallel (branch `art-walk-polish`) is superseded by this one and kept only for reference.
 
+**Layout pass (Nov 3, evening).**
+- **Walk:** the stride is shorter (10 units, widest leg angle about 11°) and the upper body leans less, so the pelvis stays a steady center.
+- **Station highlights:** while someone is selected, each station badge gets a small green, amber or red marker, and only the best spot gets a thin light outline. The big colored rectangles are gone.
+- **Craft table:** the idle spots at crafty are spread out and staggered in depth. In landscape the set shows only one "?" (for the next step) and "!" for anyone blocked. Others waiting pulse on their crew cards.
+- **Safe area:** the set's working frame fits between the crew portraits, the status bar, the ACTION column and a bottom margin, so nobody you tap is cut off or under a control. The camera push-in is off in landscape.
+- **Lights:** the key beam starts at the lens (named points on the light art) and follows the aim. The beams are blurred and dimmer, and the rolling spotlight is a soft oval centered on the burger.
+
 **Ro's pelvis.** A new pelvis part (shorts) sits between the shirt and the legs, and the new rounded-top legs hinge inside it. All of Ro's parts share one 27 px per unit master. He is about 51 set units tall with the cap.
 
 ## What the experiment found

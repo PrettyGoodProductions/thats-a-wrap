@@ -46,6 +46,16 @@
         "off": "387c3775-image.png",
         "on": "e9fe8e18-image.png",
         "dead": "0b5df88a-image.png"
+      },
+      "points": {
+        "lensA": [
+          150,
+          75
+        ],
+        "lensB": [
+          1080,
+          680
+        ]
       }
     },
     "crew.ro.head": {

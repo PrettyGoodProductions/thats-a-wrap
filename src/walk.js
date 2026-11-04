@@ -21,11 +21,12 @@
 
   const CFG = {
     speed: 46,      // set units per game second
-    step: 12,       // set units per step (one foot), stretched per trip to land on the mark
+    step: 10,       // set units per step (one foot), stretched per trip to land on the mark. Short enough that the
+                    // widest pose stays under the pelvis instead of splaying
     frames: 4,      // stop-motion poses per step: contact, down, passing, up
     lift: 1.3,      // how high the advancing foot clears the floor at passing, puppet units
     arm: 0.45,      // arm swing as a share of the opposite leg's swing
-    lean: 2.5,      // forward lean of the upper body while walking, degrees
+    lean: 1.5,      // forward lean of the upper body while walking, degrees (the pelvis itself stays level)
     scale: 1.25,    // puppet units to set units (the set draws puppets at scale 1.25)
     minTrip: 1.5,   // shorter moves just snap
   };
