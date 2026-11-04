@@ -26,10 +26,10 @@ A single-player mobile game about running a small video production company, made
 - **Tests:** 33 automated simulation tests pass, including soft-lock fuzzing.
 - **Known gap:** the shoot plays itself. It takes 84 seconds, the crew pick all 14 tasks, the player makes 4 decisions and the crew are idle 57% of the time. The Active Play Proposal addresses this.
 
-## Milestone B, first slice (in review, Nov 3)
+## Milestone B (in progress, Nov 3)
 
-- **Playable link (Layout Lab build):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE
-- **Branch:** `milestone-b-lab`. `master` is still Milestone A until the experiment is reviewed.
+- **Playable link (Milestone B build):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
 - **Tests:** 74 simulation tests pass, including a scripted player that finishes the shoot with every crew member at autonomy 0. A Chrome test bot (`tools/qa_lab_e2e.py`) finishes the Lab in portrait, landscape and rotated landscape with real taps.
@@ -71,18 +71,18 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 - **Autonomy:** 0 Newbie waits for orders, 1 Solid keeps going at its station, 2 Veteran moves to eligible department work within the current shot. Nobody changes shot order, spends money, starts risky perishables or calls ACTION. Assist Mode raises the floor to 1 and never lowers a veteran. The player always stays busy; better crew means less micromanagement, not less play.
 - **Small problems:** each costs something different (quality, or time, or a time/money/quality choice), never all three by default. Real time with in-world warnings and quick choices. Full-screen cards only for major chaos.
 - **Losing:** yes. Successful, compromised, or hard-stop failure, with advance warnings and recoverable money and reputation costs. Keep the hard-stop framework and rebalance it.
-- **Orientation:** leaning portrait HQ and landscape shoot, pending the Layout Lab. No assets get converted until it is reviewed.
+- **Orientation (locked):** the shoot is landscape: a full-screen wide set with a floating paper HUD (status bar, crew portraits, shot list pop-up, quest line, ACTION). HQ stays portrait. See Milestone-B-Plan.md
 
 ## Waiting on Tomás
 
-- [ ] **Play the Layout Lab** in both layouts on your phone and pick the shoot orientation.
+- [ ] **Play the landscape shoot** on your phone and send notes.
 - [ ] **Small calls in Milestone-B-Plan.md:** narrowing veterans to the current shot, hard-stop warning timing, what counts as a compromised delivery.
 
 ## Next steps
 
 See Milestone-B-Plan.md for the full sequence. In short:
 
-1. **Orientation:** apply the Lab winner to the shoot screen only.
+1. **Orientation:** done. The shoot is landscape.
 2. **Queues and small problems:** up to 3 queued tasks per person, real-time problems with the three consequence types.
 3. **Walking:** walk time from the parked branch (not its economy), puppets read positions from the engine.
 4. **Controls polish:** idle bell, queue pips, the Lab's station highlights.

@@ -6,7 +6,7 @@
   node build.mjs --art /nonexistent --out /tmp/plain-dist
   python3 tools/qa_art_e2e.py /tmp/plain-dist/index.html /tmp/qa-plain --expect none
 
-Plays a real shoot at 2x on a phone-sized screen: title, office, job board, hire, shoot, ACTION, key light
+Plays a real shoot at 2x on a phone held sideways (or upright with --upright): title, office, job board, hire, shoot, ACTION, key light
 failure, wrap. Samples the page while it runs, saves a screenshot the first time each state shows up, and
 fails if a state never appears or the page logs any error.
 
@@ -69,7 +69,9 @@ def snap(page, name, sel='#setWrap'):
 
 with sync_playwright() as p:
     b = p.chromium.launch(channel='chrome', args=['--no-sandbox'])
-    ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, has_touch=True)
+    # The shoot plays in landscape. --upright plays it on an upright phone, where the game turns the shoot sideways
+    vw, vh = (390, 844) if '--upright' in sys.argv else (844, 390)
+    ctx = b.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=2, has_touch=True)
     page = ctx.new_page()
     page.on('pageerror', lambda e: errors.append(f'pageerror: {e}'))
     # Web fonts come from the internet and are blocked in some sandboxes. That is not a game error.

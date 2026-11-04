@@ -2,7 +2,7 @@
 
 Nov 3, 2026 · @Tomás Valladares
 
-Hands-on crew direction, in steps small enough to playtest. This doc records the decisions, what is already built, what the first experiment found, and the order of work from here.
+Hands-on crew direction, in steps small enough to playtest. This doc records the decisions, what is already built, what the first experiment found, and the order of work from here. All Milestone B work lives on the branch `milestone-b-lab`.
 
 ## Decisions locked (Nov 3)
 
@@ -12,7 +12,7 @@ Hands-on crew direction, in steps small enough to playtest. This doc records the
 | Small problems | Different problems cost different things: some only quality, some block progress and cost time, some offer a choice between time, money and quality. Never all three at once by default. They happen in real time without pausing, with an in-world warning and a quick contextual choice. Full-screen interruptions stay for major chaos |
 | Shoot failure | Real failure is possible: successful, compromised, or hard stop. Hard stops get advance warnings. The cost is real but recoverable (money and reputation). Keep the hard-stop framework and rebalance it for manual assignment |
 | Departments | Each crew member works only their own department's tasks: art does art, camera does camera. Choosing who goes where is part of the challenge |
-| Orientation | Leaning portrait HQ and landscape shoot. Validate with the experiment below before committing. Nothing else is converted until it is reviewed |
+| Orientation | **Landscape shoot, portrait HQ** (locked Nov 3, evening). The shoot screen is the full-screen wide set with the pop-up HUD described below, in every shoot, not only the Layout Lab. On a phone held upright the game turns the shoot sideways itself. The Lab keeps its portrait run for comparison only |
 
 ## What is built so far (branch `milestone-b-lab`)
 
@@ -54,6 +54,20 @@ Task prompts pop up on the set: a "?" over anyone waiting for orders, bouncing o
 
 **Ro's pelvis.** A new pelvis part (shorts) sits between the shirt and the legs, and the new rounded-top legs hinge inside it. All of Ro's parts share one 27 px per unit master. He is about 51 set units tall with the cap.
 
+**Landscape is the shoot (Nov 3, late).** Starting a shoot from the office now opens the landscape layout, not only the Layout Lab's landscape run:
+- the wide set covering the screen inside the safe area
+- the floating paper HUD: status bar, crew portraits, shot list pop-up, quest line, ACTION
+- in-world pop-ups and small station markers
+- the soft, lens-anchored lights and the walk with the pelvis
+
+On an upright phone the shoot is turned sideways for you, and the pause menu has a Flip button if it comes out upside down. HQ, hiring and the office stay portrait. A full shoot with Ro hired passes held sideways and upright, the Lab bot passes portrait, landscape and tablet, and 95 tests pass.
+
+**Branches folded in or superseded.** This branch has everything from the landscape and art work on Nov 3:
+- **`feature/landscape-shoot-layout`:** the layout adopted from the ChatGPT prototype review. It is superseded by the wide set and pop-up HUD here. Its open ideas are in the backlog below.
+- **`art-walk-polish`:** a parallel walk, superseded by `src/walk.js`.
+
+Neither needs merging.
+
 ## What the experiment found
 
 A test bot played all three setups with real taps (portrait 390x844, landscape 844x390, landscape on a locked-portrait phone). Every run finished, every target was tappable, and the chaos card fit. These facts are measured. How each layout **feels** is only yours to judge, because the bot has no thumbs.
@@ -82,8 +96,8 @@ Each step ends at something you can play. We only move on after a review.
 
 | Step | Scope | Gate |
 | --- | --- | --- |
-| **0. Done** | Autonomy engine slice, Layout Lab, tests | You play both layouts and tell me which one feels better, with the Lab numbers |
-| **1. Orientation** | Apply the winner to the shoot screen only. HQ stays portrait. Rebuild the chaos and wrap cards for it. Real art is not converted | Shoot plays well on your phone |
+| **0. Done** | Autonomy engine slice, Layout Lab, tests | Done |
+| **1. Orientation, done** | Landscape is the shoot screen: wide set, pop-up HUD, safe area, chaos and wrap cards laid out for landscape. HQ stays portrait. The portrait shoot remains only in the Layout Lab | Play it on your phone held sideways |
 | **2. Queues and problems (B1b)** | Task queue of up to 3 per person (do it now, or add to the queue), long-press to clear. Small problems in real time with the three consequence types, shown as in-world markers with countdown rings. Level 2 narrowed to "within the current shot" as decided | Test player still finishes. Playtest 1 |
 | **3. Walking (B2)** | Port only the walk-time logic from `wip/crew-depth`, not its economy. Puppets read their position from the engine each frame. Walk cycle and work poses. Distance becomes a real decision | Crew visibly walk. Tests for walk time |
 | **4. Controls polish (C1)** | Idle bell (jumps to the next idle person), queue pips, bigger targets, and the highlights now prototyped in the Lab | Two taps per order holds on a phone |
@@ -92,6 +106,14 @@ Each step ends at something you can play. We only move on after a review.
 | **7. Tiers in the real game** | Autonomy comes from the crew you hire. Assist Mode setting. Hire cards show it | Hiring choices change how the shoot plays |
 
 Why queues and problems come before walking: they are the first things that make you busy, and they are cheap to test with the code-drawn puppets. Walking is mostly a rendering change plus one engine rule, and it benefits from knowing the orientation first.
+
+## Backlog from the ChatGPT prototype review
+
+These are ideas from `ChatGPT-Landscape-Prototype-Review.md` that still need a decision. Each fits a step above:
+- **Client review loop after a take** (approve, or a note leading to a retake or a quality penalty). Fits step 2 as a small problem.
+- **Rush crew** ($600 for 20 seconds of faster work) as a money-for-time button. Fits step 2.
+- **Freshness countdown on perishable shots** ("FRESH FOR 23s", then "STALE -20") with an art refresh action. Fits step 5.
+- **A "turn your phone" hold screen.** Not needed: an upright phone turns the shoot sideways instead.
 
 ## Open questions
 

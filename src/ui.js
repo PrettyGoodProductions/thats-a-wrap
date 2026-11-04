@@ -76,15 +76,18 @@
   }
   // A landscape lab shoot on a phone held upright (or locked to portrait): turn the whole shoot sideways ourselves
   function syncRot() {
-    const rot = !!lab && lab.layout === 'land' && screen === 'shoot' && window.innerHeight > window.innerWidth;
+    const rot = isLand() && screen === 'shoot' && window.innerHeight > window.innerWidth;
     document.body.classList.toggle('rot', rot);
-    document.body.classList.toggle('lab-land', !!lab && lab.layout === 'land' && screen === 'shoot');
+    document.body.classList.toggle('lab-land', isLand() && screen === 'shoot');
     document.body.classList.toggle('flip', rot && labFlip);
   }
   function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
   function say(text, bad, ms) { toast = { text, bad: !!bad, until: performance.now() + (ms || 2600) }; }
-  const idleSpot = (dept) => (lab && lab.layout === 'land' ? A.IDLE_WIDE : A.IDLE)[dept];
+  // The shoot is played in landscape (Milestone B decision, Nov 3). The Layout Lab can still run a portrait shoot
+  // for comparison. HQ screens stay portrait.
+  const isLand = () => (lab ? lab.layout === 'land' : true);
+  const idleSpot = (dept) => (isLand() ? A.IDLE_WIDE : A.IDLE)[dept];
   const ROLE_WORD = { camera: 'DP', lighting: 'Gaffer', art: 'Art', grip: 'Grip' };
   // The landscape HUD shows shoot time as a time of day: call at 8:00 AM, the wrap time is a 10 hour day
   const DAY_HOURS = 10, CALL_HOUR = 8;
@@ -299,8 +302,8 @@
 
   function buildShoot() {
     resetView();
-    const land = !!lab && lab.layout === 'land';
-    $('screen-shoot').className = 'app' + (lab ? (land ? ' lab land' : ' lab port') : '');
+    const land = isLand();
+    $('screen-shoot').className = 'app' + (lab ? ' lab' : '') + (land ? ' land' : lab ? ' port' : '');
     const perks = lab ? [] : save.owned.map(id => CO.rooms.find(r => r.id === id).name);
     // The same pieces in both arrangements. Portrait stacks them; landscape puts the shot list left, the set in the
     // middle at full height and crew plus ACTION under the right thumb. Ids are the same, so rendering is shared.
@@ -360,7 +363,7 @@
 
     const layer = $('crewLayer');
     const bar = $('crewbar');
-    const HIT_W = lab ? 48 : 36; // the lab widens the tap area around each puppet so the layouts are compared on comfortable targets
+    const HIT_W = lab || isLand() ? 48 : 36; // the lab widens the tap area around each puppet so the layouts are compared on comfortable targets
     for (const c of st.crew) {
       const idle = idleSpot(c.dept);
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -797,9 +800,9 @@
     const realDt = view.walkT ? Math.min(0.1, (now - view.walkT) / 1000) : 0;
     view.walkT = now;
     const walkDt = modal || st.paused ? 0 : realDt * speed;
-    const qs = lab && lab.layout === 'land' && S.nextStep(st);
+    const qs = isLand() && S.nextStep(st);
     const questCrew = qs && qs.crew;
-    const landHud = !!lab && lab.layout === 'land';
+    const landHud = isLand();
     const at = {};
     const targets = {};
     for (const c of st.crew) {
@@ -871,7 +874,7 @@
 
   function renderHud(now) {
     const t = S.seconds(st);
-    const landHud = !!lab && lab.layout === 'land';
+    const landHud = isLand();
     if (!landHud) {
       setText($('clock'), S.fmtTime(t));
       $('clock').classList.toggle('warn', t > LEVEL.timeLimit);
@@ -936,7 +939,7 @@
     $('autoBtn').hidden = !!lab || !(sc && sc.override);
 
     renderShotCard(cand);
-    if (lab && lab.layout === 'land') renderLandHud(t, cand, r);
+    if (isLand()) renderLandHud(t, cand, r);
   }
 
   // Time of day for the landscape HUD: shoot seconds scaled so the wrap time is DAY_HOURS after call
@@ -1024,7 +1027,7 @@
     const rowsKey = st.priority.map(id => id + (st.shots[id].captured ? 'c' + st.shots[id].quality : '') + (st.stageShot === id ? 's' : '') + st.shots[id].taskIds.length).join() + '|' + cand;
     if (rowsKey !== view.rowsKey) {
       view.rowsKey = rowsKey;
-      const landRows = lab && lab.layout === 'land';
+      const landRows = isLand();
       $('shotcard').innerHTML = st.priority.map((id, i) => {
         const s = st.shots[id];
         if (landRows) return landShotRow(id, i, cand);
@@ -1088,6 +1091,7 @@
         <button type="button" data-speed="2" aria-pressed="${speed === 2}">2x</button>
       </div>
       <button class="btn go" type="button" data-resume>Back to set</button>
+      ${document.body.classList.contains('rot') ? `<p class="note">Your phone is upright, so the shoot is turned sideways for you. <button class="btn small" type="button" data-rotflip>Upside down? Flip it</button></p>` : ''}
       <div class="row2"><button class="btn" type="button" data-again>Restart shoot</button><button class="btn" type="button" data-quit>Quit to office</button></div>`);
   }
 
@@ -1148,6 +1152,7 @@
     if (t.closest('[data-jobs]')) { showJobs(); return; }
     if (t.closest('[data-lab]') || t.closest('[data-labback]')) { showLab(); return; }
     if (t.closest('[data-labstart]')) { startLab(t.closest('[data-labstart]').dataset.labstart); return; }
+    if (t.closest('[data-rotflip]')) { labFlip = !labFlip; syncRot(); fitWideSet(); return; }
     if (t.closest('[data-labflip]')) { labFlip = !labFlip; showLab(); say(labFlip ? 'Rotating the other way' : 'Rotating the default way'); return; }
     if (t.closest('[data-book]')) { showBrief(); return; }
     if (t.closest('[data-hire-screen]')) { closeModal(); renderHire(); show('hire'); return; }
