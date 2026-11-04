@@ -153,7 +153,12 @@
       if (w.to && w.to.x === x && w.to.y === y) return;
       if (!w.to && w.x === x && w.y === y) return;
       const D = Math.hypot(x - w.x, y - w.y);
-      if (D < CFG.minTrip) { w.x = x; w.y = y; w.to = null; place(); return; }
+      if (D < CFG.minTrip) {
+        // A nudge (also a new mark right where a walk has got to): snap there and stand, ending any walk in progress
+        w.x = x; w.y = y; w.to = null;
+        if (w.moving) { w.moving = false; rest(); el.classList.remove('walking'); }
+        place(); return;
+      }
       if (Math.abs(x - w.x) > 2) {
         w.facing = x < w.x ? -1 : 1;
         if (flip) flip.setAttribute('transform', w.facing < 0 ? 'scale(-1 1)' : '');

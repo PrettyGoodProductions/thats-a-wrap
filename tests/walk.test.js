@@ -124,3 +124,18 @@ test('walkers face where they go, hold still when paused, and snap tiny moves', 
   w.goTo(250.5, 300.5);
   assert.ok(!w.moving); assert.equal(w.x, 250.5);
 });
+
+test('a new mark a nudge away from where a walk has got to ends the walk cleanly (no crash on the next frame)', () => {
+  const el = fakePup();
+  const w = W.create(el, { x: 28, y: 330 });
+  w.goTo(104, 210);
+  for (let i = 0; i < 30; i++) w.tick(1 / 60);
+  assert.ok(w.moving);
+  w.goTo(w.x + 0.5, w.y);          // the engine changes its mind to a spot right where the puppet is
+  assert.ok(!w.moving, 'stands still');
+  assert.ok(!el.classList.has('walking'));
+  assert.doesNotThrow(() => { for (let i = 0; i < 10; i++) w.tick(1 / 60); });
+  w.goTo(104, 210);                // and can walk on afterwards
+  while (w.moving) w.tick(1 / 60);
+  assert.equal(w.x, 104); assert.equal(w.y, 210);
+});

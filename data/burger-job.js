@@ -35,7 +35,8 @@
     hardStop: 200,         // the client pulls the plug here
     qualityTarget: 90,     // average quality needed for the third star
     actionDuration: 5,     // seconds of rolling after ACTION
-    crossDeptRate: 0.5,    // speed when someone works outside their department
+    departmentsOnly: true, // each crew member only works their own department's tasks (art does art, camera does camera)
+    crossDeptRate: 0.5,    // speed outside their department, for levels that allow it (departmentsOnly: false)
 
     // Default crew for tests and quick starts (the "solid" hire in every role)
     crew: [

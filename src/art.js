@@ -13,10 +13,10 @@
 
   function globalDefs() {
     return `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+      <!-- "cut": the soft drop shadow that lifts each paper piece off the one behind it. No surface texture or edge
+           wobble here: texture belongs inside each asset's own art (the noise wobble also warped delivered art) -->
       <filter id="cut" x="-10%" y="-10%" width="120%" height="130%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="n"/>
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>
-        <feDropShadow in="d" dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
+        <feDropShadow dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
       </filter>
       <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="1.2" dy="1.6" stdDeviation="0.7" flood-color="#2A1E12" flood-opacity=".35"/>
@@ -265,7 +265,7 @@
     <path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>
     <path d="M144 -40 L216 -44 L214 40 L146 40Z" fill="#D9A04A"/>
     <path d="M230 -34 L298 -30 L300 152 L228 152Z" fill="#6F8F83"/>
-    <rect x="290" y="-56" width="76" height="208" fill="url(#corrDark)"/>
+    <rect x="290" y="-56" width="76" height="208" fill="#2E4664"/>
   </g>
 
   <!-- Ceiling grid with hanging practicals and a flag -->

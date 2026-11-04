@@ -6,6 +6,10 @@ const { burgerJob, company } = require('../data/burger-job.js');
 
 const TPS = S.TPS;
 const fresh = () => S.createGame(burgerJob);
+// The Burger Job keeps every crew member in their own department. A few tests use cross-department help to set up a
+// situation (pull the gaffer off lighting), so they run on this open copy, which also keeps the half-speed rule tested.
+const openLevel = Object.assign({}, burgerJob, { departmentsOnly: false });
+const freshOpen = () => S.createGame(openLevel);
 const secs = n => Math.round(n * TPS);
 const runUntil = (st, pred, max = 5000) => { let i = 0; while (!pred(st) && !st.over && i++ < max) S.tick(st); return pred(st); };
 const clone = obj => JSON.parse(JSON.stringify(obj));
@@ -99,7 +103,7 @@ test('stage tasks for the next shot wait until the current shot is captured', ()
 /* ---------- Overrides ---------- */
 
 test('override keeps progress on the paused task and resumes it after', () => {
-  const st = fresh();
+  const st = freshOpen();
   S.stepTicks(st, secs(5));
   const before = st.tasks['hero.set'].progress;
   assert.equal(before, secs(5));
@@ -129,7 +133,7 @@ test('override is refused with a reason when a task is not workable', () => {
 });
 
 test('release returns a crew member to auto', () => {
-  const st = fresh();
+  const st = freshOpen();
   S.command(st, { type: 'assign', crew: 'dp', task: 'hero.set' });
   S.stepTicks(st, 3);
   assert.equal(st.crew.find(c => c.id === 'dp').task, 'hero.set');
@@ -160,7 +164,7 @@ test('perishable task waits for its shot, goes bad, and gets redone', () => {
 /* ---------- ACTION ---------- */
 
 test('ACTION is refused until required tasks are done, then allowed without optional ones', () => {
-  const st = fresh();
+  const st = freshOpen();
   let r = S.command(st, { type: 'action' });
   assert.equal(r.ok, false);
   assert.match(r.message, /Needs Build tabletop/);
@@ -390,7 +394,7 @@ test('gear cage turns renting a light into a free 2-second swap', () => {
 });
 
 test('edit bay adds quality, capped at 100', () => {
-  const st = S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['edit']) });
+  const st = S.createGame(openLevel, { mods: S.companyMods(company.rooms, ['edit']) });
   S.stepTicks(st, secs(14) + 1);
   S.command(st, { type: 'assign', crew: 'gaffer', task: 'hero.style' });
   runUntil(st, s => S.readiness(s, 'hero').ready);
@@ -510,7 +514,9 @@ test('tier sets autonomy and Assist Mode lifts the floor without lowering vetera
 test('canAssign says go, slow, busy or no, with the reason', () => {
   const st = withAutonomy(0);
   assert.equal(S.canAssign(st, 'grip', 'table').state, 'go');
-  assert.equal(S.canAssign(st, 'art', 'table').state, 'slow', 'art on a grip job runs at half speed');
+  assert.equal(S.canAssign(st, 'gaffer', 'table').state, 'no', 'the Burger Job keeps the gaffer off grip work');
+  assert.match(S.canAssign(st, 'gaffer', 'table').why, /Build tabletop is grip work\. Ro only does lighting/);
+  assert.equal(S.canAssign(S.createGame(openLevel, { autonomy: 0 }), 'gaffer', 'table').state, 'slow', 'on an open level it is half speed');
   const gaffer = S.canAssign(st, 'gaffer', 'light');
   assert.equal(gaffer.state, 'no');
   assert.match(gaffer.why, /Needs Build tabletop/);
@@ -611,4 +617,53 @@ test('nextStep names the first order for the shot on stage, and waitingOn names 
     }
   });
   assert.ok(done.__checked, 'checked the moment between shots');
+});
+
+
+/* ---------- Departments only ---------- */
+
+test('the Burger Job keeps every crew member in their own department', () => {
+  assert.equal(burgerJob.departmentsOnly, true);
+  const st = S.createGame(burgerJob, { autonomy: 0 });
+  for (const c of st.crew) for (const t of Object.values(st.tasks)) {
+    const r = S.command(S.createGame(burgerJob, { autonomy: 0 }), { type: 'assign', crew: c.id, task: t.id });
+    if (c.dept !== t.dept) {
+      assert.equal(r.ok, false, `${c.id} refused ${t.id}`);
+      assert.match(r.message, / work\. .* only does /);
+    }
+  }
+});
+
+test('helping a busy coworker in another department is refused, with the reason', () => {
+  const st = S.createGame(burgerJob, { autonomy: 0 });
+  S.command(st, { type: 'assign', crew: 'grip', task: 'hero.set' });
+  const r = S.command(st, { type: 'assign', crew: 'art', task: 'hero.set' });
+  assert.equal(r.ok, false);
+  assert.equal(r.message, 'Build tabletop is grip work. Lu only does art');
+  assert.equal(st.crew.find(c => c.id === 'art').task, null);
+});
+
+test('stations only offer a person their own department: art at the platform waits for the burger to be placed', () => {
+  const st = S.createGame(burgerJob, { autonomy: 0 });
+  const art = S.canAssign(st, 'art', 'table');
+  assert.equal(art.state, 'no');
+  assert.equal(art.task, 'hero.place', 'the art task at the platform, not the grip one');
+  assert.equal(S.canAssign(st, 'grip', 'table').state, 'go');
+  assert.equal(S.canAssign(st, 'grip', 'cart').state, 'no');
+});
+
+test('with departments only, the scripted player still wraps every shot order and nobody works out of department', () => {
+  const ids = ['hero', 'cheese', 'sauce'];
+  const perms = [];
+  const permute = (a, rest) => rest.length ? rest.forEach((x, i) => permute(a.concat(x), rest.filter((_, j) => j !== i))) : perms.push(a);
+  permute([], ids);
+  for (const order of perms) for (const level of [0, 1, 2]) {
+    const st = withAutonomy(level);
+    S.command(st, { type: 'setPriority', order });
+    directedPlay(st, 10, s => {
+      assertNoSoftLock(s);
+      for (const c of s.crew) if (c.task) assert.equal(s.tasks[c.task].dept, c.dept, `${c.id} on ${c.task}`);
+    });
+    assert.equal(st.endReason, 'wrap', `order ${order}, autonomy ${level}`);
+  }
 });

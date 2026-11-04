@@ -431,10 +431,10 @@
   function assignStation(station) {
     if (!selected) { view.stCard = view.stCard === station ? null : station; return; }
     view.stCard = null;
-    const list = S.stationTasks(st, station);
-    if (!list.length) { say('Nothing left to do there.', true); return; }
-    const workable = list.find(t => !S.blockReason(st, t, true));
-    assignTo((workable || list[0]).id);
+    // The engine decides what this person can do here (their own department only, on the Burger Job)
+    const a = S.canAssign(st, selected, station);
+    if (a.state === 'go' || a.state === 'slow') { assignTo(a.task); return; }
+    say(a.why || 'Nothing for them there.', a.state !== 'busy');
   }
 
   /* ================= Layout lab (Milestone B experiment) ================= */
@@ -874,7 +874,7 @@
     const rb = $('ribbon');
     let text = '', bad = false;
     if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
-    else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a lit-up spot on the set, a task icon, or a busy coworker.` : `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
+    else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a green spot on the set or a ${c.dept} task icon.` : `${c.name} selected. Tap a ${c.dept} task icon or a spot on the set.`; }
     else if (now < tipUntil) text = lab ? 'Everyone waits for your orders. Tap a person, then tap where they should work.' : 'Your crew start on their own. Tap a person to give them a different job.';
     else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set. The stage clears after the cut.`;
     else if (lab && !(r && r.ready) && S.nextStep(st)) text = `Next: ${nextLine(S.nextStep(st))}.`;
@@ -1002,7 +1002,10 @@
       const p = ts.fresh != null ? 1 : ts.pct;
       const v = p.toFixed(3);
       if (el._p !== v) { el._p = v; el.style.setProperty('--p', v); }
-      const cls = `ti dept-${t.dept}${t.optional ? ' optl' : ''} ${ts.state}${ts.fresh != null ? ' fresh' : ''}`;
+      // While someone is picked, other departments' icons fade: on the Burger Job they can only take their own
+      const sc = selected && st.crew.find(x => x.id === selected);
+      const other = !!(sc && LEVEL.departmentsOnly && sc.dept !== t.dept);
+      const cls = `ti dept-${t.dept}${t.optional ? ' optl' : ''} ${ts.state}${ts.fresh != null ? ' fresh' : ''}${other ? ' other' : ''}`;
       if (el.className !== cls) el.className = cls;
       const label = `${t.label}: ${ts.text}`;
       if (el._l !== label) { el._l = label; el.setAttribute('aria-label', label); el.title = label; }

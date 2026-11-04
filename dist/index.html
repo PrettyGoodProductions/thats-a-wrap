@@ -178,6 +178,7 @@ button:disabled{cursor:default}
 .ti.fresh .bd::before{content:"~"}
 .ti.manualtag{outline:2px dashed var(--slate); outline-offset:2px}
 body.picking .ti:not(.done):not(.skipped){outline:2px dashed var(--slate); outline-offset:2px; opacity:1}
+body.picking .ti.other:not(.done):not(.skipped), body.picking .ti.other{outline:none; opacity:.25}
 .stamp-q{font:400 15px var(--font-hand); color:var(--ok); border:2px solid var(--ok); padding:0 6px; transform:rotate(-5deg); background:#fff}
 .dept-grip{--dc:var(--d-grip)} .dept-lighting{--dc:var(--d-lighting)} .dept-camera{--dc:var(--d-camera)} .dept-art{--dc:var(--d-art)}
 .crewbar{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px}
@@ -506,7 +507,8 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
     hardStop: 200,         // the client pulls the plug here
     qualityTarget: 90,     // average quality needed for the third star
     actionDuration: 5,     // seconds of rolling after ACTION
-    crossDeptRate: 0.5,    // speed when someone works outside their department
+    departmentsOnly: true, // each crew member only works their own department's tasks (art does art, camera does camera)
+    crossDeptRate: 0.5,    // speed outside their department, for levels that allow it (departmentsOnly: false)
 
     // Default crew for tests and quick starts (the "solid" hire in every role)
     crew: [
@@ -685,6 +687,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
        Autonomy never touches strategy: shot order, spending, risky perishables and ACTION stay with the player.
     2. Stage claim: the first stage task started locks the stage to that shot. Chaos events can fire here.
     3. Work: tasks gain progress from everyone on them (speed x 1 in their dept, x crossDeptRate outside).
+       With level.departmentsOnly, nobody works outside their own department at all: art does art, camera does camera.
        A finished task can be botched by an unreliable crew member: half of it is redone, once per task.
     4. Perishables: finished perishable tasks go bad after freshFor seconds.
     5. Waits: rentals on the way count down.
@@ -1198,6 +1201,12 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
   }
 
   // Open tasks at a workstation, best first: the shot on stage, then shot priority, then data order.
+  // Why this crew member can't take this task because of their department, or null if they can
+  function deptReason(st, c, t) {
+    if (!st.level.departmentsOnly || c.dept === t.dept) return null;
+    return `${t.label} is ${t.dept} work. ${c.name} only does ${c.dept}`;
+  }
+
   function stationTasks(st, station) {
     const cand = stageCandidate(st);
     return taskList(st)
@@ -1211,8 +1220,11 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
     const c = typeof crew === 'string' ? crewById(st, crew) : crew;
     if (st.over) return { state: 'no', why: 'The shoot is wrapped' };
     if (st.pending) return { state: 'no', why: 'Deal with the problem first' };
-    const list = stationTasks(st, station);
-    if (!list.length) return { state: 'no', why: 'Nothing left to do there' };
+    const all = stationTasks(st, station);
+    if (!all.length) return { state: 'no', why: 'Nothing left to do there' };
+    // With departments only, a station offers this person only their own department's work
+    const list = st.level.departmentsOnly ? all.filter(x => x.dept === c.dept) : all;
+    if (!list.length) return { state: 'no', why: deptReason(st, c, all[0]) };
     const t = list.find(x => !blockReason(st, x, true));
     if (!t) return { state: 'no', task: list[0].id, label: list[0].label, why: blockReason(st, list[0], true) };
     if (c.override === t.id || c.task === t.id) return { state: 'busy', task: t.id, label: t.label, why: 'Already on it' };
@@ -1291,6 +1303,8 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
         const t = st.tasks[cmd.task];
         if (!c || !t) return fail('Unknown crew member or task');
         if (c.override === t.id) return ok(`${c.name} is already on ${t.label}`);
+        const dw = deptReason(st, c, t);
+        if (dw) return fail(dw);
         const why = blockReason(st, t, true);
         if (why) return fail(why);
         c.override = t.id;
@@ -1409,7 +1423,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
     readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
-    stationTasks, canAssign, idleWork, tierAutonomy, nextStep, waitingOn,
+    stationTasks, canAssign, idleWork, deptReason, tierAutonomy, nextStep, waitingOn,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });
@@ -1902,10 +1916,10 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
 
   function globalDefs() {
     return `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+      <!-- "cut": the soft drop shadow that lifts each paper piece off the one behind it. No surface texture or edge
+           wobble here: texture belongs inside each asset's own art (the noise wobble also warped delivered art) -->
       <filter id="cut" x="-10%" y="-10%" width="120%" height="130%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="n"/>
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>
-        <feDropShadow in="d" dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
+        <feDropShadow dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
       </filter>
       <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="1.2" dy="1.6" stdDeviation="0.7" flood-color="#2A1E12" flood-opacity=".35"/>
@@ -2154,7 +2168,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
     <path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>
     <path d="M144 -40 L216 -44 L214 40 L146 40Z" fill="#D9A04A"/>
     <path d="M230 -34 L298 -30 L300 152 L228 152Z" fill="#6F8F83"/>
-    <rect x="290" y="-56" width="76" height="208" fill="url(#corrDark)"/>
+    <rect x="290" y="-56" width="76" height="208" fill="#2E4664"/>
   </g>
 
   <!-- Ceiling grid with hanging practicals and a flag -->
@@ -2657,7 +2671,12 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
       if (w.to && w.to.x === x && w.to.y === y) return;
       if (!w.to && w.x === x && w.y === y) return;
       const D = Math.hypot(x - w.x, y - w.y);
-      if (D < CFG.minTrip) { w.x = x; w.y = y; w.to = null; place(); return; }
+      if (D < CFG.minTrip) {
+        // A nudge (also a new mark right where a walk has got to): snap there and stand, ending any walk in progress
+        w.x = x; w.y = y; w.to = null;
+        if (w.moving) { w.moving = false; rest(); el.classList.remove('walking'); }
+        place(); return;
+      }
       if (Math.abs(x - w.x) > 2) {
         w.facing = x < w.x ? -1 : 1;
         if (flip) flip.setAttribute('transform', w.facing < 0 ? 'scale(-1 1)' : '');
@@ -3140,10 +3159,10 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
   function assignStation(station) {
     if (!selected) { view.stCard = view.stCard === station ? null : station; return; }
     view.stCard = null;
-    const list = S.stationTasks(st, station);
-    if (!list.length) { say('Nothing left to do there.', true); return; }
-    const workable = list.find(t => !S.blockReason(st, t, true));
-    assignTo((workable || list[0]).id);
+    // The engine decides what this person can do here (their own department only, on the Burger Job)
+    const a = S.canAssign(st, selected, station);
+    if (a.state === 'go' || a.state === 'slow') { assignTo(a.task); return; }
+    say(a.why || 'Nothing for them there.', a.state !== 'busy');
   }
 
   /* ================= Layout lab (Milestone B experiment) ================= */
@@ -3583,7 +3602,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
     const rb = $('ribbon');
     let text = '', bad = false;
     if (toast && now < toast.until) { text = toast.text; bad = toast.bad; }
-    else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a lit-up spot on the set, a task icon, or a busy coworker.` : `${c.name} selected. Tap a task icon, a spot on the set, or a busy coworker.`; }
+    else if (selected) { const c = st.crew.find(x => x.id === selected); text = lab ? `${c.name}: tap a green spot on the set or a ${c.dept} task icon.` : `${c.name} selected. Tap a ${c.dept} task icon or a spot on the set.`; }
     else if (now < tipUntil) text = lab ? 'Everyone waits for your orders. Tap a person, then tap where they should work.' : 'Your crew start on their own. Tap a person to give them a different job.';
     else if (st.capture) text = `Rolling on ${st.shots[st.capture.shot].name}. Quiet on set. The stage clears after the cut.`;
     else if (lab && !(r && r.ready) && S.nextStep(st)) text = `Next: ${nextLine(S.nextStep(st))}.`;
@@ -3711,7 +3730,10 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
       const p = ts.fresh != null ? 1 : ts.pct;
       const v = p.toFixed(3);
       if (el._p !== v) { el._p = v; el.style.setProperty('--p', v); }
-      const cls = `ti dept-${t.dept}${t.optional ? ' optl' : ''} ${ts.state}${ts.fresh != null ? ' fresh' : ''}`;
+      // While someone is picked, other departments' icons fade: on the Burger Job they can only take their own
+      const sc = selected && st.crew.find(x => x.id === selected);
+      const other = !!(sc && LEVEL.departmentsOnly && sc.dept !== t.dept);
+      const cls = `ti dept-${t.dept}${t.optional ? ' optl' : ''} ${ts.state}${ts.fresh != null ? ' fresh' : ''}${other ? ' other' : ''}`;
       if (el.className !== cls) el.className = cls;
       const label = `${t.label}: ${ts.text}`;
       if (el._l !== label) { el._l = label; el.setAttribute('aria-label', label); el.title = label; }

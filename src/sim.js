@@ -14,6 +14,7 @@
        Autonomy never touches strategy: shot order, spending, risky perishables and ACTION stay with the player.
     2. Stage claim: the first stage task started locks the stage to that shot. Chaos events can fire here.
     3. Work: tasks gain progress from everyone on them (speed x 1 in their dept, x crossDeptRate outside).
+       With level.departmentsOnly, nobody works outside their own department at all: art does art, camera does camera.
        A finished task can be botched by an unreliable crew member: half of it is redone, once per task.
     4. Perishables: finished perishable tasks go bad after freshFor seconds.
     5. Waits: rentals on the way count down.
@@ -527,6 +528,12 @@
   }
 
   // Open tasks at a workstation, best first: the shot on stage, then shot priority, then data order.
+  // Why this crew member can't take this task because of their department, or null if they can
+  function deptReason(st, c, t) {
+    if (!st.level.departmentsOnly || c.dept === t.dept) return null;
+    return `${t.label} is ${t.dept} work. ${c.name} only does ${c.dept}`;
+  }
+
   function stationTasks(st, station) {
     const cand = stageCandidate(st);
     return taskList(st)
@@ -540,8 +547,11 @@
     const c = typeof crew === 'string' ? crewById(st, crew) : crew;
     if (st.over) return { state: 'no', why: 'The shoot is wrapped' };
     if (st.pending) return { state: 'no', why: 'Deal with the problem first' };
-    const list = stationTasks(st, station);
-    if (!list.length) return { state: 'no', why: 'Nothing left to do there' };
+    const all = stationTasks(st, station);
+    if (!all.length) return { state: 'no', why: 'Nothing left to do there' };
+    // With departments only, a station offers this person only their own department's work
+    const list = st.level.departmentsOnly ? all.filter(x => x.dept === c.dept) : all;
+    if (!list.length) return { state: 'no', why: deptReason(st, c, all[0]) };
     const t = list.find(x => !blockReason(st, x, true));
     if (!t) return { state: 'no', task: list[0].id, label: list[0].label, why: blockReason(st, list[0], true) };
     if (c.override === t.id || c.task === t.id) return { state: 'busy', task: t.id, label: t.label, why: 'Already on it' };
@@ -620,6 +630,8 @@
         const t = st.tasks[cmd.task];
         if (!c || !t) return fail('Unknown crew member or task');
         if (c.override === t.id) return ok(`${c.name} is already on ${t.label}`);
+        const dw = deptReason(st, c, t);
+        if (dw) return fail(dw);
         const why = blockReason(st, t, true);
         if (why) return fail(why);
         c.override = t.id;
@@ -738,7 +750,7 @@
   return {
     TPS, validateLevel, hireCheck, companyMods, createGame, tick, stepTicks, advance, command,
     readiness, crewStatus, taskStatus, stageCandidate, chainLen, blockReason, eventOptions, score, stationOf, stationInfo,
-    stationTasks, canAssign, idleWork, tierAutonomy, nextStep, waitingOn,
+    stationTasks, canAssign, idleWork, deptReason, tierAutonomy, nextStep, waitingOn,
     snapshot, anyAvailableWork, seconds, fmtTime, fmtMoney, actionTicks, freshFor, hasPerk,
   };
 });
