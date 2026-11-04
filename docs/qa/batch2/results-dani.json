@@ -1,0 +1,142 @@
+[
+  {
+    "check": "[Dani] portrait crop shows the whole head (nothing cut off at the top or sides of the card)",
+    "pass": true,
+    "detail": "art spans x 12-147 of 168, y 14-180 of 180 device px"
+  },
+  {
+    "check": "[Dani] every image is sharp on the hardest display it meets (delivered px >= drawn device px)",
+    "pass": true,
+    "detail": "softest 1.23x"
+  },
+  {
+    "check": "[Dani] no image carries more than 2x the pixels the hardest display can show",
+    "pass": true,
+    "detail": "most oversized 1.40x"
+  },
+  {
+    "check": "[Dani] platform: corners fully transparent",
+    "pass": true,
+    "detail": "corner alpha [np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)]"
+  },
+  {
+    "check": "[Dani] key-on: corners fully transparent",
+    "pass": true,
+    "detail": "corner alpha [np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)]"
+  },
+  {
+    "check": "[Dani] dani: corners fully transparent",
+    "pass": true,
+    "detail": "corner alpha [np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)]"
+  },
+  {
+    "check": "[Dani] platform bottom edge sits on the spot (y = 192 set units, +-0.8)",
+    "pass": true,
+    "detail": "bottom 192.05"
+  },
+  {
+    "check": "[Dani] platform is centered on its spot (x = 184, +-1.0)",
+    "pass": true,
+    "detail": "center 184.05"
+  },
+  {
+    "check": "[Dani] platform footprint is within 15% of the manifest width (112 units)",
+    "pass": true,
+    "detail": "drawn 104.1 wide x 42.7 tall (manifest 112 x 60)"
+  },
+  {
+    "check": "[Dani] hero burger base sits on the platform contact point (+-0.8 units)",
+    "pass": true,
+    "detail": "base at 181.1, 158.0; contact 181.4, 158.0; layout shift +1.4, +30.0"
+  },
+  {
+    "check": "[Dani] the contact point is on the platform art (the lid), not in empty canvas",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "[Dani] no jump between key light states (every state within 0.75 device px of \"off\", all aim angles)",
+    "pass": true,
+    "detail": "worst 0.22 device px = 0.06 units at 3x"
+  },
+  {
+    "check": "[Dani] key light state outlines match (overlap >= 0.97)",
+    "pass": true,
+    "detail": "worst 0.987"
+  },
+  {
+    "check": "[Dani] key head turns about the stand (pivot at the yoke): rotated art matches drawn art >= 0.95",
+    "pass": true,
+    "detail": "worst 0.984"
+  },
+  {
+    "check": "[Dani] pivot point sits on the art (the yoke), not in empty canvas",
+    "pass": true,
+    "detail": "pixel at pivot opaque: True"
+  },
+  {
+    "check": "[Dani] only Ro uses the fixed rig, other crew keep their own look",
+    "pass": true,
+    "detail": "1 fixed-character puppet(s) on set"
+  },
+  {
+    "check": "[Dani] idle: puppet stands on the ground mark (feet at y = 0, +-0.8 units)",
+    "pass": true,
+    "detail": "feet +0.19 units from the mark"
+  },
+  {
+    "check": "[Dani] idle: puppet height is in line with the other crew (44 to 52 puppet units)",
+    "pass": true,
+    "detail": "51.6 puppet units tall"
+  },
+  {
+    "check": "[Dani] idle: one solid piece (no gaps at neck, shoulders, hips)",
+    "pass": true,
+    "detail": "1 piece(s)"
+  },
+  {
+    "check": "[Dani] work: one solid piece in all 12 frames (arm stays attached at the shoulder)",
+    "pass": true,
+    "detail": "pieces per frame [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]"
+  },
+  {
+    "check": "[Dani] work: front arm reaches forward (>= 6 units past the idle silhouette)",
+    "pass": true,
+    "detail": "reaches 13.7 units further"
+  },
+  {
+    "check": "[Dani] work: body stays planted (feet within 1.5 units of the mark)",
+    "pass": true,
+    "detail": "feet -0.65 to +0.19"
+  },
+  {
+    "check": "[Dani] lab page logged no errors",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "[Dani] walk: one solid piece in every frame of both trips",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "[Dani] walk: the planted foot does not slide (sole center moves < 0.25 units while planted)",
+    "pass": true,
+    "detail": "worst 0.152 set units, against a step of about 10"
+  },
+  {
+    "check": "[Dani] walk: feet on the floor in every frame (lowest point within 0.6 units of the mark)",
+    "pass": true,
+    "detail": "-0.07 to +0.28 units"
+  },
+  {
+    "check": "[Dani] walk: steps matched to travel (even spacing, 4 poses per step)",
+    "pass": true,
+    "detail": "spacing varies 0.0000 units, 4.0, 4.0 frames per step"
+  },
+  {
+    "check": "[Dani] walk: starts and stops without a pop (first and last change within the range of ordinary frames)",
+    "pass": true,
+    "detail": "start/stop overlap vs the 10th percentile of ordinary frames: 1.000/0.853 vs 0.860; 0.874/0.865 vs 0.861"
+  }
+]

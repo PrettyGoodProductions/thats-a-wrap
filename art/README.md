@@ -95,7 +95,7 @@ One more file, `crew.<character>.json`, fits the character to the shared rig:
 
 The walk, work and reach animations live in `src/page.html` (`.wl-rig` rules) and move parts by role, so every character on the rig animates the same way. A pose image such as `crew.ro.arm-front.work@8x.png` replaces the part while that pose plays.
 
-A new character is its files plus one line in `CHARACTERS` in `src/slots.js`.
+A new character is its files plus one line in `CHARACTERS` in `src/slots.js`. Batch 2 (Mika, Dani, Lu) shows the path: `tools/batch2.map.json` is generated from each crop's alpha (pivots at the neck stub, hem, sleeve cap and hip tab) and gives each character its own `native` scale, so every one stands 51.8 units tall like Ro.
 
 ## Checking a batch
 
@@ -105,6 +105,8 @@ A new character is its files plus one line in `CHARACTERS` in `src/slots.js`.
 | `python3 tools/audit_art.py art` | Per file: size, weight, margins, specks, haze, edge halos. Per piece: how far states drift from each other |
 | `node build.mjs --lab --out /tmp/lab && python3 tools/qa_pipeline.py /tmp/lab /tmp/qa` | In Chrome: sharpness at phone and tablet scale, transparency, platform placement, key light jump and pivot, puppet walk and work frames (writes GIFs and contact sheets) |
 | `python3 tools/qa_art_e2e.py dist/index.html /tmp/e2e --expect ro` | Plays a real shoot with Ro hired and checks everything shows up |
+| `python3 tools/qa_art_e2e.py dist/index.html /tmp/e2e --expect crew` | Same, with every delivered character hired (Ro, Mika, Dani; Lu when she is not booked): each must walk and work on the fixed rig |
+| `python3 tools/qa_pipeline.py /tmp/lab /tmp/qa --char mika` | The bench checks on one character (`ro`, `mika`, `dani`, `lu`). Run one at a time: four in parallel crash Chrome |
 
 ## Adding a new piece
 
