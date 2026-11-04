@@ -21,6 +21,20 @@ Hands-on crew direction, in steps small enough to playtest. This doc records the
 
 **Layout Lab.** Office screen, "Layout lab" button. One seeded shoot, same crew, everyone at autonomy 0, played once in portrait and once in landscape. It measures orders per minute, wait for an order, crew idle share, taps per order, dropped selections and refused orders, plus the real pixel size of everything you tap on your device. Results save per layout and show side by side. Stations light up green (full speed), amber (half speed) or red (can't, tap for the reason) once someone is selected, and crew with work available but no orders show a "?". If a phone is locked to portrait, landscape turns the shoot sideways itself (turn the phone counterclockwise, or tap Flip).
 
+**Merged in from master (Nov 3, later).** The asset loader, art batch 1 (platform, key light, Ro the Gaffer on the fixed-character rig) and the removal of the set-wide paper texture.
+
+**Walk (part of B2, rendering only).** `src/walk.js` replaces the fixed 0.9 second slide. Crew walk at one speed in game time, with a whole number of steps per trip so the last step lands on the mark. Each step has four stepped poses: contact, down, passing, up. The planted boot stays on its spot and rolls on its own outline instead of sinking or sliding. The advancing foot lifts a little, the bob is only what keeps the planted foot on the floor, and the arms swing gently against the legs. Trips start and end in the idle pose, the walk pauses with the game, and 2x walks faster. The engine still has no walk time, which step 3 adds.
+
+**Hero contact point.** The platform's settings name a `contact` point on its lid. The burger sits there, and the frame marks, sparkle, pour, rig and beam ends move with it. Batch 1's flat box drops the burger 30 units. The Asset Manifest has the spec for a taller box (112 x 76, lid center at y 128).
+
+**Concept HUD on the landscape shoot.** The Lab's landscape layout now follows the concept:
+- **Top bar:** logo, job tag, budget and spend meters, time of day with hour segments, stars on track, pause.
+- **Left:** crew status cards and a what's-next panel.
+- **Middle:** the set.
+- **Right:** the shot list with polaroids and progress, and set conditions per department.
+
+Portrait is unchanged. The Lab bot plays it on an 844 x 390 phone, a rotation-locked phone and a 1280 x 800 tablet.
+
 ## What the experiment found
 
 A test bot played all three setups with real taps (portrait 390x844, landscape 844x390, landscape on a locked-portrait phone). Every run finished, every target was tappable, and the chaos card fit. These facts are measured. How each layout **feels** is only yours to judge, because the bot has no thumbs.
