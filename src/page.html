@@ -298,43 +298,128 @@ body.picking .station-hit.hit-busy{fill:rgba(255,255,255,.10); stroke:#fff; stro
 .labcmp .dim{color:var(--ink-2)}
 .labrun{display:flex; flex-direction:column; gap:8px}
 
-/* Landscape shoot: shot list left, the set in the middle at full height, crew and ACTION under the right thumb */
-#screen-shoot.land{position:fixed; inset:0; z-index:5; max-width:none; margin:0; gap:0; overflow:hidden; background:var(--paper);
+/* Landscape shoot, laid out like the concept HUD: status bar across the top, crew status and what's next on the
+   left, the set in the middle at full height, shot list and set conditions on the right. Sized for a phone held
+   sideways first (844 x 390), with a larger tier for tablets. */
+#screen-shoot.land{position:fixed; inset:0; z-index:5; max-width:none; margin:0; gap:0; overflow:hidden; background:#2C3E56;
   padding:max(6px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
-.land-grid{height:100%; display:grid; grid-template-columns:minmax(170px,26%) minmax(0,1fr) minmax(176px,24%); gap:8px; min-height:0}
-.land-col{display:flex; flex-direction:column; gap:6px; min-height:0; min-width:0}
+.land-grid{height:100%; display:grid; grid-template-columns:minmax(178px,23%) minmax(0,1fr) minmax(196px,26%); grid-template-rows:auto minmax(0,1fr); gap:12px 8px; min-height:0}
+.land-col{display:flex; flex-direction:column; gap:14px; min-height:0; min-width:0; padding-top:4px}
 .land-mid{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column}
 .land .set-wrap{flex:1; min-height:0; display:grid; place-items:center}
 .land .set{width:100%; height:100%}
-.land .land-hud{position:absolute; top:12px; left:6px; right:6px; z-index:4; pointer-events:none}
-.land .land-hud .topbar{gap:4px; pointer-events:none}
-.land .land-hud .pill, .land .land-hud .sq{pointer-events:auto}
-.land .land-hud .pill{padding:3px 7px; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
-.land .land-hud .pill b{font-size:13px}
-.land .land-hud .pill .hand{font-size:13px}
-.land .land-hud .pill span{font-size:8.5px}
-.land .land-hud .sq{width:40px; min-height:40px; height:auto; box-shadow:1px 2px 0 rgba(34,38,43,.85)}
-.land .daybar{position:absolute; left:0; right:0; top:0; z-index:4; margin:0; height:8px; border-radius:3px 3px 0 0}
-.land .daybar .wm span{display:none}
-.land .land-hud .pill.grow{flex:0 1 auto}
-.land .land-hud .pill .hand{display:none}
-.land .onstage{display:none}
-.land .ribbon{margin:0; min-height:0; font-size:12px; line-height:1.25; padding:5px 7px; flex:none}
-.land .shotcard{flex:1; min-height:0; overflow:auto; padding:2px 8px}
-.land .srow{grid-template-columns:20px minmax(0,1fr); grid-template-areas:"sg sn" "ic ic"; row-gap:3px; padding:4px 0; min-height:0; align-items:center}
-.land .srow .sg{grid-area:sg}
-.land .srow .sn{grid-area:sn; font-size:15px}
-.land .srow .icons, .land .srow .stamp-q{grid-area:ic}
-.land .srow.stage{margin-inline:-8px; padding-inline:8px}
-.land .icons{flex-wrap:wrap; gap:4px}
-.land .crewbar{grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); flex:1; min-height:0}
-.land .cb{padding:4px 3px 9px; justify-content:center}
-.land .cb svg{width:36px; height:36px}
-.land .cb .tx{height:24px; font-size:10.5px}
-.land .clapbtn{position:static; width:100%; max-width:none; flex:none; min-height:76px; flex-direction:row; align-items:center; gap:8px}
-.land .clapbtn svg{width:74px; flex:none}
-.land .clapbtn .cap{flex:1; font-size:14px; padding:10px 6px; text-align:center}
+.land .onstage, .land .daybar{display:none}
 .land .stcard{left:6px; right:6px; bottom:6px; font-size:12px}
+
+/* Top status bar */
+.hud-top{grid-column:1 / -1; display:flex; align-items:center; gap:6px; min-height:44px; min-width:0}
+.hud-logo{height:46px; width:auto; flex:none; transform:rotate(-4deg); filter:drop-shadow(1px 2px 0 rgba(10,14,20,.5))}
+.hud-job{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; justify-content:center; background:#F8EFDC; padding:4px 10px 3px; border-radius:2px 5px 3px 6px;
+  transform:rotate(-1.2deg); box-shadow:2px 2px 0 rgba(10,14,20,.45)}
+.hud-job b{font:400 15px/1.05 var(--font-hand); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hud-job small{font:700 9.5px/1.2 var(--font-ui); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hud-dark{flex:none; display:flex; align-items:center; gap:10px; background:#23272D; color:#F4EBDA; border-radius:10px; padding:5px 10px; box-shadow:0 2px 0 rgba(0,0,0,.45)}
+.hud-dark span{font:400 11px/1 var(--font-hand); text-transform:uppercase; letter-spacing:.02em; color:#E6DCC8}
+.hud-dark b{font:600 14px/1 var(--font-mono); font-variant-numeric:tabular-nums}
+.hud-dark b.neg{color:#FF8A72}
+.hud-money .meter{display:grid; grid-template-columns:auto auto; grid-template-rows:auto 6px; align-items:end; gap:3px 6px}
+.hud-money .meter em{grid-column:1 / -1; display:block; height:6px; border-radius:3px; background:#464B53; overflow:hidden}
+.hud-money .meter em i{display:block; height:100%; width:0; background:#6DB35A; border-radius:3px}
+.hud-money .meter:last-child em i{background:#9BC86A}
+.hud-time{display:grid; grid-template-columns:auto auto; grid-template-rows:auto 9px; gap:3px 8px; align-items:end}
+.hud-time .segs{grid-column:1 / -1; display:flex; gap:2px}
+.hud-time .segs i{width:9px; height:9px; border-radius:2px; background:#4A4F57}
+.hud-time .segs i.on{background:#F2B630}
+.hud-time.ot b{color:#FF8A72}
+.hud-time.ot .segs i{background:#D86B56}
+.hud-stars{gap:1px; padding:4px 8px}
+.hud-stars svg{width:22px; height:22px; display:block}
+.hud-pause{flex:none; width:42px; height:42px; display:grid; place-items:center; background:#F8EFDC; border-radius:9px; box-shadow:0 2px 0 rgba(0,0,0,.45); text-align:center}
+
+/* Paper panels with a torn tag for a title */
+.panel{position:relative; background:#F4E7CB; border-radius:4px 9px 5px 8px; padding:17px 7px 6px; box-shadow:2px 3px 0 rgba(12,16,22,.5); min-height:0; min-width:0; display:flex; flex-direction:column}
+.panel .tag{position:absolute; z-index:2; top:-9px; left:7px; margin:0; font:400 13px/1 var(--font-hand); text-transform:uppercase; color:var(--ink); background:#FCF5E6;
+  padding:5px 10px 4px; transform:rotate(-3deg); box-shadow:1px 2px 0 rgba(12,16,22,.4); border-radius:2px 4px 2px 3px; white-space:nowrap}
+
+/* Crew status: one card per person, colored by department, portrait on top */
+.crew-panel{flex:1}
+.land .crewbar{flex:1; min-height:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); gap:6px}
+.land .cb{padding:4px 3px 8px; justify-content:center; gap:1px; border:0; border-radius:6px; box-shadow:1px 2px 0 rgba(12,16,22,.35); background:#FBF4E4}
+.land .cb.dept-camera{background:#BFD6EE} .land .cb.dept-lighting{background:#F4D98A} .land .cb.dept-art{background:#F3C3C6} .land .cb.dept-grip{background:#BFDCC9}
+.land .cb svg{width:34px; height:34px; flex:none}
+.land .cb .rl{font:400 12px/1 var(--font-hand); text-transform:uppercase}
+.land .cb .nm{font:700 9.5px/1.1 var(--font-ui); color:var(--ink-2)}
+.land .cb .tx{height:auto; max-height:22px; font-size:9.5px; line-height:1.15; -webkit-line-clamp:2; margin-bottom:3px}
+.land .cb .bar{left:6px; right:6px; bottom:4px; height:5px; border-radius:3px; background:rgba(34,38,43,.18)}
+.land .cb .bar i{border-radius:3px; background:#4E9A5A}
+.land .cb.sel{box-shadow:0 0 0 3px var(--coral)}
+.cb .rl{display:none}
+.land .cb .rl{display:block}
+
+/* What's next: ACTION plus the coaching line */
+.next-panel{flex:none}
+.next-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:6px; align-items:stretch}
+.land .clapbtn{position:static; width:100%; max-width:none; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:5px; min-height:64px;
+  background:#FBF4E4; border-radius:8px; box-shadow:1px 2px 0 rgba(12,16,22,.35)}
+.land .clapbtn.on{background:#F2C14E}
+.land .clapbtn svg{width:58px}
+.land .clapbtn .cap{border:0; background:none; padding:0; font:700 10px/1.15 var(--font-ui); text-align:center}
+.land .clapbtn.on .cap{background:none; color:var(--ink)}
+.land .clapbtn.rolling{background:#23272D} .land .clapbtn.rolling .cap{background:none; color:#F4EBDA}
+.land .ribbon{margin:0; min-height:0; box-shadow:1px 2px 0 rgba(12,16,22,.35); border:0; border-radius:8px; background:#FBF4E4; font-size:11px; line-height:1.25; padding:6px 7px; align-items:center}
+.land .ribbon.bad{background:#FFE0D8}
+
+/* Shot list: polaroid, status mark, name and progress; the shot that is up next is highlighted and shows its tasks */
+.shot-panel{flex:1}
+.shot-num{position:absolute; top:3px; right:9px; font:400 14px/1 var(--font-hand)}
+.land .shotcard{flex:1; min-height:0; overflow:auto; padding:0; display:flex; flex-direction:column; gap:4px; background:none; border:0; box-shadow:none}
+.lrow{display:grid; grid-template-columns:40px 17px minmax(0,1fr); align-items:center; gap:3px 6px; padding:4px 5px; border-radius:6px}
+.lrow.up{background:#F6D88B; box-shadow:inset 0 0 0 1.5px rgba(34,38,43,.2)}
+.lthumb{width:40px; height:31px; object-fit:cover; border:2.5px solid #fff; border-bottom-width:5px; transform:rotate(-2.5deg); box-shadow:1px 1px 0 rgba(12,16,22,.35); border-radius:1px}
+.lrow .sk{width:17px; height:17px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center; font:700 10px/1 var(--font-ui)}
+.lrow .sk.done{background:#4E9A5A; border-color:#4E9A5A; color:#fff}
+.lrow .sk.up{background:#FBF4E4; font-size:8px}
+.lmain{min-width:0; display:flex; flex-direction:column; gap:2px}
+.lmain b{font:400 13px/1.05 var(--font-hand); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lmain .ss{font:700 9.5px/1.1 var(--font-ui); text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2)}
+.lmain .ss.done{color:#3E8A4C}
+.lmain .mvup{font-size:9.5px; text-transform:none; letter-spacing:0}
+.lrow .sbar{display:block; height:6px; border-radius:3px; background:rgba(34,38,43,.18); overflow:hidden}
+.lrow .sbar i{display:block; height:100%; width:0; background:#E89A2E; border-radius:3px}
+.lrow .icons{grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:4px}
+.land .lrow .ti{width:32px; height:32px}
+
+/* Set conditions: each department's readiness for the shot that is up next */
+.cond-panel{flex:none; flex-direction:row; align-items:flex-start; gap:6px}
+.conds{list-style:none; margin:0; padding:0; flex:1; display:grid; grid-template-columns:1fr 1fr; gap:3px 6px}
+.conds li{display:flex; align-items:center; gap:5px; font:700 10.5px/1.15 var(--font-ui)}
+.conds li i{flex:none; width:14px; height:14px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center; background:conic-gradient(#4E9A5A calc(var(--p) * 360deg), transparent 0)}
+.conds li.ok i{background:#4E9A5A; border-color:#4E9A5A}
+.conds li.ok i::after{content:"✓"; color:#fff; font:700 9px/1 var(--font-ui)}
+.board{display:none}
+
+@media (min-width:1000px) and (min-height:600px){
+  .land-grid{grid-template-columns:minmax(230px,22%) minmax(0,1fr) minmax(270px,25%); gap:16px 12px}
+  .hud-top{min-height:64px; gap:10px}
+  .hud-logo{height:66px}
+  .hud-job b{font-size:22px} .hud-job small{font-size:12px}
+  .hud-dark{padding:8px 14px; border-radius:12px; gap:16px}
+  .hud-dark span{font-size:15px} .hud-dark b{font-size:20px}
+  .hud-money .meter{grid-template-rows:auto 8px} .hud-money .meter em{height:8px}
+  .hud-time{grid-template-rows:auto 12px} .hud-time .segs i{width:14px; height:12px}
+  .hud-stars svg{width:32px; height:32px}
+  .hud-pause{width:56px; height:56px}
+  .panel{padding:22px 10px 10px} .panel .tag{font-size:18px; top:-12px}
+  .land .cb svg{width:60px; height:60px} .land .cb .rl{font-size:16px} .land .cb .nm{font-size:12px} .land .cb .tx{font-size:11.5px; max-height:28px}
+  .land .clapbtn svg{width:84px} .land .clapbtn .cap{font-size:13px} .land .ribbon{font-size:13.5px}
+  .lrow{grid-template-columns:64px 22px minmax(0,1fr); padding:6px 8px} .lthumb{width:64px; height:50px}
+  .lrow .sk{width:22px; height:22px; font-size:12px} .lmain b{font-size:18px} .lmain .ss{font-size:12px}
+  .land .lrow .ti{width:40px; height:40px}
+  .conds{grid-template-columns:1fr} .conds li{font-size:14px} .conds li i{width:20px; height:20px}
+  .board{display:block; position:relative; flex:none; width:96px; aspect-ratio:4/5; background:#FFFDF6; padding:8px 6px; transform:rotate(3deg); box-shadow:1px 2px 0 rgba(12,16,22,.35)}
+  .board svg{width:100%; height:auto; filter:grayscale(1) contrast(1.6) brightness(1.25); opacity:.85}
+  .board .tape{position:absolute; top:-7px; right:-6px; width:34px; height:12px; background:#F2D27A; opacity:.9; transform:rotate(28deg)}
+}
 
 /* Phones locked to portrait: the game turns the shoot sideways itself (turn the phone counterclockwise) */
 body.rot{overflow:hidden}

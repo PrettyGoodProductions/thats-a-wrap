@@ -9,6 +9,7 @@ Scenarios
   port       portrait layout on a 390x844 phone
   land       landscape layout on an 844x390 phone
   land-rot   landscape layout on a 390x844 phone (rotation locked), so the game turns the shoot sideways itself
+  land-tab   landscape layout on a 1280x800 tablet (the larger HUD tier)
 
 Every tap goes through document.elementFromPoint first, so a station that is covered by something else and cannot
 actually be tapped fails the run. The bot taps the crew member who is asking for orders, then a lit-up station.
@@ -20,7 +21,7 @@ from playwright.sync_api import sync_playwright
 
 page_path, out_dir, scenario = sys.argv[1], sys.argv[2], sys.argv[3]
 os.makedirs(out_dir, exist_ok=True)
-VIEW = {'port': (390, 844), 'land': (844, 390), 'land-rot': (390, 844)}[scenario]
+VIEW = {'port': (390, 844), 'land': (844, 390), 'land-rot': (390, 844), 'land-tab': (1280, 800)}[scenario]
 LAYOUT = 'port' if scenario == 'port' else 'land'
 
 # A point inside the element that really belongs to it (nothing is covering it), in viewport coordinates

@@ -53,7 +53,7 @@
   const view = {};
 
   function resetView() {
-    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null, walkT: 0 });
+    Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null, hits: null, walkT: 0, segKey: '', condKey: '', stars: -1 });
   }
 
   /* ================= Helpers ================= */
@@ -84,10 +84,14 @@
   function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
   function say(text, bad, ms) { toast = { text, bad: !!bad, until: performance.now() + (ms || 2600) }; }
+  const ROLE_WORD = { camera: 'DP', lighting: 'Gaffer', art: 'Art', grip: 'Grip' };
+  // The landscape HUD shows shoot time as a time of day: call at 8:00 AM, the wrap time is a 10 hour day
+  const DAY_HOURS = 10, CALL_HOUR = 8;
+  const COND = [['grip', 'Set built'], ['lighting', 'Lighting'], ['art', 'Prop styling'], ['camera', 'Camera ready']];
   const STATION_WORD = { light: 'key light', table: 'platform', camera: 'camera', cart: 'art table' };
   const nextLine = n => `${n.name} to the ${STATION_WORD[n.station]} to ${n.label.toLowerCase()}`;
   const setText = (el, t) => { if (el && el._t !== t) { el._t = t; el.textContent = t; } };
-  const setW = (el, p) => { const v = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; if (el._w !== v) { el._w = v; el.style.width = v; } };
+  const setW = (el, p) => { if (!el) return; const v = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; if (el._w !== v) { el._w = v; el.style.width = v; } };
   const setAttr = (el, k, v) => { if (el && el.getAttribute(k) !== String(v)) el.setAttribute(k, v); };
   const pct = id => { const t = st.tasks[id]; return !t ? 0 : t.done ? 1 : t.progress / t.need; };
   const isDone = id => !!(st.tasks[id] && st.tasks[id].done);
@@ -316,11 +320,30 @@
     const ribbon = `<div class="ribbon" id="ribbon"><span id="ribbonText"></span><button class="btn small" type="button" id="autoBtn" hidden>Back to auto</button></div>`;
     const shotcard = `<div class="shotcard paper" id="shotcard"></div>`;
     const crewbar = `<div class="crewbar" id="crewbar"></div>`;
+    // Landscape follows the concept HUD: a status bar across the top, crew and what's next on the left, the set in
+    // the middle, the shot list and set conditions on the right
+    const segs = Array.from({ length: DAY_HOURS }, () => '<i></i>').join('');
+    const hudTop = `<div class="hud-top">
+        ${window.WrapAssets ? `<img class="hud-logo" src="${window.WrapAssets.logo}" alt="That's a Wrap!">` : ''}
+        <div class="hud-job"><b>${esc(LEVEL.title)}</b><small>Shoot day · ${esc(LEVEL.client || 'Big Bun Burgers')}</small></div>
+        <div class="hud-dark hud-money">
+          <div class="meter"><span>Budget</span><b id="hudBudget"></b><em><i id="budgetFill"></i></em></div>
+          <div class="meter"><span>Spend</span><b id="hudSpend"></b><em><i id="spendFill"></i></em></div>
+        </div>
+        <div class="hud-dark hud-time" id="hudTime"><span>Time</span><b id="clock"></b><div class="segs" id="timeSegs">${segs}</div></div>
+        <div class="hud-dark hud-stars" id="hudStars" role="img" aria-label="On track for stars"></div>
+        <button class="hud-pause" type="button" id="pauseBtn" aria-label="Pause"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
+      </div>`;
+    const crewPanel = `<section class="panel crew-panel"><h3 class="tag">Crew status</h3>${crewbar}</section>`;
+    const nextPanel = `<section class="panel next-panel"><h3 class="tag">What's next?</h3><div class="next-row">${actionBtn}${ribbon}</div></section>`;
+    const shotPanel = `<section class="panel shot-panel"><h3 class="tag">Shot list</h3><span class="shot-num" id="shotNum">0 / 3</span>${shotcard}</section>`;
+    const condPanel = `<section class="panel cond-panel"><h3 class="tag">Set conditions</h3><ul class="conds" id="conds"></ul><div class="board" id="board"></div></section>`;
     $('screen-shoot').innerHTML = land
       ? `<div class="land-grid">
-          <div class="land-col">${ribbon}${shotcard}</div>
-          <div class="land-mid">${daybar}<div class="land-hud">${top}</div>${setBox}</div>
-          <div class="land-col">${crewbar}${actionBtn}</div>
+          ${hudTop}
+          <div class="land-col land-left">${crewPanel}${nextPanel}</div>
+          <div class="land-mid">${setBox}</div>
+          <div class="land-col land-right">${shotPanel}${condPanel}</div>
         </div>`
       : `${top}${daybar}${setBox}${ribbon}${shotcard}${crewbar}${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
     syncRot();
@@ -347,9 +370,9 @@
 
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'cb';
+      b.className = 'cb dept-' + c.dept;
       b.dataset.crew = c.id;
-      b.innerHTML = `<span class="dotst"></span>${A.faceSVG(c)}<span class="nm">${esc(c.name)}</span><span class="tx"></span><span class="bar"><i></i></span><span class="man" hidden>MANUAL</span>`;
+      b.innerHTML = `<span class="dotst"></span>${A.faceSVG(c)}<span class="rl">${esc(ROLE_WORD[c.dept] || c.dept)}</span><span class="nm">${esc(c.name)}</span><span class="tx"></span><span class="bar"><i></i></span><span class="man" hidden>MANUAL</span>`;
       bar.appendChild(b);
       view.cb[c.id] = { el: b, dot: b.querySelector('.dotst'), tx: b.querySelector('.tx'), bar: b.querySelector('.bar i'), man: b.querySelector('.man') };
     }
@@ -781,14 +804,17 @@
 
   function renderHud(now) {
     const t = S.seconds(st);
-    setText($('clock'), S.fmtTime(t));
-    $('clock').classList.toggle('warn', t > LEVEL.timeLimit);
-    setText($('budget'), money(st.budget));
-    $('budget').classList.toggle('neg', st.budget < 0);
-    const wrapped = Object.values(st.shots).filter(s => s.captured).length;
-    setText($('shotCount'), `${wrapped}/3 SHOTS`);
-    setW($('dayFill'), t / LEVEL.hardStop);
-    $('daybar').classList.toggle('ot', t > LEVEL.timeLimit);
+    const landHud = !!lab && lab.layout === 'land';
+    if (!landHud) {
+      setText($('clock'), S.fmtTime(t));
+      $('clock').classList.toggle('warn', t > LEVEL.timeLimit);
+      setText($('budget'), money(st.budget));
+      $('budget').classList.toggle('neg', st.budget < 0);
+      const wrapped = Object.values(st.shots).filter(s => s.captured).length;
+      setText($('shotCount'), `${wrapped}/3 SHOTS`);
+      setW($('dayFill'), t / LEVEL.hardStop);
+      $('daybar').classList.toggle('ot', t > LEVEL.timeLimit);
+    }
 
     const cand = S.stageCandidate(st);
     setText($('onstage'), st.capture ? st.shots[st.capture.shot].name : st.stageShot ? st.shots[st.stageShot].name : (cand ? st.shots[cand].name : 'Wrapped'));
@@ -843,16 +869,93 @@
     $('autoBtn').hidden = !!lab || !(sc && sc.override);
 
     renderShotCard(cand);
+    if (lab && lab.layout === 'land') renderLandHud(t, cand, r);
+  }
+
+  // Time of day for the landscape HUD: shoot seconds scaled so the wrap time is DAY_HOURS after call
+  function dayTime(t) {
+    const mins = Math.round(CALL_HOUR * 60 + (t / LEVEL.timeLimit) * DAY_HOURS * 60);
+    const h24 = Math.floor(mins / 60) % 24, m = mins % 60;
+    return `${((h24 + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h24 < 12 ? 'AM' : 'PM'}`;
+  }
+  // Stars the shoot is on track for right now, by the same rules as the wrap report
+  function projectedStars(t) {
+    const shots = Object.values(st.shots);
+    const qs = shots.map(s => s.captured ? s.quality : S.readiness(st, s.id).quality);
+    const avg = qs.reduce((a, q) => a + q, 0) / qs.length;
+    return 1 + (t <= LEVEL.timeLimit ? 1 : 0) + (avg >= LEVEL.qualityTarget && st.budget >= 0 ? 1 : 0);
+  }
+  const STAR = (on) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2l-5.8 3.2 1.2-6.5L2.6 9.4l6.5-.8z" fill="${on ? '#F2B630' : 'none'}" stroke="${on ? '#B5781A' : '#F2E9D8'}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+
+  function renderLandHud(t, cand, r) {
+    const spent = LEVEL.budget - st.budget;
+    setText($('hudBudget'), money(st.budget));
+    $('hudBudget').classList.toggle('neg', st.budget < 0);
+    setW($('budgetFill'), st.budget / LEVEL.budget);
+    setText($('hudSpend'), money(spent));
+    setW($('spendFill'), spent / LEVEL.budget);
+    setText($('clock'), dayTime(t));
+    const hours = (t / LEVEL.timeLimit) * DAY_HOURS;
+    const segKey = Math.floor(hours) + (t > LEVEL.timeLimit ? 'ot' : '');
+    if (view.segKey !== segKey) {
+      view.segKey = segKey;
+      $('hudTime').classList.toggle('ot', t > LEVEL.timeLimit);
+      [...$('timeSegs').children].forEach((el, i) => el.classList.toggle('on', i < Math.floor(hours)));
+    }
+    const stars = st.over ? S.score(st).stars : projectedStars(t);
+    if (view.stars !== stars) { view.stars = stars; $('hudStars').innerHTML = [0, 1, 2].map(i => STAR(i < stars)).join(''); $('hudStars').setAttribute('aria-label', `On track for ${stars} of 3 stars`); }
+    const done = Object.values(st.shots).filter(s => s.captured).length;
+    setText($('shotNum'), `${done} / 3`);
+
+    // Set conditions: how far each department is on the shot that is up next
+    const shot = cand && st.shots[cand];
+    const condKey = shot ? cand + COND.map(([d]) => {
+      const ts = shot.taskIds.map(id => st.tasks[id]).filter(x => x.dept === d);
+      if (!ts.length) return 'n';
+      return Math.round(100 * ts.reduce((a, x) => a + (x.done ? 1 : x.progress / x.need), 0) / ts.length);
+    }).join(',') : 'wrap';
+    if (view.condKey !== condKey) {
+      view.condKey = condKey;
+      const pcts = condKey === 'wrap' ? [] : condKey.slice(cand.length).split(',');
+      $('conds').innerHTML = shot ? COND.map(([d, label], i) => {
+        const p = pcts[i];
+        if (p === 'n') return '';
+        const n = +p;
+        const state = n >= 100 ? 'ok' : n > 0 ? 'part' : 'none';
+        return `<li class="${state}" style="--p:${(n / 100).toFixed(2)}"><i></i><span>${label}${n > 0 && n < 100 ? ` ${n}%` : ''}</span></li>`;
+      }).join('') : '<li class="ok"><i></i><span>Everything in the can</span></li>';
+      $('board').innerHTML = shot ? `<span class="tape"></span>${A.propSVG(cand)}` : '';
+    }
   }
 
   function iconKey(t) { return t.id === 'keylight.fix' ? 'fix' : t.dept; }
+
+  // Landscape shot list row, as in the concept: polaroid, status, name, progress. Only the shot that is up next
+  // shows its task icons, the others stay one line so the list fits a phone held sideways.
+  function landShotRow(id, i, cand) {
+    const s = st.shots[id];
+    const up = !s.captured && cand === id;
+    const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
+    const mark = s.captured ? '<span class="sk done">✓</span>' : up ? '<span class="sk up">▶</span>' : '<span class="sk"></span>';
+    const status = s.captured ? `<small class="ss done">Complete · ${s.quality}%</small>`
+      : up ? `<small class="ss up">${st.capture && st.capture.shot === id ? 'Rolling' : 'In progress'}</small><span class="sbar"><i id="shotProg"></i></span>`
+      : `<small class="ss">Pending${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</small>`;
+    const icons = up ? `<span class="icons">${s.taskIds.map(tid => {
+        const t = st.tasks[tid];
+        return `<button class="ti dept-${t.dept}${t.optional ? ' optl' : ''}" type="button" data-task="${tid}" aria-label="${esc(t.label)}">${A.deptIcon(iconKey(t))}<i class="bd"></i></button>`;
+      }).join('')}</span>` : '';
+    return `<div class="lrow${s.captured ? ' done' : ''}${up ? ' up' : ''}">${thumb(id, 'lthumb')}${mark}
+      <div class="lmain"><b>${String(i + 1).padStart(2, '0')} ${esc(s.name)}</b>${status}</div>${icons}</div>`;
+  }
 
   function renderShotCard(cand) {
     const rowsKey = st.priority.map(id => id + (st.shots[id].captured ? 'c' + st.shots[id].quality : '') + (st.stageShot === id ? 's' : '') + st.shots[id].taskIds.length).join() + '|' + cand;
     if (rowsKey !== view.rowsKey) {
       view.rowsKey = rowsKey;
+      const landRows = lab && lab.layout === 'land';
       $('shotcard').innerHTML = st.priority.map((id, i) => {
         const s = st.shots[id];
+        if (landRows) return landShotRow(id, i, cand);
         const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
         const cls = s.captured ? 'done' : (cand === id ? 'stage' : '');
         const right = s.captured
@@ -867,6 +970,8 @@
       view.icons = {};
       document.querySelectorAll('#shotcard [data-task]').forEach(el => { view.icons[el.dataset.task] = el; });
     }
+    const sp = $('shotProg');
+    if (sp && cand) { const rr = S.readiness(st, cand); setW(sp, st.capture && st.capture.shot === cand ? 1 - st.capture.left / st.capture.total : rr.done / rr.total); }
     for (const id in view.icons) {
       const el = view.icons[id];
       const t = st.tasks[id];
