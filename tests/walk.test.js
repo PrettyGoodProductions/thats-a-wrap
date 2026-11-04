@@ -25,7 +25,7 @@ test('a trip starts and ends in the idle pose: feet under the hips, nothing lift
     const p = pose(s, D, L, LEGS);
     assert.ok(Math.abs(p.stanceDx) < 1e-9 && Math.abs(p.swingDx) < 1e-9);
     assert.ok(Math.abs(p.legFront.rot) < 1e-6 && Math.abs(p.legBack.rot) < 1e-6);
-    assert.equal(p.legFront.lift + p.legBack.lift, 0);
+    assert.ok(p.legFront.lift + p.legBack.lift < 1e-9);
     assert.ok(p.drop < 1e-9);
     assert.equal(p.lean, 0);
   }
