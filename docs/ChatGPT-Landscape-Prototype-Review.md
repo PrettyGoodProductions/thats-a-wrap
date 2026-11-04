@@ -1,27 +1,30 @@
-# ChatGPT landscape prototype: what we adopted and what is next (Nov 3, 2026)
+# ChatGPT landscape prototype: review and what is left to adopt (updated Nov 3, 2026, late)
 
-Source: Thats-A-Wrap-Mobile-Source.zip (the Burger Job prototype). Code branch: `feature/landscape-shoot-layout` in the repo. Not merged to master.
+Source: Thats-A-Wrap-Mobile-Source.zip (the Burger Job prototype).
 
-## Adopted now (done, 67 sim tests pass)
+## Status: superseded by Milestone B
 
-- **Landscape shoot layout.** Slim HUD on top (title, cash, time bar with the WRAP marker, pause). Crew in a 2x2 block on the left, the set in the middle at the largest size the screen height allows, shot list with task icons on the right, and the "what's needed" ribbon under the crew. Nothing scrolls. Portrait is unchanged.
-- **Sizing.** Task icons grow to 44px on screens 740px wide and up (36px on a 667px-wide phone). Crew cards are 72px wide and up. Safe-area insets and dynamic viewport height are respected.
-- **Rotation keeps the shoot.** Rotating during a shoot changes only the layout. The sim, the selected crew and task progress carry over.
-- Already in our build, no change: auto-pause when the tab is hidden, depth-sorted crew, a progress ring on each station.
+My first pass (branch `feature/landscape-shoot-layout`, a CSS-only landscape layout on top of the Milestone A portrait set) is **not needed and should not be merged**. The asset loader and Milestone B sessions went further on `milestone-b-lab`: a wide landscape set, a floating paper HUD (status bar, crew portraits on the left edge, shot list pop-up, ACTION lower right), the safe area, and Ro's real art (platform, key light, pelvis rig). That build already has the prototype's main idea, a full-width scene with a slim HUD, and uses our own art and rig. Milestone-B-Plan.md records this.
 
-## Worth adopting next (needs a decision from Tomás)
+## Taken from the prototype (already in the Lab branch)
 
-1. **Client review loop.** After a take the client reviews it, then either approves or sends a note ("Can we see more of the logo?"). The player chooses a retake (short art adjust, camera reframe, roll again) or accepts a flat quality penalty. This gives ACTION a consequence and a decision. It touches the sim and tests.
-2. **Rush crew ($600, 20s of faster work) as an always-visible button.** A money-for-time trade that fits the HQ economy and the Active Play proposal.
-3. **Freshness shown as a countdown on the shot ("FRESH FOR 23s", then "STALE −20")** with an Art action to refresh prep. We have perishables in the sim, but the player never sees the clock.
-4. **A wide set.** Their scene is composed for landscape: a perspective floor, overlapping flats and a big foreground camera. Ours is a portrait diorama shown at about 300px wide in landscape. Recomposing the set into a wide stage is the next art task, and it should be built to the Asset Manifest.
-5. **Portrait hold screen.** A "turn your phone" prompt that pauses the shoot, with an opt-out. Only needed if we commit to landscape-only.
+- Landscape-first shoot, full-width scene, HUD kept thin and out of the way.
+- Safe-area and dynamic-viewport handling, no page scroll.
+- Rotation preserves the shoot.
+
+## Still open, in the Milestone B backlog
+
+1. **Client review loop.** After a take the client approves or sends a note ("Can we see more of the logo?"). The player picks a retake (short art adjust, camera reframe, roll again) or accepts a flat quality penalty. Fits step C2.
+2. **Rush crew ($600, 20 s faster) as an always-visible button.** Money for time.
+3. **Freshness countdown on the shot** ("FRESH FOR 23s", then "STALE −20") with an Art refresh action.
+4. **Touch targets.** The prototype keeps every main control at 44 px or more. Our landscape task icons are 34 px (40 px on wider screens). Worth raising to 44 px.
 
 ## Not taking
 
-- Their canvas renderer, assembled character images, and fixed 4-person roster. Our SVG layers, modular rig and loader are the better base.
-- Their tuning numbers ($8,550 budget, $22/s burn, 240s deadline). Ours come from the money model.
+- Their canvas renderer, assembled character images and fixed roster. Our SVG layers, loader and Ro's rig are the base.
+- Their tuning numbers ($8,550, $22/s, 240 s). Ours come from the money model.
+- Their "turn your phone" screen. An upright phone turns the shoot sideways for you.
 
-## Open decision
+## Art notes for the next batch (from the prototype's scene)
 
-Orientation: with this layout, landscape is playable today. Do we make landscape the primary shoot orientation, or keep portrait primary and landscape a bonus?
+The prototype composes its scene with a perspective floor, overlapping scenic flats and a large foreground camera. The Asset Manifest's wide-set pieces (flats and floor at 5 px per unit) are the place to match that depth.
