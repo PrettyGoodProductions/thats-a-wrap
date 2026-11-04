@@ -1,5 +1,5 @@
 {
-  "_note": "Maps the first art delivery (unnamed image files) to manifest names and fits it to the export spec. Pivots are in the SOURCE image's pixels, offsets and joints in set units. native = px per set unit in the delivered file, target = px per set unit to export. points = named spots on a piece (source px), e.g. the platform's contact point where the hero prop sits.",
+  "_note": "Maps the first art delivery (unnamed image files) to manifest names and fits it to the export spec. Pivots are in the SOURCE image's pixels, offsets and joints in set units. native = px per set unit in the delivered file, target = px per set unit to export. points = named spots on a piece (source px), e.g. the platform's contact point where the hero prop sits. Batch 1b (Nov 3): new legs with rounded tops and a pelvis; the legs hinge inside the pelvis. All of Ro's parts share a 27 px per unit master.",
   "pieces": {
     "grip.platform": {
       "native": 15.295,
@@ -49,7 +49,7 @@
       }
     },
     "crew.ro.head": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
         209,
@@ -60,7 +60,7 @@
       }
     },
     "crew.ro.torso": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
         178,
@@ -71,7 +71,7 @@
       }
     },
     "crew.ro.arm-front": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
         58,
@@ -82,7 +82,7 @@
       }
     },
     "crew.ro.arm-back": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
         165,
@@ -93,25 +93,36 @@
       }
     },
     "crew.ro.leg-front": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
-        99,
-        45
+        100,
+        95
       ],
       "files": {
-        "default": "91b56124-image.png"
+        "default": "c8d72c4e-image.png"
       }
     },
     "crew.ro.leg-back": {
-      "native": 25,
+      "native": 27,
       "target": 8,
       "pivot": [
-        172,
-        45
+        170,
+        95
       ],
       "files": {
-        "default": "dd823c69-image.png"
+        "default": "ef7166b1-image.png"
+      }
+    },
+    "crew.ro.pelvis": {
+      "native": 27,
+      "target": 8,
+      "pivot": [
+        201,
+        150
+      ],
+      "files": {
+        "default": "2cf80dff-image.png"
       }
     }
   },
@@ -122,32 +133,36 @@
       "joints": {
         "hips": [
           0,
-          -16.32
+          -22.22
         ],
         "neck": [
-          0.32,
-          -28.88
+          0.3,
+          -33.85
         ],
         "shoulderFront": [
-          5.44,
-          -25.76
+          5.04,
+          -30.96
         ],
         "shoulderBack": [
-          -5.32,
-          -25.72
+          -4.93,
+          -30.96
+        ],
+        "pelvis": [
+          0,
+          -18.96
         ],
         "hipFront": [
-          3.8,
-          -21.56
+          3.33,
+          -18.85
         ],
         "hipBack": [
-          -4,
-          -22
+          -3.44,
+          -19.11
         ]
       },
       "portrait": [
         -11.5,
-        -51,
+        -55.5,
         23,
         25.5
       ]

@@ -26,6 +26,7 @@
     hairLine: { x: 0, y: -37.5 },
     shoulderFront: { x: 7.5, y: -24.5 },
     shoulderBack: { x: -7.5, y: -24.5 },
+    pelvis: { x: 0, y: -11 },
     hipFront: { x: 4, y: -13 },
     hipBack: { x: -4, y: -13 },
   };
@@ -81,9 +82,11 @@
     'arm-back': { joint: 'shoulderBack', pivot: 'top-center', size: [8, 17] },
     'leg-front': { joint: 'hipFront', pivot: 'top-center', size: [11, 24] },
     'leg-back': { joint: 'hipBack', pivot: 'top-center', size: [11, 24] },
+    // Optional: shorts that cover the tops of the legs, so the legs hinge inside the pelvis instead of under the shirt
+    pelvis: { joint: 'pelvis', pivot: 'center', size: [15, 9] },
   };
   // Back to front. The upper body (everything but the legs) leans as one when the character works.
-  const RIG_ORDER = { legs: ['leg-back', 'leg-front'], upper: ['arm-back', 'torso', 'head', 'arm-front'] };
+  const RIG_ORDER = { legs: ['leg-back', 'leg-front', 'pelvis'], upper: ['arm-back', 'torso', 'head', 'arm-front'] };
   const CHARACTER_REQUIRED = ['head', 'torso', 'arm-front', 'leg-front', 'leg-back'];
 
   const api = { SLOTS, RIG, PUPPET, CHARACTERS, ROLES, RIG_ORDER, CHARACTER_REQUIRED };

@@ -4,10 +4,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const W = require('../src/walk.js');
 const { CFG, pose, stepsFor } = W;
-// Ro's legs: the bottom outline of each boot from art/crew.ro.leg-*.json, relative to the hip joint (puppet units)
+// Ro's legs: the bottom outline of each boot from art/crew.ro.leg-*.json, relative to the hip joint inside the pelvis (puppet units)
 const LEGS = {
-  front: W.makeLeg([[-2.71, 18.07], [-1.46, 21.2], [-0.21, 21.2], [1.04, 21.2], [2.29, 21.45], [3.54, 21.45], [4.79, 21.45], [6.04, 21.32], [7.16, 20.95]]),
-  back: W.makeLeg([[-6.5, 21.32], [-5.62, 21.82], [-4.75, 21.95], [-3.88, 21.95], [-3.0, 21.95], [-2.12, 21.95], [-1.25, 21.82], [-0.38, 21.7], [0.5, 21.32], [1.0, 21.07]]),
+  front: W.makeLeg([[-2.33, 18.11], [-1.2, 18.61], [-0.08, 18.61], [1.05, 18.61], [2.17, 18.86], [3.3, 18.86], [4.42, 18.86], [5.55, 18.74], [6.67, 18.49], [7.3, 18.11]]),
+  back: W.makeLeg([[-5.92, 18.36], [-5.05, 18.86], [-4.17, 18.99], [-3.3, 19.11], [-2.42, 19.11], [-1.55, 19.11], [-0.67, 18.99], [0.2, 18.74], [1.08, 18.49], [1.45, 18.24]]),
 };
 
 test('steps are fitted to the trip: whole steps that land exactly on the mark', () => {
