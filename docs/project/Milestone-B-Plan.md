@@ -27,13 +27,18 @@ Hands-on crew direction, in steps small enough to playtest. This doc records the
 
 **Hero contact point.** The platform's settings name a `contact` point on its lid. The burger sits there, and the frame marks, sparkle, pour, rig and beam ends move with it. Batch 1's flat box drops the burger 30 units. The Asset Manifest has the spec for a taller box (112 x 76, lid center at y 128).
 
-**Concept HUD on the landscape shoot.** The Lab's landscape layout now follows the concept:
-- **Top bar:** logo, job tag, budget and spend meters, time of day with hour segments, stars on track, pause.
-- **Left:** crew status cards and a what's-next panel.
-- **Middle:** the set.
-- **Right:** the shot list with polaroids and progress, and set conditions per department.
+**Landscape shoot: full-screen set with pop-up HUD.** In landscape the set is recomposed wide and covers the whole screen. The stage keeps its place, the walls and floor run on to both sides, video village moves to the left and the craft table to the right. Screens of other shapes show more set, never empty bands.
 
-Portrait is unchanged. The Lab bot plays it on an 844 x 390 phone, a rotation-locked phone and a 1280 x 800 tablet.
+The HUD floats on the set in small paper pieces:
+- **Top:** a thin status bar with the logo, job tag, budget and spend, time of day with hour segments, stars on track and pause.
+- **Left edge:** crew portraits colored by department, each with a progress strip.
+- **Right:** a shot list tab that opens as a pop-up with the shot rows, task icons and set conditions.
+- **Under the top bar:** a one-line quest tracker.
+- **Bottom right:** ACTION.
+
+Task prompts pop up on the set: a "?" over anyone waiting for orders, bouncing over the one the next step needs. Portrait is unchanged. The Lab bot finishes the shoot on an 844 x 390 phone, a rotation-locked phone and a 1280 x 800 tablet.
+
+**Ro's pelvis.** A new pelvis part (shorts) sits between the shirt and the legs, and the new rounded-top legs hinge inside it. All of Ro's parts share one 27 px per unit master. He is about 51 set units tall with the cap.
 
 ## What the experiment found
 

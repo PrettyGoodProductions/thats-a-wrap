@@ -214,7 +214,25 @@
     </g>`;
   }
 
-  function setMarkup() {
+  /*
+    The set is composed for a 360 x 410 portrait frame. setMarkup({ wide: true }) recomposes it for a landscape
+    screen: the stage stays where it is, the walls and floor run on to both sides, video village moves to the left
+    and the craft table (where idle crew wait) to the right, so the whole working area fits a wide, short frame.
+    WIDE_VIEW is the area that is always shown; the paper flats and floor run well past it, so a screen of any
+    shape shows more set instead of empty bands.
+  */
+  const WIDE_VIEW = [-150, -40, 660, 336];
+  const IDLE_WIDE = {
+    lighting: { x: 336, y: 286 },
+    art:      { x: 366, y: 288 },
+    grip:     { x: 396, y: 286 },
+    camera:   { x: 426, y: 288 },
+  };
+  const WIDE_VILLAGE = 'translate(-300 -48)';
+  const WIDE_CRAFTY = 'translate(300 -44)';
+
+  function setMarkup(opts) {
+    const wide = !!(opts && opts.wide);
     const s = S();
     const h = heroSpot();
     const moved = h.dx || h.dy;
@@ -222,15 +240,26 @@
     const heroOpen = moved ? `<g id="heroSpot" transform="translate(${h.dx} ${h.dy})">` : '';
     const heroClose = moved ? '</g>' : '';
     return `
-<svg class="set" id="setSvg" viewBox="0 -70 360 410" role="img" aria-label="The Burger Job set">
+<svg class="set${wide ? ' wide' : ''}" id="setSvg" viewBox="${wide ? WIDE_VIEW.join(' ') : '0 -70 360 410'}"${wide ? ' preserveAspectRatio="xMidYMid meet" overflow="visible"' : ''} role="img" aria-label="The Burger Job set">
   <defs>
     <pattern id="corrRed" width="5" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#D7705A"/><rect width="2" height="10" fill="#C2604B"/></pattern>
-    <mask id="spotMask" maskUnits="userSpaceOnUse" x="0" y="-70" width="360" height="410">
-      <rect x="0" y="-70" width="360" height="410" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask>
+    <mask id="spotMask" maskUnits="userSpaceOnUse" x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}">
+      <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask>
   </defs>
 
   <!-- Back wall: layered paper flats -->
-  <rect x="0" y="-70" width="360" height="410" fill="#344F70"/>
+  <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#344F70"/>
+  ${wide ? `<g filter="url(#cut)">
+    <path d="M-600 -60 L-236 -66 L-232 154 L-600 156Z" fill="#2E4664"/>
+    <path d="M-248 -36 L-150 -42 L-146 154 L-250 155Z" fill="#C79A64"/>
+    <path d="M-160 -14 L-74 -20 L-72 154 L-158 154Z" fill="#E1B14E"/>
+    <path d="M-86 -50 L-6 -46 L-10 153 L-84 153Z" fill="#7C5A7E"/>
+    <path d="M356 -46 L432 -50 L428 146 L354 146Z" fill="#C4644D"/>
+    <path d="M420 -24 L500 -28 L502 145 L418 145Z" fill="#E8D9B5"/>
+    <path d="M492 -56 L600 -52 L598 144 L490 145Z" fill="#6F8F83"/>
+    <path d="M590 -60 L960 -66 L960 144 L588 144Z" fill="#2E4664"/>
+  </g>
+  <g filter="url(#cut)"><rect x="436" y="0" width="52" height="36" fill="#F2E9D8"/><path d="M444 10 h36 M444 18 h30 M444 26 h24" stroke="#5E5A52" stroke-width="2"/></g>` : ''}
   <g filter="url(#cut)">
     <path d="M-8 -48 L74 -52 L70 152 L-8 152Z" fill="#3E5C80"/>
     <path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>
@@ -240,7 +269,7 @@
   </g>
 
   <!-- Ceiling grid with hanging practicals and a flag -->
-  <g stroke="#1C2C42" stroke-width="3.2" stroke-linecap="round"><path d="M-4 -54 H364"/><path d="M-4 -36 H364" opacity=".55"/></g>
+  <g stroke="#1C2C42" stroke-width="3.2" stroke-linecap="round"><path d="M${wide ? -600 : -4} -54 H${wide ? 960 : 364}"/><path d="M${wide ? -600 : -4} -36 H${wide ? 960 : 364}" opacity=".55"/></g>
   <g filter="url(#cut)">
     <path d="M58 -54 V-28" ${s} stroke-width="1.6"/><path d="M46 -16 L52 -30 H64 L70 -16Z" fill="#D86B56" ${s}/>
     <path d="M306 -54 V-26" ${s} stroke-width="1.6"/><path d="M294 -14 L300 -28 H312 L318 -14Z" fill="#7D9E91" ${s}/>
@@ -265,10 +294,12 @@
   </g>
 
   <!-- Floor -->
-  <path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
-  <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
-  <path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
-  <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>
+  ${wide ? `<path d="M-600 158 L0 152 L360 145 L960 139 L960 600 L-600 600Z" fill="#D8C29C"/>
+  <path d="M-600 158 L0 152 L360 145 L960 139" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
+  <path d="M-600 236 q160 -8 330 2 t330 -2 t330 4 t300 -4 V300 H-600Z" fill="#CFB78F" opacity=".45"/>` : `<path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
+  <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>`}
+  ${wide ? '' : `<path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
+  <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>`}
   <g stroke="#E7B84F" stroke-width="3" stroke-linecap="round" opacity=".9"><path d="M176 230 l10 6 M186 230 l-10 6"/><path d="M322 232 l9 5 M331 232 l-9 5"/><path d="M98 226 l9 5 M107 226 l-9 5"/></g>
   <path d="M74 198 q30 16 70 8 t90 6 q30 4 60 -2 q20 30 -40 70" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".6"/>
 
@@ -359,7 +390,7 @@
   </g>
 
   <!-- Craft table (idle crew hang out here) -->
-  <g filter="url(#cut)">
+  ${wide ? `<g transform="${WIDE_CRAFTY}">` : ''}<g filter="url(#cut)">
     <rect x="14" y="282" width="150" height="8" fill="#F2E9D8" ${s}/>
     <path d="M22 290 V318 M156 290 V318" ${s} stroke-width="2.2"/>
     <rect x="22" y="258" width="18" height="24" rx="3" fill="#9AA0A8" ${s}/><rect x="40" y="268" width="5" height="3" fill="${INK}"/>
@@ -367,10 +398,10 @@
     <g fill="#E3A85A" ${s} stroke-width="1"><circle cx="66" cy="274" r="4"/><circle cx="76" cy="274" r="4"/><circle cx="86" cy="274" r="4"/></g>
     <g ${s} stroke-width="1"><rect x="112" y="271" width="8" height="11" rx="1" fill="#E7B84F"/><rect x="123" y="271" width="8" height="11" rx="1" fill="#D86B56"/><rect x="134" y="271" width="8" height="11" rx="1" fill="#F2E9D8"/></g>
   </g>
-  <text x="90" y="303" text-anchor="middle" ${HAND} font-size="9" fill="${INK}" opacity=".7">CRAFTY</text>
+  <text x="90" y="303" text-anchor="middle" ${HAND} font-size="9" fill="${INK}" opacity=".7">CRAFTY</text>${wide ? '</g>' : ''}
 
   <!-- Video village: monitor, client and agency -->
-  <g filter="url(#cut)">
+  ${wide ? `<g transform="${WIDE_VILLAGE}">` : ''}<g filter="url(#cut)">
     <path d="M224 334 V276 M212 334 h24" ${s} stroke-width="2.2"/>
     <rect x="194" y="236" width="60" height="40" rx="3" fill="#2F3440" ${s}/>
     <rect x="198" y="240" width="52" height="32" fill="#151820"/>
@@ -387,7 +418,7 @@
   <g id="clientBub" opacity="0">
     <path d="M232 228 h108 a4 4 0 0 1 4 4 v20 a4 4 0 0 1 -4 4 h-46 l-8 8 l-1 -8 h-53 a4 4 0 0 1 -4 -4 v-20 a4 4 0 0 1 4 -4z" fill="#fff" ${s} stroke-width="1.3"/>
     <text id="clientText" x="286" y="245" text-anchor="middle" ${UI} font-weight="700" font-size="8.5" fill="${INK}"></text>
-  </g>
+  </g>${wide ? '</g>' : ''}
 
   <!-- Workstation badges, then tap targets -->
   ${stationBadge('light', 'lighting', 26, 68)}
@@ -402,7 +433,7 @@
   <g id="crewLayer"></g>
   <g id="fxLayer"></g>
 
-  <rect id="dim" x="0" y="-70" width="360" height="410" fill="#0B0F18" opacity="0" mask="url(#spotMask)" pointer-events="none"/>
+  <rect id="dim" x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#0B0F18" opacity="0" mask="url(#spotMask)" pointer-events="none"/>
 
   <!-- Clapper for ACTION -->
   <g id="clap" class="clap" transform="translate(146 30)">
@@ -573,7 +604,7 @@
   }
 
   root.WrapArt = {
-    DEPT_COLOR, heroSpot, STATIONS, IDLE, CLIENT, AGENCY,
+    DEPT_COLOR, heroSpot, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };

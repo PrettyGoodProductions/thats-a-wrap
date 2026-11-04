@@ -84,6 +84,7 @@
   function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
   function say(text, bad, ms) { toast = { text, bad: !!bad, until: performance.now() + (ms || 2600) }; }
+  const idleSpot = (dept) => (lab && lab.layout === 'land' ? A.IDLE_WIDE : A.IDLE)[dept];
   const ROLE_WORD = { camera: 'DP', lighting: 'Gaffer', art: 'Art', grip: 'Grip' };
   // The landscape HUD shows shoot time as a time of day: call at 8:00 AM, the wrap time is a 10 hour day
   const DAY_HOURS = 10, CALL_HOUR = 8;
@@ -311,7 +312,7 @@
     const daybar = `<div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>`;
     const actionBtn = `<button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>`;
     const setBox = `<div class="set-wrap" id="setWrap">
-        ${A.setMarkup()}
+        ${A.setMarkup({ wide: land })}
         <div class="stcard" id="stcard" hidden></div>
         <div class="onstage"><small>ON STAGE</small><span id="onstage"></span></div>
         ${land ? '' : actionBtn}
@@ -334,16 +335,24 @@
         <div class="hud-dark hud-stars" id="hudStars" role="img" aria-label="On track for stars"></div>
         <button class="hud-pause" type="button" id="pauseBtn" aria-label="Pause"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
       </div>`;
-    const crewPanel = `<section class="panel crew-panel"><h3 class="tag">Crew status</h3>${crewbar}</section>`;
-    const nextPanel = `<section class="panel next-panel"><h3 class="tag">What's next?</h3><div class="next-row">${actionBtn}${ribbon}</div></section>`;
-    const shotPanel = `<section class="panel shot-panel"><h3 class="tag">Shot list</h3><span class="shot-num" id="shotNum">0 / 3</span>${shotcard}</section>`;
-    const condPanel = `<section class="panel cond-panel"><h3 class="tag">Set conditions</h3><ul class="conds" id="conds"></ul><div class="board" id="board"></div></section>`;
+    // Landscape: the set fills the screen and the HUD floats on it, mobile-game style. A thin status bar on top,
+    // crew portraits down the left edge, the shot list folded into a tab that opens as a pop-up, the coaching line
+    // as a small quest tracker, ACTION under the right thumb. Task prompts appear on the set over the crew.
     $('screen-shoot').innerHTML = land
-      ? `<div class="land-grid">
+      ? `<div class="land-stage">
+          ${setBox}
           ${hudTop}
-          <div class="land-col land-left">${crewPanel}${nextPanel}</div>
-          <div class="land-mid">${setBox}</div>
-          <div class="land-col land-right">${shotPanel}${condPanel}</div>
+          <div class="crew-rail">${crewbar}</div>
+          <button class="shots-tab" type="button" id="shotsTab" aria-expanded="false" aria-controls="shotsPop">
+            <b>Shot list</b><span id="shotNum">0 / 3</span><small id="shotsNow"></small><em><i id="shotsNowBar"></i></em>
+          </button>
+          <section class="shots-pop" id="shotsPop" hidden>
+            <div class="pop-h"><b>Shot list</b><button class="pop-x" type="button" data-shotsclose aria-label="Close">✕</button></div>
+            ${shotcard}
+            <h4>Set conditions</h4><ul class="conds" id="conds"></ul><div class="board" id="board"></div>
+          </section>
+          <div class="quest">${ribbon}</div>
+          ${actionBtn}
         </div>`
       : `${top}${daybar}${setBox}${ribbon}${shotcard}${crewbar}${perks.length ? `<p class="hint">Office perks today: ${esc(perks.join(', '))}</p>` : ''}`;
     syncRot();
@@ -352,7 +361,7 @@
     const bar = $('crewbar');
     const HIT_W = lab ? 48 : 36; // the lab widens the tap area around each puppet so the layouts are compared on comfortable targets
     for (const c of st.crew) {
-      const idle = A.IDLE[c.dept];
+      const idle = idleSpot(c.dept);
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.setAttribute('class', 'pup');
       g.setAttribute('data-crew', c.id);
@@ -380,6 +389,12 @@
 
   /* ================= Shoot: input ================= */
 
+
+  function setShots(open) {
+    $('shotsPop').hidden = !open;
+    $('shotsTab').setAttribute('aria-expanded', String(open));
+    $('shotsTab').classList.toggle('open', open);
+  }
 
   // Every order goes through here so the lab can time and count it
   function cmdAssign(crewId, taskId) {
@@ -737,6 +752,8 @@
     const realDt = view.walkT ? Math.min(0.1, (now - view.walkT) / 1000) : 0;
     view.walkT = now;
     const walkDt = modal || st.paused ? 0 : realDt * speed;
+    const qs = lab && lab.layout === 'land' && S.nextStep(st);
+    const questCrew = qs && qs.crew;
     const at = {};
     const targets = {};
     for (const c of st.crew) {
@@ -747,7 +764,7 @@
         const base = A.STATIONS[stn];
         const shift = stn === 'camera' ? [cam.x, cam.y] : [0, 0];
         p = { x: Math.round(base.x + shift[0] - (at[stn] - 1) * 28), y: Math.round(base.y + shift[1] + (at[stn] - 1) * 5) };
-      } else p = A.IDLE[c.dept];
+      } else p = idleSpot(c.dept);
       targets[c.id] = p;
       const v = view.pups[c.id];
       // The walker steps the puppet to its spot at walking speed, in game time (pauses with the game, 2x walks faster)
@@ -760,6 +777,7 @@
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
       v.g.classList.toggle('ask', asking);
+      v.g.classList.toggle('quest', !!questCrew && questCrew === c.id && selected !== c.id);
       Ld.pose(v.g, v.walking ? 'walk' : cs.state === 'WORKING' ? 'work' : 'idle');
       const hk = cs.state === 'WORKING' ? 'tool' : '';
       if (hk !== v.heldKey) { v.heldKey = hk; v.held.innerHTML = A.heldItem(c.dept, hk); }
@@ -906,6 +924,11 @@
     if (view.stars !== stars) { view.stars = stars; $('hudStars').innerHTML = [0, 1, 2].map(i => STAR(i < stars)).join(''); $('hudStars').setAttribute('aria-label', `On track for ${stars} of 3 stars`); }
     const done = Object.values(st.shots).filter(s => s.captured).length;
     setText($('shotNum'), `${done} / 3`);
+    if (cand) {
+      const rr = S.readiness(st, cand);
+      setText($('shotsNow'), `${st.shots[cand].name} · ${rr.done}/${rr.total}`);
+      setW($('shotsNowBar'), rr.done / rr.total);
+    } else { setText($('shotsNow'), 'All in the can'); setW($('shotsNowBar'), 1); }
 
     // Set conditions: how far each department is on the shot that is up next
     const shot = cand && st.shots[cand];
@@ -1134,6 +1157,13 @@
       labTap(t.closest('#actionBtn') ? 'action' : t.closest('.cb') ? 'bar' : t.closest('.pup') ? 'puppet' : t.closest('[data-station]') ? 'station' : t.closest('[data-task]') ? 'icon' : t.closest('button') ? 'other' : 'empty');
     }
     if (t.closest('#pauseBtn')) { showPause(); return; }
+    // Landscape shot list pop-up: the tab opens and closes it, a tap anywhere outside it closes it
+    const pop = $('shotsPop');
+    if (pop) {
+      if (t.closest('#shotsTab')) { setShots(pop.hidden); return; }
+      if (t.closest('[data-shotsclose]')) { setShots(false); return; }
+      if (!pop.hidden && !t.closest('#shotsPop')) setShots(false);
+    }
     if (t.closest('#actionBtn')) { pressAction(); return; }
     if (t.closest('#autoBtn')) { const r = S.command(st, { type: 'release', crew: selected }); say(r.message); selected = null; return; }
     if (t.closest('[data-stclose]')) { view.stCard = null; return; }
