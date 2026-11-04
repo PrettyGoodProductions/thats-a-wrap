@@ -51,6 +51,38 @@
     'elec.keylight-stand': { anchor: { x: 72, y: 202 }, pivot: 'bottom-center', size: [30, 126], shadow: false, initial: 'default' },
     'elec.fill': { anchor: { x: 240, y: 206 }, pivot: 'bottom-center', size: [30, 110], shadow: false, initial: 'default' },
     // Camera: track, body without lens, the lens in two lengths, and the red framing corners
+    // Set dressing (batch 4). Flats stand on their bottom center. Pivots come from the settings files, read off the art.
+    'set.flat-1': { anchor: { x: 33, y: 152 }, pivot: 'bottom-center', size: [82, 204], shadow: false, initial: 'default' },
+    'set.flat-2': { anchor: { x: 97, y: 152 }, pivot: 'bottom-center', size: [74, 183], shadow: false, initial: 'default' },
+    'set.flat-3': { anchor: { x: 180, y: 40 }, pivot: 'bottom-center', size: [72, 84], shadow: false, initial: 'default' },
+    'set.flat-4': { anchor: { x: 264, y: 152 }, pivot: 'bottom-center', size: [72, 186], shadow: false, initial: 'default' },
+    'set.flat-5': { anchor: { x: 328, y: 152 }, pivot: 'bottom-center', size: [76, 208], shadow: false, initial: 'default' },
+    'set.flat-6': { anchor: { x: -198, y: 154 }, pivot: 'bottom-center', size: [104, 196], shadow: false, initial: 'default' },
+    'set.flat-7': { anchor: { x: -116, y: 154 }, pivot: 'bottom-center', size: [88, 174], shadow: false, initial: 'default' },
+    'set.flat-8': { anchor: { x: -46, y: 153 }, pivot: 'bottom-center', size: [80, 203], shadow: false, initial: 'default' },
+    'set.flat-9': { anchor: { x: 393, y: 146 }, pivot: 'bottom-center', size: [78, 196], shadow: false, initial: 'default' },
+    'set.flat-10': { anchor: { x: 460, y: 145 }, pivot: 'bottom-center', size: [84, 173], shadow: false, initial: 'default' },
+    'set.flat-11': { anchor: { x: 545, y: 144 }, pivot: 'bottom-center', size: [110, 200], shadow: false, initial: 'default' },
+    'set.call-sheet': { anchor: { x: 436, y: 0 }, pivot: 'top-left', size: [52, 36], shadow: false, initial: 'default' },
+    'set.poster': { anchor: { x: 18, y: 16 }, pivot: 'top-left', size: [44, 34], shadow: false, initial: 'default' },
+    // Two colors of practical lamp, each with off and on. They hang from the top of the cord. The set shows them lit.
+    'set.practical-red': { anchor: { x: 58, y: -54 }, pivot: 'top-center', size: [24, 40], shadow: false, initial: 'on', states: ['off', 'on'] },
+    'set.practical-sage': { anchor: { x: 306, y: -54 }, pivot: 'top-center', size: [24, 40], shadow: false, initial: 'on', states: ['off', 'on'] },
+    'set.overhead-flag': { anchor: { x: 192, y: -54 }, pivot: 'top-center', size: [44, 34], shadow: false, initial: 'default' },
+    'set.plant-1': { anchor: { x: 22, y: 152 }, pivot: 'bottom-center', size: [40, 70], shadow: false, initial: 'default' },
+    'set.plant-2': { anchor: { x: 331, y: 152 }, pivot: 'bottom-center', size: [34, 56], shadow: false, initial: 'default' },
+    'set.cable': { anchor: { x: 74, y: 198 }, pivot: 'left-center', size: [230, 80], shadow: false, initial: 'default' },
+    // Tiles and scattered pieces are drawn straight from art.js (patterns, several copies), the anchor is their default
+    'set.wall': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [200, 200], shadow: false, initial: 'default' },
+    'set.floor': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [200, 200], shadow: false, initial: 'default' },
+    'set.grid': { anchor: { x: 0, y: -46 }, pivot: 'left-center', size: [200, 24], shadow: false, initial: 'default' },
+    'set.floor-scuffs': { anchor: { x: 60, y: 262 }, pivot: 'center', size: [120, 30], shadow: false, initial: 'default' },
+    'set.tape-mark': { anchor: { x: 181, y: 233 }, pivot: 'center', size: [10, 6], shadow: false, initial: 'default' },
+    // HUD pieces drawn inside SVG (stars, pause bars, shot status), in CSS pixels
+    'ui.star': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [32, 32], shadow: false, initial: 'on', states: ['on', 'off'] },
+    'ui.icon-pause': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [24, 26], shadow: false, initial: 'default' },
+    'ui.shot-status': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [22, 22], shadow: false, initial: 'done', states: ['done', 'pending'] },
+
     'cam.track': { anchor: { x: 232, y: 212 }, pivot: 'top-left', size: [126, 12], shadow: true, initial: 'default' },
     'cam.camera': { anchor: { x: 304, y: 210 }, pivot: 'bottom-center', size: [54, 90], shadow: false, initial: 'default' },
     'cam.lens': { anchor: { x: 289, y: 138 }, pivot: 'center', size: [19, 14], shadow: false, initial: 'standard', states: ['standard', 'macro'] },

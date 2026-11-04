@@ -310,7 +310,7 @@
     const top = `<div class="topbar">
         <div class="pill paper grow"><b class="hand">${esc(LEVEL.title)}</b><span><span id="shotCount">0/3 SHOTS</span> · <span class="clock" id="clock">0:00</span></span></div>
         <div class="pill paper"><span>CASH LEFT</span><b id="budget">$0</b></div>
-        <button class="sq" type="button" id="pauseBtn" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
+        <button class="sq" type="button" id="pauseBtn" aria-label="Pause">${A.pauseSVG(18)}</button>
       </div>`;
     const daybar = `<div class="daybar" id="daybar"><i id="dayFill"></i><span class="wm" style="left:${(LEVEL.timeLimit / LEVEL.hardStop * 100).toFixed(1)}%"><span>WRAP</span></span></div>`;
     const actionBtn = `<button class="clapbtn" type="button" id="actionBtn" aria-label="Call action">${A.clapperSVG()}<span class="cap" id="actionCap">not ready</span></button>`;
@@ -336,7 +336,7 @@
         </div>
         <div class="hud-dark hud-time" id="hudTime"><span>Time</span><b id="clock"></b><div class="segs" id="timeSegs">${segs}</div></div>
         <div class="hud-dark hud-stars" id="hudStars" role="img" aria-label="On track for stars"></div>
-        <button class="hud-pause" type="button" id="pauseBtn" aria-label="Pause"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
+        <button class="hud-pause" type="button" id="pauseBtn" aria-label="Pause">${A.pauseSVG(20)}</button>
       </div>`;
     // Landscape: the set fills the screen and the HUD floats on it, mobile-game style. A thin status bar on top,
     // crew portraits down the left edge, the shot list folded into a tab that opens as a pop-up, the coaching line
@@ -1021,7 +1021,9 @@
     const s = st.shots[id];
     const up = !s.captured && cand === id;
     const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
-    const mark = s.captured ? '<span class="sk done">✓</span>' : up ? '<span class="sk up">▶</span>' : '<span class="sk"></span>';
+    const mDone = A.shotMark('done'), mPend = A.shotMark('pending');
+    const mark = s.captured ? (mDone ? `<span class="sk done art">${mDone}</span>` : '<span class="sk done">✓</span>')
+      : up ? '<span class="sk up">▶</span>' : (mPend ? `<span class="sk art">${mPend}</span>` : '<span class="sk"></span>');
     const status = s.captured ? `<small class="ss done">Complete · ${s.quality}%</small>`
       : up ? `<small class="ss up">${st.capture && st.capture.shot === id ? 'Rolling' : 'In progress'}</small><span class="sbar"><i id="shotProg"></i></span>`
       : `<small class="ss">Pending${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</small>`;

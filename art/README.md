@@ -111,3 +111,7 @@ A new character is its files plus one line in `CHARACTERS` in `src/slots.js`. Ba
 ## Adding a new piece
 
 Art for a piece that is not wired yet is ignored with a warning. Wiring is one entry in `src/slots.js` plus wrapping its placeholder in `slot()` in `src/art.js`. After that, any delivery of that piece is drop-in.
+
+## Batch 4 (set and HUD)
+
+`tools/make_batch4_map.py` builds `tools/batch4.map.json` from the masters. Textures that must tile (`set.wall`, `set.floor`, `set.grid`) set `"seamless": true` in the map, which blends the tile so it wraps, and the game draws them as SVG patterns. Opaque paper (wall, floor, flats) sets `"quantize"` to keep the PNG small. A piece can set `"crop"` per file to trim empty canvas (the pivot is then relative to the crop) and `"decontaminate": true` to remove a colored halo.

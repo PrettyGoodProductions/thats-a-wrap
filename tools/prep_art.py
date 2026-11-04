@@ -28,6 +28,38 @@ def core_mask(im, keep_alpha=64, grow=10):
         al[~near] = 0
     return Image.fromarray(a, 'RGBA')
 
+def make_seamless(im):
+    """Make a texture tile wrap without a seam: blend the image with a copy shifted by half a tile, weighted so the
+    edges show only the shifted copy's middle (which is continuous across the wrap). Paper grain hides the blend."""
+    a = np.array(im).astype(np.float32)
+    h, w = a.shape[:2]
+    wx = np.sin(np.linspace(0, np.pi, w, endpoint=False)) ** 2
+    wy = np.sin(np.linspace(0, np.pi, h, endpoint=False)) ** 2
+    m = (wy[:, None] * wx[None, :])[..., None]
+    shifted = np.roll(a, (h // 2, w // 2), axis=(0, 1))
+    return Image.fromarray(np.clip(a * m + shifted * (1 - m), 0, 255).astype(np.uint8), im.mode)
+
+def resize_tile(im, w, h):
+    """Resize a wrapping tile so the resample also wraps: filter a 3 x 3 repeat and keep the middle"""
+    t = Image.new(im.mode, (im.width * 3, im.height * 3))
+    for i in range(3):
+        for j in range(3):
+            t.paste(im, (i * im.width, j * im.height))
+    t = t.resize((w * 3, h * 3), Image.LANCZOS)
+    return t.crop((w, h, 2 * w, 2 * h))
+
+def decontaminate(im, floor=0):
+    """Remove a colored halo: drop faint alpha (under floor) and give every soft edge pixel the color of the nearest solid one"""
+    a = np.array(im)
+    al = a[..., 3]
+    if floor: al[al < floor] = 0
+    solid = al >= 250
+    if solid.any():
+        _, (iy, ix) = ndi.distance_transform_edt(~solid, return_indices=True)
+        soft = (al > 0) & ~solid
+        a[..., :3][soft] = a[..., :3][iy[soft], ix[soft]]
+    return Image.fromarray(a, 'RGBA')
+
 def clean_alpha(im):
     a = np.array(im)
     al = a[..., 3]
@@ -52,6 +84,9 @@ for pid, p in spec['pieces'].items():
         kk = p['target'] / ent['native'] if ent.get('native') else k   # a state may need its own scale (same piece, different render size)
         im = Image.open(os.path.join(src_dir, fname)).convert('RGBA')
         if ent.get('mask') == 'core': im = core_mask(im)
+        if ent.get('crop'): im = im.crop(tuple(ent['crop']))   # trim empty canvas, the pivot in the map is already relative to the crop
+        if p.get('seamless'): im = make_seamless(im)
+        if ent.get('decontaminate'): im = decontaminate(im, ent.get('alpha_floor', 40))
         im = clean_alpha(im)
         if ent.get('native') or ent.get('pivot'):
             state_cfg[state] = {}
@@ -59,9 +94,14 @@ for pid, p in spec['pieces'].items():
             if ent.get('native'): state_cfg[state]['scale'] = p['target']
             if ent.get('points'): state_cfg[state]['points'] = {n: [round(v[0] * kk, 1), round(v[1] * kk, 1)] for n, v in ent['points'].items()}
         w, h = round(im.width * kk), round(im.height * kk)
-        out = clean_alpha(im.resize((w, h), Image.LANCZOS))   # Pillow premultiplies RGBA for resizing; resampling brings back faint alpha and specks, so clean again
+        out = clean_alpha(resize_tile(im, w, h) if p.get('seamless') else im.resize((w, h), Image.LANCZOS))   # Pillow premultiplies RGBA for resizing; resampling brings back faint alpha and specks, so clean again
         name = pid + ('' if state == 'default' else '.' + state) + '@%gx.png' % p['target']
-        out.save(os.path.join(out_dir, name), optimize=True)
+        if p.get('quantize'):
+            # Flat paper with fine grain: a 128 color palette with no dithering keeps the grain and cuts the PNG by two thirds
+            q = out.quantize(colors=p['quantize'], method=Image.FASTOCTREE, dither=Image.NONE)   # keeps alpha
+            q.save(os.path.join(out_dir, name), optimize=True)
+        else:
+            out.save(os.path.join(out_dir, name), optimize=True)
         sizes[state] = (w, h, os.path.getsize(os.path.join(out_dir, name)))
     cfg = dict(p.get('settings', {}))
     cfg['pivot'] = [round(p['pivot'][0] * k, 1), round(p['pivot'][1] * k, 1)]

@@ -34,7 +34,9 @@ else:
 
 # Pieces whose "states" are separate parts (layers of a stack, strands, a lens in two lengths), each on its own
 # canvas by design, so the one-canvas check below does not apply to them
-SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens'}
+SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens', 'ui.shot-status'}
+# Seamless tiles run to the edge of their canvas on purpose
+TILES = {'set.wall', 'set.floor', 'set.grid'}
 
 problems, warnings = [], []
 info = {}
@@ -62,7 +64,7 @@ for pid, st, path, scale in files:
     if far: flags.append(f'{far} faint px far from the art')
     if haze > 0.01 * al.size: flags.append(f'{haze} haze px')
     if abs(ring) > 25: flags.append(f'edge ring {ring:+.0f} luminance')
-    if min(margins) < 1: flags.append('art touches the canvas edge (clipped?)')
+    if min(margins) < 1 and pid not in TILES: flags.append('art touches the canvas edge (clipped?)')
     label = f'{pid}.{st}' if st != 'default' else pid
     print(f'{label:28s} {im.width:5d}x{im.height:<5d} {scale:6.2f}px/u  {im.width/scale:6.1f}x{im.height/scale:<5.1f}u  {kb:6.0f} KB  margin(px) {tuple(int(m) for m in margins)}  specks {specks} far {far} haze {haze} ring {ring:+.0f}' + ('  <-- ' + '; '.join(flags) if flags else ''))
     for fl in flags:

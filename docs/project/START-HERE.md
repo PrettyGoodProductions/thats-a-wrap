@@ -28,7 +28,7 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B (in progress, Nov 3)
 
-- **Playable link (Milestone B build, updated Nov 4 with the batch 3 props and set pieces):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Playable link (Milestone B build, updated Nov 4 with the batch 4 set dressing):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
 - **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
@@ -39,6 +39,10 @@ A single-player mobile game about running a small video production company, made
 ## Asset loader (done, Nov 3)
 
 Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far (batch 3 added the taller platform, sweep and tube, key stand, fill light, camera, lenses, track, frame marks, hero, cheese and sauce props, cheese pot): hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+
+## Art batch 4 (Nov 4): wall, floor, flats and set dressing
+
+37 masters fitted. Wired: wall and floor (seamless tiles), all 11 flats, call sheet, poster, both practical lamps (lit), flag, ceiling pipes, both plants, tape marks, cable, floor scuffs, and the HUD stars, pause bars and shot-list check and ring. Not wired yet: the cream panel, dark HUD panel, job tag, crew card and coral button, which need nine-slice insets and a decision on the button. See Art-Batch-4-Validation.md.
 
 ## Art batch 3 (Nov 4): props, lights, camera
 

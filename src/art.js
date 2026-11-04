@@ -311,6 +311,25 @@
   const WIDE_VILLAGE = 'translate(-300 -48)';
   const WIDE_CRAFTY = 'translate(300 -44)';
 
+  // Seamless textures (batch 4): the wall and the floor are 200 x 200 unit tiles, the ceiling pipes a strip 200 units wide.
+  // A tile becomes an SVG pattern, so the page carries one small image however far the set runs.
+  function tileDef(id, patId, w, h, y0, ay) {
+    const L = loader();
+    if (!L || !L.has(id, 'default')) return '';
+    return `<pattern id="${patId}" width="${w}" height="${h}" patternUnits="userSpaceOnUse"${y0 ? ` patternTransform="translate(0 ${y0})"` : ''}>${L.use(id, 'default', { x: 0, y: ay })}</pattern>`;
+  }
+  const hasArt = (id, st) => !!(loader() && loader().has(id, st || 'default'));
+  // Floor dressing drawn from delivered art: three tape marks, and scuffs scattered over the floor
+  function floorDressing(wide) {
+    const L = loader();
+    const tape = hasArt('set.tape-mark')
+      ? [[181, 233, -8], [326, 234, 12], [102, 228, -3]].map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})">${L.use('set.tape-mark', 'default', { x: 0, y: 0 })}</g>`).join('')
+      : `<g stroke="#E7B84F" stroke-width="3" stroke-linecap="round" opacity=".9"><path d="M176 230 l10 6 M186 230 l-10 6"/><path d="M322 232 l9 5 M331 232 l-9 5"/><path d="M98 226 l9 5 M107 226 l-9 5"/></g>`;
+    const spots = wide ? [[60, 262], [430, 282], [-330, 292], [800, 268], [-20, 360], [520, 380]] : [[180, 262], [180, 310]];
+    const scuffs = hasArt('set.floor-scuffs') ? spots.map(([x, y]) => L.use('set.floor-scuffs', 'default', { x, y })).join('') : '';
+    return scuffs + tape;
+  }
+
   function setMarkup(opts) {
     const wide = !!(opts && opts.wide);
     const s = S();
@@ -327,41 +346,42 @@
       <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#fff"/><ellipse cx="${h.x}" cy="${h.y - 16}" rx="52" ry="38" fill="url(#spotGrad)"/></mask>
     <radialGradient id="spotGrad"><stop offset="0" stop-color="#000"/><stop offset=".5" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient>
     <filter id="beamSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4.5"/></filter>
+    ${tileDef('set.wall', 'setWall', 200, 200, 0, 0)}${tileDef('set.floor', 'setFloor', 200, 200, 0, 0)}${tileDef('set.grid', 'setGrid', 200, 24, -58, 12)}
   </defs>
 
   <!-- Back wall: layered paper flats -->
-  <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#344F70"/>
+  <rect x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="${hasArt('set.wall') ? 'url(#setWall)' : '#344F70'}"/>
   ${wide ? `<g filter="url(#cut)">
     <path d="M-600 -60 L-236 -66 L-232 154 L-600 156Z" fill="#2E4664"/>
-    <path d="M-248 -36 L-150 -42 L-146 154 L-250 155Z" fill="#C79A64"/>
-    <path d="M-160 -14 L-74 -20 L-72 154 L-158 154Z" fill="#E1B14E"/>
-    <path d="M-86 -50 L-6 -46 L-10 153 L-84 153Z" fill="#7C5A7E"/>
-    <path d="M356 -46 L432 -50 L428 146 L354 146Z" fill="#C4644D"/>
-    <path d="M420 -24 L500 -28 L502 145 L418 145Z" fill="#E8D9B5"/>
-    <path d="M492 -56 L600 -52 L598 144 L490 145Z" fill="#6F8F83"/>
+    ${slot('set.flat-6', '<path d="M-248 -36 L-150 -42 L-146 154 L-250 155Z" fill="#C79A64"/>')}
+    ${slot('set.flat-7', '<path d="M-160 -14 L-74 -20 L-72 154 L-158 154Z" fill="#E1B14E"/>')}
+    ${slot('set.flat-8', '<path d="M-86 -50 L-6 -46 L-10 153 L-84 153Z" fill="#7C5A7E"/>')}
+    ${slot('set.flat-9', '<path d="M356 -46 L432 -50 L428 146 L354 146Z" fill="#C4644D"/>')}
+    ${slot('set.flat-10', '<path d="M420 -24 L500 -28 L502 145 L418 145Z" fill="#E8D9B5"/>')}
+    ${slot('set.flat-11', '<path d="M492 -56 L600 -52 L598 144 L490 145Z" fill="#6F8F83"/>')}
     <path d="M590 -60 L960 -66 L960 144 L588 144Z" fill="#2E4664"/>
   </g>
-  <g filter="url(#cut)"><rect x="436" y="0" width="52" height="36" fill="#F2E9D8"/><path d="M444 10 h36 M444 18 h30 M444 26 h24" stroke="#5E5A52" stroke-width="2"/></g>` : ''}
+  ${slot('set.call-sheet', '<g filter="url(#cut)"><rect x="436" y="0" width="52" height="36" fill="#F2E9D8"/><path d="M444 10 h36 M444 18 h30 M444 26 h24" stroke="#5E5A52" stroke-width="2"/></g>')}` : ''}
   <g filter="url(#cut)">
-    <path d="M-8 -48 L74 -52 L70 152 L-8 152Z" fill="#3E5C80"/>
-    <path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>
-    <path d="M144 -40 L216 -44 L214 40 L146 40Z" fill="#D9A04A"/>
-    <path d="M230 -34 L298 -30 L300 152 L228 152Z" fill="#6F8F83"/>
-    <rect x="290" y="-56" width="76" height="208" fill="#2E4664"/>
+    ${slot('set.flat-1', '<path d="M-8 -48 L74 -52 L70 152 L-8 152Z" fill="#3E5C80"/>')}
+    ${slot('set.flat-2', '<path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>')}
+    ${slot('set.flat-3', '<path d="M144 -40 L216 -44 L214 40 L146 40Z" fill="#D9A04A"/>')}
+    ${slot('set.flat-4', '<path d="M230 -34 L298 -30 L300 152 L228 152Z" fill="#6F8F83"/>')}
+    ${slot('set.flat-5', '<rect x="290" y="-56" width="76" height="208" fill="#2E4664"/>')}
   </g>
 
   <!-- Ceiling grid with hanging practicals and a flag -->
-  <g stroke="#1C2C42" stroke-width="3.2" stroke-linecap="round"><path d="M${wide ? -600 : -4} -54 H${wide ? 960 : 364}"/><path d="M${wide ? -600 : -4} -36 H${wide ? 960 : 364}" opacity=".55"/></g>
+  ${hasArt('set.grid') ? `<rect x="${wide ? -600 : -4}" y="-58" width="${wide ? 1560 : 368}" height="24" fill="url(#setGrid)"/>` : `<g stroke="#1C2C42" stroke-width="3.2" stroke-linecap="round"><path d="M${wide ? -600 : -4} -54 H${wide ? 960 : 364}"/><path d="M${wide ? -600 : -4} -36 H${wide ? 960 : 364}" opacity=".55"/></g>`}
   <g filter="url(#cut)">
-    <path d="M58 -54 V-28" ${s} stroke-width="1.6"/><path d="M46 -16 L52 -30 H64 L70 -16Z" fill="#D86B56" ${s}/>
-    <path d="M306 -54 V-26" ${s} stroke-width="1.6"/><path d="M294 -14 L300 -28 H312 L318 -14Z" fill="#7D9E91" ${s}/>
-    <path d="M192 -54 V-46" ${s} stroke-width="1.6"/><rect x="170" y="-46" width="44" height="26" fill="#22262B"/>
+    ${slot('set.practical-red', `<path d="M58 -54 V-28" ${s} stroke-width="1.6"/><path d="M46 -16 L52 -30 H64 L70 -16Z" fill="#D86B56" ${s}/>`)}
+    ${slot('set.practical-sage', `<path d="M306 -54 V-26" ${s} stroke-width="1.6"/><path d="M294 -14 L300 -28 H312 L318 -14Z" fill="#7D9E91" ${s}/>`)}
+    ${slot('set.overhead-flag', `<path d="M192 -54 V-46" ${s} stroke-width="1.6"/><rect x="170" y="-46" width="44" height="26" fill="#22262B"/>`)}
   </g>
-  <ellipse cx="58" cy="-8" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>
-  <ellipse cx="306" cy="-6" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>
+  ${hasArt('set.practical-red') ? '' : `<ellipse cx="58" cy="-8" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>
+  <ellipse cx="306" cy="-6" rx="16" ry="7" fill="#FFE7A3" opacity=".35" filter="url(#glow)"/>`}
 
   <g filter="url(#cut)" transform="rotate(-5 42 36)">
-    <rect x="18" y="16" width="44" height="34" fill="#F2E9D8"/>
+    ${slot('set.poster', '<rect x="18" y="16" width="44" height="34" fill="#F2E9D8"/>')}
     <text x="40" y="31" text-anchor="middle" ${HAND} font-size="10" fill="#D86B56">BIG</text>
     <text x="40" y="44" text-anchor="middle" ${HAND} font-size="10" fill="#D86B56">BUN</text>
   </g>
@@ -369,21 +389,25 @@
 
   <!-- Potted plants -->
   <g filter="url(#cut)">
-    <path d="M8 152 l3 -22 h22 l3 22z" fill="#C4644D" ${s}/>
-    <path d="M22 130 q-18 -20 -14 -46 q12 18 14 46z M22 130 q4 -30 22 -42 q-4 26 -22 42z M22 130 q-2 -26 6 -52 q8 26 -6 52z" fill="#7FB069" ${s} stroke-width="1.2"/>
-    <path d="M318 152 l3 -18 h20 l3 18z" fill="#E7B84F" ${s}/>
-    <path d="M331 134 q-14 -16 -10 -38 q10 14 10 38z M331 134 q4 -24 18 -34 q-2 22 -18 34z" fill="#6E9E5A" ${s} stroke-width="1.2"/>
+    ${slot('set.plant-1', `<path d="M8 152 l3 -22 h22 l3 22z" fill="#C4644D" ${s}/>
+    <path d="M22 130 q-18 -20 -14 -46 q12 18 14 46z M22 130 q4 -30 22 -42 q-4 26 -22 42z M22 130 q-2 -26 6 -52 q8 26 -6 52z" fill="#7FB069" ${s} stroke-width="1.2"/>`)}
+    ${slot('set.plant-2', `<path d="M318 152 l3 -18 h20 l3 18z" fill="#E7B84F" ${s}/>
+    <path d="M331 134 q-14 -16 -10 -38 q10 14 10 38z M331 134 q4 -24 18 -34 q-2 22 -18 34z" fill="#6E9E5A" ${s} stroke-width="1.2"/>`)}
   </g>
 
   <!-- Floor -->
-  ${wide ? `<path d="M-600 158 L0 152 L360 145 L960 139 L960 600 L-600 600Z" fill="#D8C29C"/>
+  ${(() => {
+    const real = hasArt('set.floor'), fl = real ? 'url(#setFloor)' : '#D8C29C';
+    return wide ? `<path d="M-600 158 L0 152 L360 145 L960 139 L960 600 L-600 600Z" fill="${fl}"/>
   <path d="M-600 158 L0 152 L360 145 L960 139" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
-  <path d="M-600 236 q160 -8 330 2 t330 -2 t330 4 t300 -4 V600 H-600Z" fill="#CFB78F" opacity=".45"/>` : `<path d="M0 152 L360 145 L360 340 L0 340Z" fill="#D8C29C"/>
-  <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>`}
-  ${wide ? '' : `<path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
-  <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>`}
-  <g stroke="#E7B84F" stroke-width="3" stroke-linecap="round" opacity=".9"><path d="M176 230 l10 6 M186 230 l-10 6"/><path d="M322 232 l9 5 M331 232 l-9 5"/><path d="M98 226 l9 5 M107 226 l-9 5"/></g>
-  <path d="M74 198 q30 16 70 8 t90 6 q30 4 60 -2 q20 30 -40 70" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".6"/>
+  ${real ? '' : '<path d="M-600 236 q160 -8 330 2 t330 -2 t330 4 t300 -4 V600 H-600Z" fill="#CFB78F" opacity=".45"/>'}`
+      : `<path d="M0 152 L360 145 L360 340 L0 340Z" fill="${fl}"/>
+  <path d="M0 152 L360 145" stroke="${INK}" stroke-width="1.5" opacity=".35"/>
+  ${real ? '' : `<path d="M0 196 q60 -6 130 2 t160 -4 t70 4 V260 H0Z" fill="#CFB78F" opacity=".55"/>
+  <path d="M0 280 q90 -8 190 2 t170 -2 V340 H0Z" fill="#CDB48A" opacity=".5"/>`}`;
+  })()}
+  ${floorDressing(wide)}
+  ${slot('set.cable', `<path d="M74 198 q30 16 70 8 t90 6 q30 4 60 -2 q20 30 -40 70" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".6"/>`)}
 
   <!-- Grip: sweep unrolls from its tube, the hero platform is carried in, a flag goes up -->
   <g id="pc-sweep">
@@ -669,7 +693,20 @@
     bounce: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`,
   };
 
+  // HUD pieces delivered as images, drawn inside a small SVG: the art is centered on 0,0 in CSS pixels
+  function hudImg(id, state, half, w, h) {
+    const L = loader();
+    if (!L || !L.has(id, state)) return '';
+    return `<svg${w ? ` width="${w}" height="${h || w}"` : ''} viewBox="${-half} ${-half} ${2 * half} ${2 * half}" aria-hidden="true">${L.use(id, state, { x: 0, y: 0 })}</svg>`;
+  }
+  function pauseSVG(px) {
+    return hudImg('ui.icon-pause', 'default', 15, px) || `<svg width="${px}" height="${px}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>`;
+  }
+  // A shot's mark in the shot list: done (check) or pending (ring). Returns '' with no art, so the CSS circle stays.
+  function shotMark(kind) { return hudImg('ui.shot-status', kind, 13); }
   function starSVG(on) {
+    const art = hudImg('ui.star', on ? 'on' : 'off', 17);
+    if (art) return art;
     return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.7-.8z" fill="${on ? '#E7B84F' : '#E6D8BE'}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
   }
 
@@ -685,6 +722,6 @@
   root.WrapArt = {
     DEPT_COLOR, heroSpot, keyLens, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
-    deptIcon, ICON, starSVG, clapperSVG,
+    deptIcon, ICON, starSVG, pauseSVG, shotMark, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

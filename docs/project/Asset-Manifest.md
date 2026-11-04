@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 4, 2026 (revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 4, 2026 (revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -47,29 +47,29 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 
 | ID | Piece | Size (units) | Export | Position | States | Wired |
 | --- | --- | --- | --- | --- | --- | --- |
-| set.wall | Deep blue backing behind the flats, seamless tile | tile 200 x 200 | 1000 x 1000 @5x | Fills -600 to 960 | Static | Ready |
-| set.flat-1 | Blue flat, left of the stage | 82 x 204 | 410 x 1020 | x -8 to 74, y -52 to 152 | Static | Ready |
-| set.flat-2 | Brick red flat | 74 x 183 | 370 x 915 | x 60 to 134, y -31 to 152 | Static | Ready |
-| set.flat-3 | Mustard flat above the sweep | 72 x 84 | 360 x 420 | x 144 to 216, y -44 to 40 | Static | Ready |
-| set.flat-4 | Sage flat | 72 x 186 | 360 x 930 | x 228 to 300, y -34 to 152 | Static | Ready |
-| set.flat-5 | Dark corrugated flat | 76 x 208 | 380 x 1040 | x 290 to 366, y -56 to 152 | Static | Ready |
-| set.flat-6 | Kraft flat, far left | 104 x 196 | 520 x 980 | x -250 to -146, y -42 to 154 | Static | Ready |
-| set.flat-7 | Mustard flat, left | 88 x 174 | 440 x 870 | x -160 to -72, y -20 to 154 | Static | Ready |
-| set.flat-8 | Plum flat, left | 80 x 203 | 400 x 1015 | x -86 to -6, y -50 to 153 | Static | Ready |
-| set.flat-9 | Red flat, right | 78 x 196 | 390 x 980 | x 354 to 432, y -50 to 146 | Static | Ready |
-| set.flat-10 | Cream flat, right | 84 x 173 | 420 x 865 | x 418 to 502, y -28 to 145 | Static | Ready |
-| set.flat-11 | Sage flat, far right | 110 x 200 | 550 x 1000 | x 490 to 600, y -56 to 144 | Static | Ready |
-| set.call-sheet | Call sheet pinned on the right flat | 52 x 36 | 312 x 216 | (436, 0) top left | Static | Ready |
-| set.poster | Client poster card, blank: the engine writes the client name | 44 x 34 | 264 x 204 | (18, 16) top left, tilted -5° | Static | Ready |
-| set.grid | Ceiling pipes, seamless strip | tile 200 x 24 | 1000 x 120 @5x | y -58 to -34, full width | Static | Ready |
-| set.practical | Hanging practical lamp, two colors (red, sage) | 24 x 40 | 144 x 240 | Hang points (58, -54) and (306, -54) | `off`, `on` | Ready |
-| set.overhead-flag | Black flag hanging from the grid | 44 x 34 | 264 x 204 | Hang point (192, -54) | Static | Ready |
-| set.floor | Kraft paper floor, seamless tile | tile 200 x 200 | 1000 x 1000 @5x | Below the floor line, everywhere | Static | Ready |
-| set.floor-scuffs | Lighter worn patches, a few loose pieces | about 120 x 30 each | @5x | Scattered | Static | Ready |
-| set.tape-mark | Yellow tape X, crew marks on the floor | 10 x 6 | 60 x 36 | (181, 233), (326, 234), (102, 228) | Static | Ready |
-| set.cable | Black cable snaking across the floor | 230 x 80 | 1380 x 480 | From the key light (74, 198) to the right | Static | Ready |
-| set.plant-1 | Potted plant, terracotta pot | 40 x 70 | 240 x 420 | Pot base at (22, 152) | Static, optional 2-frame sway | Ready |
-| set.plant-2 | Potted plant, mustard pot | 34 x 56 | 204 x 336 | Pot base at (331, 152) | Static | Ready |
+| set.wall | Deep blue backing behind the flats, seamless tile | tile 200 x 200 | 1000 x 1000 @5x | Fills -600 to 960 | Static | **Wired** (batch 4) |
+| set.flat-1 | Blue flat, left of the stage | 82 x 204 | 410 x 1020 | x -8 to 74, y -52 to 152 | Static | **Wired** (batch 4) |
+| set.flat-2 | Brick red flat | 74 x 183 | 370 x 915 | x 60 to 134, y -31 to 152 | Static | **Wired** (batch 4) |
+| set.flat-3 | Mustard flat above the sweep | 72 x 84 | 360 x 420 | x 144 to 216, y -44 to 40 | Static | **Wired** (batch 4) |
+| set.flat-4 | Sage flat | 72 x 186 | 360 x 930 | x 228 to 300, y -34 to 152 | Static | **Wired** (batch 4) |
+| set.flat-5 | Dark corrugated flat | 76 x 208 | 380 x 1040 | x 290 to 366, y -56 to 152 | Static | **Wired** (batch 4) |
+| set.flat-6 | Kraft flat, far left | 104 x 196 | 520 x 980 | x -250 to -146, y -42 to 154 | Static | **Wired** (batch 4) |
+| set.flat-7 | Mustard flat, left | 88 x 174 | 440 x 870 | x -160 to -72, y -20 to 154 | Static | **Wired** (batch 4) |
+| set.flat-8 | Plum flat, left | 80 x 203 | 400 x 1015 | x -86 to -6, y -50 to 153 | Static | **Wired** (batch 4) |
+| set.flat-9 | Red flat, right | 78 x 196 | 390 x 980 | x 354 to 432, y -50 to 146 | Static | **Wired** (batch 4) |
+| set.flat-10 | Cream flat, right | 84 x 173 | 420 x 865 | x 418 to 502, y -28 to 145 | Static | **Wired** (batch 4) |
+| set.flat-11 | Sage flat, far right | 110 x 200 | 550 x 1000 | x 490 to 600, y -56 to 144 | Static | **Wired** (batch 4) |
+| set.call-sheet | Call sheet pinned on the right flat | 52 x 36 | 312 x 216 | (436, 0) top left | Static | **Wired** (batch 4) |
+| set.poster | Client poster card, blank: the engine writes the client name | 44 x 34 | 264 x 204 | (18, 16) top left, tilted -5° | Static | **Wired** (batch 4) |
+| set.grid | Ceiling pipes, seamless strip | tile 200 x 24 | 1000 x 120 @5x | y -58 to -34, full width | Static | **Wired** (batch 4) |
+| set.practical-red, set.practical-sage | Hanging practical lamp, two colors (red, sage) | 24 x 40 | 144 x 240 | Hang points (58, -54) and (306, -54) | `off`, `on` | **Wired** (batch 4, one ID per color) |
+| set.overhead-flag | Black flag hanging from the grid | 44 x 34 | 264 x 204 | Hang point (192, -54) | Static | **Wired** (batch 4) |
+| set.floor | Kraft paper floor, seamless tile | tile 200 x 200 | 1000 x 1000 @5x | Below the floor line, everywhere | Static | **Wired** (batch 4) |
+| set.floor-scuffs | Lighter worn patches, a few loose pieces | about 120 x 30 each | @5x | Scattered | Static | **Wired** (batch 4) |
+| set.tape-mark | Yellow tape X, crew marks on the floor | 10 x 6 | 60 x 36 | (181, 233), (326, 234), (102, 228) | Static | **Wired** (batch 4) |
+| set.cable | Black cable snaking across the floor | 230 x 80 | 1380 x 480 | From the key light (74, 198) to the right | Static | **Wired** (batch 4) |
+| set.plant-1 | Potted plant, terracotta pot | 40 x 70 | 240 x 420 | Pot base at (22, 152) | Static, optional 2-frame sway | **Wired** (batch 4) |
+| set.plant-2 | Potted plant, mustard pot | 34 x 56 | 204 x 336 | Pot base at (331, 152) | Static | **Wired** (batch 4) |
 
 ### Grip
 
@@ -226,19 +226,19 @@ The set fills the screen and the HUD floats on it in small paper pieces. Sizes a
 | ID | Piece | Size (phone / tablet) | Notes |
 | --- | --- | --- | --- |
 | ui.logo | THAT'S A WRAP! sticker | 40 / 60 tall | **In use**, cut from the concept. Needs a clean version |
-| ui.tag | Torn cream paper tag for the job name | 210 x 34 / 320 x 50, nine-slice, 10 px corners | Slight tilt is done by the engine |
-| ui.chip-dark | Dark rounded panel for budget, time and stars | 36 / 56 tall, nine-slice, 10 px corners | Behind light text |
+| ui.tag | Torn cream paper tag for the job name | 210 x 34 / 320 x 50, nine-slice, 10 px corners | Slight tilt is done by the engine Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.chip-dark | Dark rounded panel for budget, time and stars | 36 / 56 tall, nine-slice, 10 px corners | Behind light text Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
 | ui.meter | Meter track and fill (green for budget, light green for spend) | 5 / 7 tall, any width | Two files: track, fill |
 | ui.time-seg | One hour segment: empty, filled (yellow), overtime (coral) | 8 x 8 / 13 x 11 | Ten in a row |
-| ui.star | Star filled and empty | 19 / 30 square | Also used on the wrap report at 46 |
-| ui.button-paper | Square cream paper button | 38 / 52 square, nine-slice | Pause and the pop-up close button. Icons separate |
-| ui.icon-pause | Pause bars | 20 / 26 | Ink, single color |
-| ui.crew-card | Crew portrait card frame, neutral light paper | 58 x 62 / 84 x 92 | The engine tints it by department and draws the portrait from the character's head |
+| ui.star | Star filled and empty | 19 / 30 square | Also used on the wrap report at 46 **Wired** (batch 4) |
+| ui.button-paper | Square cream paper button | 38 / 52 square, nine-slice | Pause and the pop-up close button. Icons separate Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.icon-pause | Pause bars | 20 / 26 | Ink, single color **Wired** (batch 4) |
+| ui.crew-card | Crew portrait card frame, neutral light paper | 58 x 62 / 84 x 92 | The engine tints it by department and draws the portrait from the character's head Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
 | ui.crew-ring | Status dot: working, waiting, blocked | 9 / 12 | Three files |
-| ui.panel | Cream paper panel for the shot list tab and pop-up | 172 x 50 tab, up to 300 x 360 pop-up / 240 and 360 wide, nine-slice, 14 px corners | |
-| ui.polaroid | Polaroid frame for shot thumbnails | 40 x 31 / 60 x 46 inner photo | Thumbnails slot inside |
+| ui.panel | Cream paper panel for the shot list tab and pop-up | 172 x 50 tab, up to 300 x 360 pop-up / 240 and 360 wide, nine-slice, 14 px corners | Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.polaroid | Polaroid frame for shot thumbnails | 40 x 31 / 60 x 46 inner photo | Thumbnails slot inside Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
 | ui.shot-thumbs | Hero Burger, Cheese Pull, Sauce Pour photos | 120 x 92 photo at 3x | **In use**, cut from the concept. Need clean versions without the border |
-| ui.shot-status | Done check, up-next play, pending circle | 17 / 22 | Three files |
+| ui.shot-status | Done check, up-next play, pending circle | 17 / 22 | Three files **Wired** (batch 4) |
 | ui.check | Set conditions marker: empty, partial ring, done | 14 / 20 | |
 | ui.quest | Quest tracker pill, cream paper | 30 / 40 tall, nine-slice, pill ends | One line of text |
 | ui.action | ACTION button: paper base plus a clapperboard with a separate stick | 104 x 92 / 140 x 124 | States: not ready (muted), ready (yellow), rolling (dark). Stick pivots at its left hinge |

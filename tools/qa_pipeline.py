@@ -76,7 +76,7 @@ with sync_playwright() as p:
         seen = {}
         for m in e.js('lab.measure()'):
             i = imgs.get(m['key'])
-            if not i: continue
+            if not i or not m['devW']: continue   # tiles drawn through an SVG pattern have no box of their own
             ratio = i['imgW'] / m['devW']
             seen[m['key']] = min(seen.get(m['key'], 99), ratio)
         for key, r in seen.items():
