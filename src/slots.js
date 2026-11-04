@@ -73,6 +73,9 @@
   */
   const CHARACTERS = {
     ro: { name: 'Ro' },
+    mika: { name: 'Mika' },
+    dani: { name: 'Dani' },
+    lu: { name: 'Lu' },
   };
   // One entry per part of the shared rig: the joint it hangs from and its default pivot inside the image
   const ROLES = {

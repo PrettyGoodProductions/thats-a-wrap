@@ -1,0 +1,358 @@
+{
+  "_note": "Batch 2 (Nov 4): Mika, Dani and Lu, lossless crops from the approved sheets. Source px per set unit is 25.7 (Mika), 25.6 (Dani) and 26.5 (Lu), picked so each character stands 51.8 units to the top of the head, like Ro. Left and right in the source file names are viewer-facing; arm-front and leg-front use the right-hand crops (hands and boots toward the stage), arm-back and leg-back the left. Pivots come from the alpha: neck stub, hem, cap and hip-tab centers.",
+  "pieces": {
+    "crew.mika.head": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        237.1,
+        431
+      ],
+      "files": {
+        "default": "mika/crew.mika.head.png"
+      }
+    },
+    "crew.mika.torso": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        192.0,
+        432
+      ],
+      "files": {
+        "default": "mika/crew.mika.torso.png"
+      }
+    },
+    "crew.mika.pelvis": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        194.0,
+        159.0
+      ],
+      "files": {
+        "default": "mika/crew.mika.pelvis.png"
+      }
+    },
+    "crew.mika.arm-front": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        58.2,
+        55.5
+      ],
+      "files": {
+        "default": "mika/crew.mika.arm-right.png"
+      }
+    },
+    "crew.mika.arm-back": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        209.0,
+        57.5
+      ],
+      "files": {
+        "default": "mika/crew.mika.arm-left.png"
+      }
+    },
+    "crew.mika.leg-front": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        99.1,
+        55.5
+      ],
+      "files": {
+        "default": "mika/crew.mika.leg-right.png"
+      }
+    },
+    "crew.mika.leg-back": {
+      "native": 25.7,
+      "target": 8,
+      "pivot": [
+        154.8,
+        55.0
+      ],
+      "files": {
+        "default": "mika/crew.mika.leg-left.png"
+      }
+    },
+    "crew.dani.head": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        240.9,
+        466
+      ],
+      "files": {
+        "default": "dani/crew.dani.head.png"
+      }
+    },
+    "crew.dani.torso": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        202.2,
+        436
+      ],
+      "files": {
+        "default": "dani/crew.dani.torso.png"
+      }
+    },
+    "crew.dani.pelvis": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        211.0,
+        164.4
+      ],
+      "files": {
+        "default": "dani/crew.dani.pelvis.png"
+      }
+    },
+    "crew.dani.arm-front": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        73.8,
+        84.0
+      ],
+      "files": {
+        "default": "dani/crew.dani.arm-right.png"
+      }
+    },
+    "crew.dani.arm-back": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        202.7,
+        82.5
+      ],
+      "files": {
+        "default": "dani/crew.dani.arm-left.png"
+      }
+    },
+    "crew.dani.leg-front": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        115.9,
+        83.5
+      ],
+      "files": {
+        "default": "dani/crew.dani.leg-right.png"
+      }
+    },
+    "crew.dani.leg-back": {
+      "native": 25.6,
+      "target": 8,
+      "pivot": [
+        163.5,
+        82.5
+      ],
+      "files": {
+        "default": "dani/crew.dani.leg-left.png"
+      }
+    },
+    "crew.lu.head": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        329.5,
+        476
+      ],
+      "files": {
+        "default": "lu/crew.lu.head.png"
+      }
+    },
+    "crew.lu.torso": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        222.9,
+        483
+      ],
+      "files": {
+        "default": "lu/crew.lu.torso.png"
+      }
+    },
+    "crew.lu.pelvis": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        176.0,
+        142.6
+      ],
+      "files": {
+        "default": "lu/crew.lu.pelvis.png"
+      }
+    },
+    "crew.lu.arm-front": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        91.8,
+        59.5
+      ],
+      "files": {
+        "default": "lu/crew.lu.arm-right.png"
+      }
+    },
+    "crew.lu.arm-back": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        198.6,
+        59.0
+      ],
+      "files": {
+        "default": "lu/crew.lu.arm-left.png"
+      }
+    },
+    "crew.lu.leg-front": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        103.4,
+        71.5
+      ],
+      "files": {
+        "default": "lu/crew.lu.leg-right.png"
+      }
+    },
+    "crew.lu.leg-back": {
+      "native": 26.5,
+      "target": 8,
+      "pivot": [
+        160.1,
+        71.0
+      ],
+      "files": {
+        "default": "lu/crew.lu.leg-left.png"
+      }
+    }
+  },
+  "characters": {
+    "crew.mika": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0,
+          -22.01
+        ],
+        "neck": [
+          0.3,
+          -35.08
+        ],
+        "shoulderFront": [
+          5.28,
+          -32.23
+        ],
+        "shoulderBack": [
+          -5.28,
+          -32.23
+        ],
+        "pelvis": [
+          0,
+          -19.17
+        ],
+        "hipFront": [
+          3.06,
+          -19.16
+        ],
+        "hipBack": [
+          -3.06,
+          -19.18
+        ]
+      },
+      "portrait": [
+        -10.7,
+        -53.4,
+        22.4,
+        24.8
+      ]
+    },
+    "crew.dani": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0,
+          -20.74
+        ],
+        "neck": [
+          0.3,
+          -33.96
+        ],
+        "shoulderFront": [
+          5.64,
+          -31.11
+        ],
+        "shoulderBack": [
+          -5.64,
+          -31.11
+        ],
+        "pelvis": [
+          0,
+          -17.32
+        ],
+        "hipFront": [
+          3.34,
+          -17.3
+        ],
+        "hipBack": [
+          -3.34,
+          -17.34
+        ]
+      },
+      "portrait": [
+        -12.3,
+        -53.8,
+        25.8,
+        28.6
+      ]
+    },
+    "crew.lu": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0,
+          -18.96
+        ],
+        "neck": [
+          0.3,
+          -33.68
+        ],
+        "shoulderFront": [
+          5.21,
+          -30.83
+        ],
+        "shoulderBack": [
+          -5.21,
+          -30.83
+        ],
+        "pelvis": [
+          0,
+          -16.37
+        ],
+        "hipFront": [
+          2.62,
+          -16.36
+        ],
+        "hipBack": [
+          -2.62,
+          -16.38
+        ]
+      },
+      "portrait": [
+        -14.0,
+        -53.4,
+        24.2,
+        26.8
+      ]
+    }
+  }
+}

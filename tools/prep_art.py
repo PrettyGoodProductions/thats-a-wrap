@@ -36,7 +36,7 @@ for pid, p in spec['pieces'].items():
         im = Image.open(os.path.join(src_dir, fname)).convert('RGBA')
         im = clean_alpha(im)
         w, h = round(im.width * k), round(im.height * k)
-        out = im.resize((w, h), Image.LANCZOS)   # Pillow premultiplies RGBA for resizing
+        out = clean_alpha(im.resize((w, h), Image.LANCZOS))   # Pillow premultiplies RGBA for resizing; resampling brings back faint alpha and specks, so clean again
         name = pid + ('' if state == 'default' else '.' + state) + '@%gx.png' % p['target']
         out.save(os.path.join(out_dir, name), optimize=True)
         sizes[state] = (w, h, os.path.getsize(os.path.join(out_dir, name)))

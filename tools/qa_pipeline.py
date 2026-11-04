@@ -16,11 +16,18 @@ from io import BytesIO
 from playwright.sync_api import sync_playwright
 
 dist, out = sys.argv[1], sys.argv[2]
+# --char ro|mika|dani|lu picks which delivered character the puppet checks run on (default ro). Run once per character
+CH = sys.argv[sys.argv.index('--char') + 1] if '--char' in sys.argv else 'ro'
+NAME = {'ro': 'Ro', 'mika': 'Mika', 'dani': 'Dani', 'lu': 'Lu'}[CH]
+DEPT = {'ro': 'lighting', 'mika': 'camera', 'dani': 'grip', 'lu': 'art'}[CH]
+PUP = f"'{CH}',{{name:'{NAME}',dept:'{DEPT}'}}"
 os.makedirs(out, exist_ok=True)
 LAB = 'file://' + os.path.abspath(os.path.join(dist, 'lab.html'))
 results = []
 
 def check(name, ok, detail=''):
+    if name.startswith('Ro '): name = name[3:]
+    name = f'[{NAME}] ' + name
     results.append((name, bool(ok), detail))
     print(('PASS ' if ok else 'FAIL ') + name + (('  ' + detail) if detail else ''))
 
@@ -64,7 +71,7 @@ with sync_playwright() as p:
         e = Env(p, w, dpr)
         e.mount('set')
         e.js("lab.key('on',0)")
-        e.js("lab.addPuppet('ro',{name:'Ro',dept:'lighting'},104,300,false)")
+        e.js(f"lab.addPuppet({PUP},104,300,false)")
         imgs = {i['key']: i for i in e.js('lab.images()')}
         seen = {}
         for m in e.js('lab.measure()'):
@@ -78,11 +85,11 @@ with sync_playwright() as p:
         e.close()
     # Hire card and crew bar portraits of Ro (the head, in a 56 x 60 css px card at 3x)
     e = Env(p, 430, 3)
-    rect = e.js("lab.portrait({name:'Ro',dept:'lighting'},56,60,'transparent')")
+    rect = e.js(f"lab.portrait({{name:'{NAME}',dept:'{DEPT}'}},56,60,'transparent')")
     portrait_png = e.shot()
     imgs = {i['key']: i for i in e.js('lab.images()')}
-    head = [i for i in imgs.values() if i['id'] == 'crew.ro.head'][0]
-    box = e.js("(WrapLoader.portraitOf('ro'))")
+    head = [i for i in imgs.values() if i['id'] == f'crew.{CH}.head'][0]
+    box = e.js(f"(WrapLoader.portraitOf('{CH}'))")
     head_dev_w = head['w'] * (56 / box[2]) * 3
     sizing.setdefault(head['key'], {})['hire card portrait @3x'] = head['imgW'] / head_dev_w
     pm = mask(portrait_png, 40)
@@ -90,7 +97,7 @@ with sync_playwright() as p:
     W, H = portrait_png.size
     clipped = x0 <= 0 or y0 <= 0 or x1 >= W   # the bottom edge is meant to cut through the shoulders
     check('Ro portrait crop shows the whole head (nothing cut off at the top or sides of the card)', not clipped, f'art spans x {x0}-{x1} of {W}, y {y0}-{y1} of {H} device px')
-    portrait_png.save(os.path.join(out, 'portrait-ro.png'))
+    portrait_png.save(os.path.join(out, f'portrait-{CH}.png'))
     e.close()
     worst = 99
     print('   piece: delivered px / drawn device px  (1.0 = exact, below 1.0 = soft, above 3 = wasted weight)')
@@ -109,9 +116,9 @@ with sync_playwright() as p:
     print('\n== 2. Transparency ==')
     e = Env(p, 430, 3)
     e.mount('transparent'); e.js("lab.key('on',0)")
-    e.js("lab.addPuppet('ro',{name:'Ro',dept:'lighting'},184,330,false)")
+    e.js(f"lab.addPuppet({PUP},184,330,false)")
     pieces = {}
-    for name, mode in (('platform', 'platform'), ('key-on', 'key'), ('ro', 'puppet')):
+    for name, mode in (('platform', 'platform'), ('key-on', 'key'), (CH, 'puppet')):
         e.js(f"lab.iso('{mode}')")
         im = e.shot()
         pieces[name] = im
@@ -223,8 +230,8 @@ with sync_playwright() as p:
     e = Env(p, 430, 3)
     e.mount('transparent'); e.js("lab.iso('puppet')")
     X, Y = 184, 330
-    e.js(f"lab.addPuppet('ro',{{name:'Ro',dept:'lighting'}},{X},{Y},false)")
-    e.js(f"lab.addPuppet('mika',{{name:'Mika',dept:'camera',look:{{skin:'#E1B48E',hair:'#3A2A1E',top:'beanie'}}}},300,{Y},false)")
+    e.js(f"lab.addPuppet({PUP},{X},{Y},false)")
+    e.js(f"lab.addPuppet('paz',{{name:'Paz',dept:'art',look:{{skin:'#C99070',hair:'#7A2E1E',top:'bun'}}}},300,{Y},false)")
     n_rig = e.js("document.querySelectorAll('.wl-rig[data-character]').length")
     check('only Ro uses the fixed rig, other crew keep their own look', n_rig == 1, f'{n_rig} fixed-character puppet(s) on set')
     e.js("document.querySelector('#labCrew .pup:nth-child(2)').style.display='none'")
@@ -236,19 +243,19 @@ with sync_playwright() as p:
         m[:, int(e.px(240, 0)[0]):] = False
         x0, y0, x1, y1 = bbox(m)
         return m, dict(x0=(x0 - ox) / e.k, x1=(x1 - ox) / e.k, top=(y0 - oy) / e.k, bottom=(y1 - oy) / e.k, comps=components(m))
-    e.js("lab.cls('ro','')")
+    e.js(f"lab.cls('{CH}','')")
     idle_im = frame(); idle_m, idle = stats(idle_im)
     h_units = (idle['bottom'] - idle['top']) / 1.25
     check('idle: puppet stands on the ground mark (feet at y = 0, +-0.8 units)', abs(idle['bottom']) <= 0.8, f"feet {idle['bottom']:+.2f} units from the mark")
     check('idle: puppet height is in line with the other crew (44 to 52 puppet units)', 44 <= h_units <= 52, f'{h_units:.1f} puppet units tall')
     check('idle: one solid piece (no gaps at neck, shoulders, hips)', idle['comps'] == 1, f"{idle['comps']} piece(s)")
-    idle_im.save(os.path.join(out, 'ro-idle.png'))
+    idle_im.save(os.path.join(out, f'{CH}-idle.png'))
 
     def run(cls_name, cycle_ms, n):
-        e.js(f"lab.cls('ro','{cls_name}')")
+        e.js(f"lab.cls('{CH}','{cls_name}')")
         frames = []
         for i in range(n):
-            e.js(f"lab.freeze('ro',{i / n},{cycle_ms})")
+            e.js(f"lab.freeze('{CH}',{i / n},{cycle_ms})")
             im = frame(); m, s = stats(im); frames.append((im, m, s))
         return frames
     work = run('working', 1200, 12)
@@ -270,7 +277,7 @@ with sync_playwright() as p:
         sheet.save(os.path.join(out, name + '-strip.png'))
         small = [t.resize((t.width // 2, t.height // 2), Image.LANCZOS) for t in tiles]
         small[0].save(os.path.join(out, name + '.gif'), save_all=True, append_images=small[1:], duration=gif_ms, loop=0, optimize=False)
-    film([f[0] for f in work], 'ro-work', 100)
+    film([f[0] for f in work], f'{CH}-work', 100)
     errs = e.errors
     check('lab page logged no errors', not errs, '; '.join(errs[:3]))
     e.close()
@@ -282,11 +289,11 @@ with sync_playwright() as p:
     def walk_trip(bg, start, end, measure):
         e.mount(bg)
         if measure: e.js("lab.iso('puppet')")
-        e.js(f"lab.addPuppet('ro',{{name:'Ro',dept:'lighting'}},{start[0]},{start[1]},false)")
+        e.js(f"lab.addPuppet({PUP},{start[0]},{start[1]},false)")
         frames = [(e.shot(), {'x': start[0], 'y': start[1], 'moving': False, 'step': None, 'planted': None})]
-        e.js(f"lab.walkTo('ro',{end[0]},{end[1]})")
+        e.js(f"lab.walkTo('{CH}',{end[0]},{end[1]})")
         for _ in range(4000):
-            st = e.js("lab.walkTick('ro', 1/60)")
+            st = e.js(f"lab.walkTick('{CH}', 1/60)")
             if st['changed']: frames.append((e.shot(), st))
             if not st['moving']: break
         return frames
@@ -337,7 +344,7 @@ with sync_playwright() as p:
         tiles = [tiles[0]] * 6 + tiles + [tiles[-1]] * 8
         gif += tiles
     small = [t.resize((t.width // 3, t.height // 3), Image.LANCZOS) for t in gif]
-    small[0].save(os.path.join(out, 'ro-walk-set.gif'), save_all=True, append_images=small[1:], duration=83, loop=0)
+    small[0].save(os.path.join(out, f'{CH}-walk-set.gif'), save_all=True, append_images=small[1:], duration=83, loop=0)
     fr = walk_trip('transparent', (60, 330), (300, 330), True)
     strip = [f[0] for f in fr[1:17]]
     film_crop = None
@@ -349,16 +356,16 @@ with sync_playwright() as p:
     sheet = Image.new('RGB', (sum(t.width for t in tiles), tiles[0].height), (233, 214, 170))
     x = 0
     for t in tiles: sheet.paste(t, (x, 0)); x += t.width
-    sheet.save(os.path.join(out, 'ro-walk-strip.png'))
+    sheet.save(os.path.join(out, f'{CH}-walk-strip.png'))
     e.close()
 
     # ---------------------------------------------------------------- 6. whole set at phone scale
     e = Env(p, 430, 3)
     e.mount('set'); e.js("lab.key('on',20)")
-    e.js("lab.addPuppet('ro',{name:'Ro',dept:'lighting'},104,300,false)")
-    e.js("lab.cls('ro','working'); lab.freeze('ro',0.25,1200)")
-    e.js("lab.addPuppet('mika',{name:'Mika',dept:'camera',look:{skin:'#E1B48E',hair:'#3A2A1E',top:'beanie'}},200,300,false)")
-    e.page.locator('#stage').screenshot(path=os.path.join(out, 'set-phone-3x.png'))
+    for i, (c_, n_, d_) in enumerate((('ro', 'Ro', 'lighting'), ('mika', 'Mika', 'camera'), ('dani', 'Dani', 'grip'), ('lu', 'Lu', 'art'))):
+        e.js(f"lab.addPuppet('{c_}',{{name:'{n_}',dept:'{d_}'}},{70 + 70 * i},300,false)")
+        e.js(f"lab.cls('{c_}','working'); lab.freeze('{c_}',0.25,1200)")
+    e.page.locator('#stage').screenshot(path=os.path.join(out, f'set-phone-3x.png' if CH == 'ro' else f'set-phone-3x-{CH}.png'))
     e.close()
 
 fails = [r for r in results if not r[1]]

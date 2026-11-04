@@ -12,6 +12,8 @@ fails if a state never appears or the page logs any error.
 
 --expect ro     the delivered batch (art/): platform, key light states, and Ro on the fixed-character rig.
                 Hires Ro as gaffer and checks he walks, works, and is the only fixed character on set
+--expect crew   the four delivered characters (batches 1 and 2): hires Ro, Mika, Dani and Lu, checks all four are on the
+                fixed rig, each walks and works, and each hire card shows its own art
 --expect art    stand-in art is built in: real images must draw, swap state with the simulation, and resolve
 --expect none   no art delivered: no art slots may exist and the placeholders must play exactly as before
 """
@@ -33,7 +35,18 @@ PROBE = """() => {
   const work = [...document.querySelectorAll('.wl-pose[data-part="crew.arm-front"] use[data-st="work"]')].filter(shown);
   const idleArms = [...document.querySelectorAll('.wl-pose[data-part="crew.arm-front"] use[data-st="default"]')].filter(shown);
   const cart = document.querySelectorAll('#cartBurger use');
+  const chars = {};
+  for (const ch of ['ro', 'mika', 'dani', 'lu']) {
+    const rig = document.querySelector(`#crewLayer .wl-rig[data-character="${ch}"]`);
+    const pup = rig && rig.closest('.pup');
+    chars[ch] = {
+      on: !!rig,
+      walking: !!(pup && pup.classList.contains('walking') && /rotate/.test((pup.querySelector('.wl-r-leg-front') || {}).style ? pup.querySelector('.wl-r-leg-front').style.transform : '')),
+      working: !!(pup && pup.classList.contains('working') && !pup.classList.contains('walking') && pup.getAnimations({ subtree: true }).some(a => a.animationName === 'rigReach')),
+    };
+  }
   return {
+    chars,
     slots: document.querySelectorAll('[data-slot]').length,
     platformShown: stateShown('grip.platform', 'default') && shown(document.getElementById('platform')),
     keyOff: stateShown('elec.keylight-head', 'off'),
@@ -55,6 +68,7 @@ PROBE = """() => {
 }"""
 
 errors = []
+notes = []
 seen = {}
 timeline = []
 
@@ -93,6 +107,23 @@ with sync_playwright() as p:
         if expect == 'ro' and dept == 'lighting' and page.locator('[data-hire="lighting:ro"]').count():
             page.click('[data-hire="lighting:ro"]')
             continue
+        if expect == 'crew':
+            want = {'lighting': 'ro', 'camera': 'mika', 'grip': 'dani', 'art': 'lu'}[dept]
+            hire_sel = f'[data-hire="{dept}:{want}"]'
+            if page.locator(hire_sel).count() == 0:
+                page.click(f'[data-net="{dept}:yours"]') if page.locator(f'[data-net="{dept}:yours"]').count() else None
+            if page.locator(hire_sel).count() == 0:
+                errors.append(f'{want} is not on the hire screen for {dept}')
+                continue
+            if page.locator(hire_sel).is_disabled():
+                notes.append(f'{want} is booked on this job, so she cannot be hired here (cover her in the Lab bench)')
+                fb = f'[data-cands="{dept}"] [data-hire]:not([disabled])'
+                if page.locator(fb).count() == 0:
+                    page.click(f'[data-net="{dept}:fof"]')
+                page.locator(fb).nth(page.locator(fb).count() - 1).click()
+                continue
+            page.click(hire_sel)
+            continue
         if page.locator(sel).count() == 0:
             page.click(f'[data-net="{dept}:fof"]')
         n = page.locator(sel).count()
@@ -101,7 +132,7 @@ with sync_playwright() as p:
         errors.append('could not afford a crew in the harness, pick cheaper hires')
     page.locator('.hire-h').scroll_into_view_if_needed()
     page.screenshot(path=os.path.join(out_dir, '03-hire.png'), full_page=True)
-    hire_probe = page.evaluate("() => ({ faces: document.querySelectorAll('.cand svg.face .wl-pose').length, uses: document.querySelectorAll('.cand svg.face use').length })")
+    hire_probe = page.evaluate("() => ({ chosen: [...document.querySelectorAll('.hire-h ~ * .cand.on, .cand.sel, .cand.picked')].length, faces: document.querySelectorAll('.cand svg.face .wl-pose').length, uses: document.querySelectorAll('.cand svg.face use').length })")
     page.click('#startBtn')
     page.wait_for_selector('#setSvg')
 
@@ -114,6 +145,7 @@ with sync_playwright() as p:
     peak = {'cartLayers': 0, 'usesResolved': 0, 'usesShown': 0, 'puppets': 0, 'workArm': 0, 'idleArm': 0, 'rigs': 0}
     deadline = time.time() + 150
     chaos_taken = False
+    walked, worked = set(), set()
     while time.time() < deadline:
         pr = page.evaluate(PROBE)
         final = pr
@@ -131,6 +163,9 @@ with sync_playwright() as p:
         if pr['keyDead']: snap(page, '15-key-dead')
         if pr['roWalking']: snap(page, '16-ro-walking')
         if pr['roWorking']: snap(page, '17-ro-working')
+        for ch, st in pr['chars'].items():
+            if st['walking']: snap(page, f'20-{ch}-walking'); walked.add(ch)
+            if st['working']: snap(page, f'21-{ch}-working'); worked.add(ch)
         if pr['action']:
             page.click('#actionBtn')
         if pr['wrap']:
@@ -139,7 +174,7 @@ with sync_playwright() as p:
     page.screenshot(path=os.path.join(out_dir, '99-wrap.png'))
     b.close()
 
-result = {'expect': expect, 'seconds': round(time.time() - t0, 1), 'seenAt': seen, 'peak': peak, 'hire': hire_probe, 'last': final, 'errors': errors[:20]}
+result = {'expect': expect, 'notes': notes, 'walked': sorted(walked), 'worked': sorted(worked), 'seconds': round(time.time() - t0, 1), 'seenAt': seen, 'peak': peak, 'hire': hire_probe, 'last': final, 'errors': errors[:20]}
 print(json.dumps(result, indent=2))
 
 problems = []
@@ -151,6 +186,16 @@ if expect == 'ro':
     if peak['usesShown'] == 0 or peak['usesResolved'] < peak['usesShown']: problems.append('some delivered images did not resolve (use href broken)')
     if peak['rigs'] != 1: problems.append(f"expected exactly one fixed-character puppet on set, saw {peak['rigs']}")
     if hire_probe['uses'] == 0: problems.append('hire screen did not use Ro\'s art')
+elif expect == 'crew':
+    for need in ('10-platform', '11-key-on', '15-key-dead', 'key-off-seen'):
+        if need not in seen: problems.append(f'never saw: {need}')
+    hired = [c for c in ('ro', 'mika', 'dani', 'lu') if not any(n.startswith(c) for n in notes)]
+    for ch in hired:
+        if ch not in walked: problems.append(f'{ch} was never seen walking on the rig')
+        if ch not in worked: problems.append(f'{ch} was never seen working (reach animation)')
+    if peak['usesShown'] == 0 or peak['usesResolved'] < peak['usesShown']: problems.append('some delivered images did not resolve (use href broken)')
+    if peak['rigs'] != len(hired): problems.append(f"expected {len(hired)} fixed-character puppets on set, saw {peak['rigs']}")
+    if hire_probe['uses'] == 0: problems.append('hire screen did not use the delivered art')
 elif expect == 'art':
     for need in ('10-platform', '11-key-on', '12-crew-working', '13-burger-stack', '15-key-dead', 'key-off-seen'):
         if need not in seen: problems.append(f'never saw: {need}')
