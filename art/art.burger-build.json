@@ -1,0 +1,44 @@
+{
+  "pivot": [
+    84.2,
+    80.6
+  ],
+  "scale": 6,
+  "states": {
+    "bottom-bun": {
+      "pivot": [
+        84.2,
+        80.6
+      ],
+      "scale": 6
+    },
+    "patty": {
+      "pivot": [
+        86.4,
+        73.8
+      ],
+      "scale": 6
+    },
+    "cheese": {
+      "pivot": [
+        91.1,
+        55.5
+      ],
+      "scale": 6
+    },
+    "lettuce": {
+      "pivot": [
+        97.0,
+        49.4
+      ],
+      "scale": 6
+    },
+    "top-bun": {
+      "pivot": [
+        86.8,
+        98.7
+      ],
+      "scale": 6
+    }
+  }
+}

@@ -39,8 +39,28 @@
     'art.burger-build': {
       anchor: { x: 30, y: 36 }, pivot: 'bottom-center', shadow: false,
       layers: ['bottom-bun', 'patty', 'cheese', 'lettuce', 'top-bun'],
-      stack: { 'bottom-bun': 0, patty: -2.3, cheese: -3.8, lettuce: -5.3, 'top-bun': -7.1 },
+      // Offsets come from the delivered hero burger (patty 7.5, cheese 10.5, lettuce 18.3, top bun 21.6 units up at its
+      // 50 wide size), times 0.6 because the cart stack is drawn at 0.6 of the hero (batch 3, tools/make_batch3_map.py)
+      stack: { 'bottom-bun': 0, patty: -4.5, cheese: -6.3, lettuce: -11, 'top-bun': -13 },
     },
+
+    // Grip: the sweep hangs from its tube and unrolls (the game scales it down the page), tinted per shot
+    'grip.sweep': { anchor: { x: 180, y: 30 }, pivot: 'top-center', size: [108, 108], shadow: false, initial: 'default' },
+    'grip.sweep-tube': { anchor: { x: 180, y: 28 }, pivot: 'center', size: [118, 8], shadow: true, initial: 'default' },
+    // Electric: stand and fill light (the key head is its own piece above). Parents carry the soft shadow.
+    'elec.keylight-stand': { anchor: { x: 72, y: 202 }, pivot: 'bottom-center', size: [30, 126], shadow: false, initial: 'default' },
+    'elec.fill': { anchor: { x: 240, y: 206 }, pivot: 'bottom-center', size: [30, 110], shadow: false, initial: 'default' },
+    // Camera: track, body without lens, the lens in two lengths, and the red framing corners
+    'cam.track': { anchor: { x: 232, y: 212 }, pivot: 'top-left', size: [126, 12], shadow: true, initial: 'default' },
+    'cam.camera': { anchor: { x: 304, y: 210 }, pivot: 'bottom-center', size: [54, 90], shadow: false, initial: 'default' },
+    'cam.lens': { anchor: { x: 289, y: 138 }, pivot: 'center', size: [19, 14], shadow: false, initial: 'standard', states: ['standard', 'macro'] },
+    'cam.frame-marks': { anchor: { x: 180, y: 112 }, pivot: 'center', size: [70, 56], shadow: false, initial: 'default' },
+    // Props. Anchors are in the group the prop is drawn in (the hero prop box, burger base center at 30,36; the pot group)
+    // and are the defaults for use(): art.js places the parts of a prop itself.
+    'prop.burger': { anchor: { x: 30, y: 36 }, pivot: 'bottom-center', size: [50, 36], shadow: false, initial: 'default' },
+    'prop.cheese': { anchor: { x: 30, y: 36 }, pivot: 'bottom-center', shadow: false, initial: 'base', states: ['base', 'top-bun', 'strand-01', 'strand-02', 'strand-03'] },
+    'prop.sauce': { anchor: { x: 30, y: 0 }, pivot: 'top-center', shadow: false, initial: 'drip', states: ['drip', 'stream'] },
+    'art.cheese-pot': { anchor: { x: 8, y: 15 }, pivot: 'bottom-center', size: [18, 16], shadow: false, initial: 'empty', states: ['empty', 'fill', 'steam-1'] },
 
     // Modular crew puppet. Required parts first, then optional ones.
     'crew.head': { anchor: RIG.neck, pivot: 'bottom-center', size: [17, 17], tint: 'skin', shadow: false, initial: 'default' },

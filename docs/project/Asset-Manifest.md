@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 4, 2026 (revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 4, 2026 (revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -75,9 +75,9 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 
 | ID | Piece | Size | Export | Pivot and position | States and motion | Driven by | Wired |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| grip.sweep | Paper sweep curving down onto the floor | 108 x 108 | 648 x 648 | Top center under the tube, (180, 30) | Unrolls downward in 6 steps. Deliver neutral light paper: it is tinted per shot (yellow, coral, sage) | Build tabletop 45 to 85% | Ready |
-| grip.sweep-tube | Roll tube the sweep hangs from | 118 x 8 | 708 x 48 | Center (180, 28) | Static | | Ready |
-| grip.platform | Hero platform, taller box (spec below) | 112 x 76 | 672 x 456 | Bottom center of the box at (184, 192). Point: `contact` | Carried in from the gear pile in 6 hops, placed | Build tabletop 0 to 45% | **Wired**, current box is batch 1 |
+| grip.sweep | Paper sweep curving down onto the floor | 108 x 108 | 648 x 648 | Top center under the tube, (180, 30) | Unrolls downward in 6 steps. Deliver neutral light paper: it is tinted per shot (yellow, coral, sage) | Build tabletop 45 to 85% | **Wired** (batch 3, tinted per shot in game) |
+| grip.sweep-tube | Roll tube the sweep hangs from | 118 x 8 | 708 x 48 | Center (180, 28) | Static | | **Wired** (batch 3) |
+| grip.platform | Hero platform, taller box (spec below) | 112 x 76 | 672 x 456 | Bottom center of the box at (184, 192). Point: `contact` | Carried in from the gear pile in 6 hops, placed | Build tabletop 0 to 45% | **Wired**, taller box from batch 3 |
 | grip.flag | Black flag on a C-stand | 26 x 140 | 156 x 840 | Stand base at (262, 202) | Hidden, standing | Build tabletop 92% | Ready |
 | grip.gear-pile | Two apple boxes and a sandbag | 46 x 30 | 276 x 180 | Bottom left at (246, 202) | Static | | Ready |
 | grip.rig-pole | C-stand for the cheese pull and sauce pour: pole on a tripod base | 20 x 150 | 120 x 900 | Base at (292, 202) | Appears | Rig the pull, mount bottle, first third | Ready |
@@ -89,10 +89,10 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 
 | ID | Piece | Size | Export | Pivot and position | States and motion | Driven by | Wired |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| elec.keylight-stand | Rolling stand: three legs with wheels, pole | 30 x 126 | 180 x 756 | Base center (72, 202). Pole top at (72, 76) carries the head | Parked by the wall, rolled 44 units to its mark in 5 steps | Any lighting task 0 to 40% | Ready |
+| elec.keylight-stand | Rolling stand: three legs with wheels, pole | 30 x 126 | 180 x 756 | Base center (72, 202). Pole top at (72, 76) carries the head | Parked by the wall, rolled 44 units to its mark in 5 steps | Any lighting task 0 to 40% | **Wired** (batch 3) |
 | elec.keylight-head | Softbox head | 56 x 34 | 336 x 204 | Yoke ring on the pole top (72, 76) | Turns -12° to 34°. `off`, `on`, `dead` | Aim 40 to 80%, on 80 to 100%. Chaos sets `dead` | **Wired**, batch 1 |
 | elec.beam | Soft light wedge from the key to the burger | 150 x 60 | 900 x 360 | Light face end | Fades 0 to 50%. Deliver white to warm paper, the engine sets opacity | Light state | Ready |
-| elec.fill | Small fill light on a stand | 30 x 110 | 180 x 660 | Base (240, 206) | Hidden, standing on | Light the burger 50% | Ready |
+| elec.fill | Small fill light on a stand | 30 x 110 | 180 x 660 | Base (240, 206) | Hidden, standing on | Light the burger 50% | **Wired** (batch 3, flipped to face left) |
 | elec.fill-beam | Fill light wedge | 50 x 30 | 300 x 180 | Light face | Fades | Fill on | Ready |
 | elec.backlight | Light hanging from the grid, with a soft cone | 20 x 60 | 120 x 360 | Hang point (214, -54) | Lowers 26 units, then on | Add backlight | Ready |
 | elec.dead-fx | Sparks and a red warning badge | 60 x 40 | 360 x 240 | Around the key head | Shown while the key light is dead | Chaos event | Ready |
@@ -101,10 +101,10 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 
 | ID | Piece | Size | Export | Pivot and position | States and motion | Driven by | Wired |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| cam.track | Dolly track, seamless rail section | 126 x 12 | 756 x 72 | (232, 212) top left | Static | | Ready |
-| cam.camera | Camera body on a tripod and dolly base, without the lens | 54 x 90 | 324 x 540 | Dolly base center (304, 210) | Slides to a mark per setup. `rec-off`, `rec-on` | Frame task 0 to 50% | Ready |
-| cam.lens | Lens, separate from the body | standard 19 x 14, macro 31 x 14 | 114 x 84 and 186 x 84 | Mount on the body front (289, 138) | `standard` for the hero shot, `macro` for close-ups | Frame task 50 to 80% | Ready |
-| cam.frame-marks | Four red corner brackets around the burger | 70 x 56 | 420 x 336 | Centered on the burger | Fade in as framing finishes | Frame task 60 to 100% | Ready |
+| cam.track | Dolly track, seamless rail section | 126 x 12 | 756 x 72 | (232, 212) top left | Static | | **Wired** (batch 3) |
+| cam.camera | Camera body on a tripod and dolly base, without the lens | 54 x 90 | 324 x 540 | Dolly base center (304, 210) | Slides to a mark per setup. `rec-off`, `rec-on` | Frame task 0 to 50% | **Wired** (batch 3, needs re-export (bottom margin)) |
+| cam.lens | Lens, separate from the body | standard 19 x 14, macro 31 x 14 | 114 x 84 and 186 x 84 | Mount on the body front (289, 138) | `standard` for the hero shot, `macro` for close-ups | Frame task 50 to 80% | **Wired** (batch 3, standard and macro) |
+| cam.frame-marks | Four red corner brackets around the burger | 70 x 56 | 420 x 336 | Centered on the burger | Fade in as framing finishes | Frame task 60 to 100% | **Wired** (batch 3) |
 
 ### Art department and props
 
@@ -112,11 +112,11 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | art.table | Styling cart on wheels with paint cans | 72 x 40 | 432 x 240 | Bottom left (10, 212) | Static | | Ready |
 | art.burger-build | Burger in 5 layers on the cart: bottom bun, patty, cheese, lettuce, top bun | whole stack about 26 x 18 | each layer on its own 156 x 108 canvas | Each layer's bottom center, stacked on the cart at (25, 165) | Layers appear one by one | Style burger, 20% per layer | **Wired** |
-| art.cheese-pot | Pot with a separate cheese fill and steam | 18 x 16 | 108 x 96 | Pot base (52, 171) | Fill rises, three-frame steam while fresh, dull tint when spoiled | Melt cheese | Ready |
+| art.cheese-pot | Pot with a separate cheese fill and steam | 18 x 16 | 108 x 96 | Pot base (52, 171) | Fill rises, three-frame steam while fresh, dull tint when spoiled | Melt cheese | **Wired** (batch 3, fill clipped to the opening) |
 | art.sauce-bowl | Bowl, sauce separate | 16 x 10 | 96 x 60 | Base (70, 173) | Sauce fades in | Prep sauce | Ready |
-| prop.burger | Hero burger | 50 x 36 | 300 x 216 | Bottom center, sits on the platform's `contact` point | Hops from the art cart (42% size) to the platform in 5 steps | Place burger | Ready |
-| prop.cheese | Burger with the top bun separate, plus three stretchy cheese strands | bun 46 x 18, base 50 x 22, strand 4 x 24 | @6x | Bun lifts from the patty line | Bun lifts 0 to 22 units, strands stretch with it | Cheese pull ACTION | Ready |
-| prop.sauce | Sauce drip on the top bun, and a pour stream | drip 26 x 10, stream 6 x 14 | @6x | From the bottle nozzle | Stream animates, drip appears | Sauce pour ACTION | Ready |
+| prop.burger | Hero burger | 50 x 36 | 300 x 216 | Bottom center, sits on the platform's `contact` point | Hops from the art cart (42% size) to the platform in 5 steps | Place burger | **Wired** (batch 3) |
+| prop.cheese | Burger with the top bun separate, plus three stretchy cheese strands | bun 46 x 18, base 50 x 22, strand 4 x 24 | @6x | Bun lifts from the patty line | Bun lifts 0 to 22 units, strands stretch with it | Cheese pull ACTION | **Wired** (batch 3, strands stretch with the lift) |
+| prop.sauce | Sauce drip on the top bun, and a pour stream | drip 26 x 10, stream 6 x 14 | @6x | From the bottle nozzle | Stream animates, drip appears | Sauce pour ACTION | **Wired** (batch 3, drip and pour stream) |
 | fx.sparkle | Burst lines around the hero burger | 80 x 40 | 480 x 240 | Centered over the burger | Two frames while rolling on the hero shot | Hero ACTION | Ready |
 
 ### Hero platform spec (revision 2)

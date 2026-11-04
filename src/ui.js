@@ -653,6 +653,7 @@
     setAttr($('sweepRoll'), 'transform', `translate(0 28) scale(1 ${Math.max(0.03, steps(seg(sp, 0.45, 0.85), 6)).toFixed(3)}) translate(0 -28)`);
     showEl('pc-flag', sp >= 0.92);
     setAttr($('sweep'), 'fill', SHOT_COLOR[disp] || '#E7B84F');
+    Ld.tint('grip.sweep', SHOT_COLOR[disp] || null);
 
     const rigTask = disp === 'cheese' ? 'cheese.rig' : disp === 'sauce' ? 'sauce.mount' : null;
     const rn = !rigTask ? 0 : (isDone(rigTask) || captured) ? 3 : Math.floor(pct(rigTask) * 3);
@@ -704,7 +705,8 @@
         const k = steps(place, 5);
         // #prop sits inside the hero spot group, so the art cart's position is taken back out of its shift
         const hs = A.heroSpot();
-        propT = `translate(${lerp(12 - hs.dx, 150, k).toFixed(1)} ${(lerp(150 - hs.dy, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
+        const c0 = A.carryStart();
+        propT = `translate(${lerp(c0.x - hs.dx, 150, k).toFixed(1)} ${(lerp(c0.y - hs.dy, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(c0.s, 1, k).toFixed(3)})`;
       }
     } else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
       const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
@@ -724,6 +726,7 @@
     setAttr($('camRig'), 'transform', `translate(${cam.x.toFixed(1)} ${cam.y.toFixed(1)})`);
     setAttr($('lens'), 'x', (270 - 12 * cam.lens).toFixed(1));
     setAttr($('lens'), 'width', (19 + 12 * cam.lens).toFixed(1));
+    Ld.state('cam.lens', cam.lens > 0.5 ? 'macro' : 'standard');
     const fp = captured || rolling ? 1 : cam.fp;
     setAttr($('frameMarks'), 'opacity', (steps(seg(fp, 0.6, 1), 4) * 0.95).toFixed(2));
     setAttr($('recDot'), 'fill', st.capture ? '#FF4B3A' : '#5A2A24');
@@ -749,6 +752,13 @@
     setAttr($('potCheese'), 'y', (14 - 12 * mp).toFixed(1));
     setAttr($('potCheese'), 'fill', melt.spoiled && !melt.done ? '#B9A15A' : '#F2C14E');
     setAttr($('steam'), 'opacity', melt.done && !st.shots.cheese.captured ? 1 : 0);
+    const pf = $('potFill');
+    if (pf) {
+      const dy = +pf.getAttribute('data-dy') || 0;
+      pf.setAttribute('display', mp > 0 ? 'inline' : 'none');
+      pf.setAttribute('transform', `translate(0 ${(dy * (1 - mp)).toFixed(2)})`);
+      Ld.tint(pf, melt.spoiled && !melt.done ? '#B9A15A' : null);
+    }
     setAttr($('bowlSauce'), 'opacity', st.shots.sauce.captured ? 0 : pct('sauce.prep').toFixed(2));
 
     // Workstation badges: the ring shows progress and turns red when the station is blocked

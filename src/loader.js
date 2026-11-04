@@ -205,6 +205,16 @@
     return useEl(id, state, anchor, true, o);
   }
 
+  // Tint every image of a slot with a color (multiply), for art delivered in neutral paper that the game colors per
+  // shot, like the sweep. Pass null to clear. Cheap: sets one attribute, and only when the color changed.
+  function tint(target, color) {
+    const el = typeof target === 'string' ? findSlot(target) : target;
+    if (!el || el._wlTint === (color || null)) return;
+    el._wlTint = color || null;
+    const ref = color ? tintRef(color) : '';
+    for (const k of el.children) if (k.getAttribute('data-st') !== null) { if (ref) k.setAttribute('filter', ref); else k.removeAttribute('filter'); }
+  }
+
   /*
     A named spot on a delivered piece, in the parent's coordinates (set units on the set): for example where the
     hero prop sits on the platform's lid. null when the piece has no art or no such point, so callers keep their
@@ -353,7 +363,7 @@
   const slotDef = (id) => slotOf(id);
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, tint, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

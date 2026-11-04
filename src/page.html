@@ -245,6 +245,8 @@ body.picking .sbadge.mk-slow .bmk{fill:#E7B84F; stroke:#fff}
 body.picking .sbadge.mk-no .bmk{fill:#B5472F; stroke:#fff; opacity:.75}
 body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 .steam path{animation:steam 1.2s steps(3) infinite}
+.steamf{animation:steamf 1.2s steps(3) infinite}
+@keyframes steamf{33%{transform:translateY(-1.5px)}66%{transform:translateY(-3px)}}
 .clap{opacity:0}
 .clap.go{animation:clapIn .9s steps(6,end)}
 .clap.go .stick{animation:clapStick .9s steps(4,end); transform-box:fill-box; transform-origin:0% 100%}
@@ -454,7 +456,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
 
 @media (prefers-reduced-motion:reduce){
   .pup.walking .wl-rig,.pup.walking .wl-pose,.pup.walking .wl-upper,.pup.working .wl-rig,.pup.working .wl-pose,.pup.working .wl-upper{animation:none}
-  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
+  .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.steamf,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
 }
 </style>
 

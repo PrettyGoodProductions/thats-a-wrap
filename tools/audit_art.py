@@ -32,6 +32,10 @@ else:
         scale = cfg.get('scale') or (float(hint) if hint else 3)
         files.append((pid, st, path, scale))
 
+# Pieces whose "states" are separate parts (layers of a stack, strands, a lens in two lengths), each on its own
+# canvas by design, so the one-canvas check below does not apply to them
+SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens'}
+
 problems, warnings = [], []
 info = {}
 for pid, st, path, scale in files:
@@ -70,7 +74,7 @@ for (pid, st), v in info.items(): by.setdefault(pid, {})[st] = v
 print()
 for pid, sts in by.items():
     names = sorted(sts)
-    if len(names) < 2: continue
+    if len(names) < 2 or pid in SEPARATE_PARTS: continue
     ref_name = 'off' if 'off' in names else names[0]
     ref = sts[ref_name]['al']
     for st in names:

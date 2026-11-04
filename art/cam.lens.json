@@ -1,0 +1,28 @@
+{
+  "flip": true,
+  "offset": [
+    5.01,
+    1.44
+  ],
+  "pivot": [
+    23.0,
+    56.9
+  ],
+  "scale": 6,
+  "states": {
+    "standard": {
+      "pivot": [
+        23.0,
+        56.9
+      ],
+      "scale": 6
+    },
+    "macro": {
+      "pivot": [
+        16.6,
+        52.3
+      ],
+      "scale": 6
+    }
+  }
+}

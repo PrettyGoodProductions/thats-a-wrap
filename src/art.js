@@ -135,8 +135,68 @@
     );
   }
 
+  /*
+    Delivered props (prop.burger, prop.cheese, prop.sauce), drawn in the same box as the placeholder burger: base center
+    at (30, 36). Returns null when the hero burger has no art, so the code-drawn burger is used. The cheese pull is the
+    delivered base plus a top bun lifted by `lift` units and three strands stretched between them, so the engine's
+    lift (10 to 20) still drives it. The sauce shot is the hero burger plus the drip on its dome.
+  */
+  const STRAND_H = 21.6;   // strand art height in units at its export scale (stretched in height by the lift)
+  const STRAND_DX = [-10, 1, 11];
+  function realProp(shotId, state) {
+    const L = loader();
+    if (!L || !L.has('prop.burger', 'default')) return null;
+    const at = { x: 30, y: 34.8 };   // 1.2 above the code-drawn base so the art sits on the platform contact point
+    const hero = () => L.use('prop.burger', 'default', at);
+    if (shotId === 'cheese' && L.has('prop.cheese', 'base') && L.has('prop.cheese', 'top-bun')) {
+      const lift = state.lift != null ? state.lift : 12;
+      const top = L.point('prop.cheese', 'top', 'base') || { x: 30, y: 10 };
+      const sy = ((lift + 6) / STRAND_H).toFixed(3);
+      const strands = ['strand-01', 'strand-02', 'strand-03'].filter(n => L.has('prop.cheese', n))
+        .map((n, i) => `<g transform="translate(${30 + STRAND_DX[i]} ${(top.y - lift - 1).toFixed(2)}) scale(1 ${sy})">${L.use('prop.cheese', n, { x: 0, y: 0 })}</g>`).join('');
+      return L.use('prop.cheese', 'base', at) + strands + L.use('prop.cheese', 'top-bun', { x: 30, y: top.y - lift });
+    }
+    if (shotId === 'sauce' && L.has('prop.sauce', 'drip')) {
+      const top = L.point('prop.burger', 'top') || { x: 30, y: -6 };
+      return hero() + L.use('prop.sauce', 'drip', { x: 30, y: top.y + 2 });
+    }
+    return hero();
+  }
+
+  // The sauce pour: the delivered stream from the bottle nozzle, or the dashed code-drawn line
+  function pourMarkup() {
+    const L = loader();
+    const real = L && L.has('prop.sauce', 'stream') ? L.use('prop.sauce', 'stream', { x: 186, y: 100 }) : '';
+    return `<g id="pour" opacity="0">${real || '<path class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round"/>'}</g>`;
+  }
+
+  // The cheese pot on the art cart. With art: the pot, a cheese fill that rises inside its opening (clipped to the
+  // opening, so a low level shows as a crescent at the front), and the steam. Without: the code-drawn pot.
+  function potMarkup() {
+    const L = loader();
+    const placeholder = `<g class="steam" id="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0"><path d="M4 -2 q-2 -4 0 -7"/><path d="M10 -2 q2 -4 0 -7"/></g>
+    <path d="M0 2 h16 l-1.5 13 h-13z" fill="#7A7F88" stroke="${INK}" stroke-width="1.3"/>
+    <rect id="potCheese" x="1" y="2" width="14" height="0" fill="#F2C14E"/>
+    <path d="M-2 2 h20" stroke="${INK}" stroke-width="1.6"/>`;
+    if (!L || !L.has('art.cheese-pot', 'empty')) return placeholder;
+    const at = L.slotDef('art.cheese-pot').anchor;
+    const pt = (n) => L.point('art.cheese-pot', n, 'empty');
+    const hl = pt('holeL'), hr = pt('holeR'), ht = pt('holeT'), hb = pt('holeB');
+    let fill = '', steam = '';
+    const cx = hl && hr ? (hl.x + hr.x) / 2 : at.x, cy = ht && hb ? (ht.y + hb.y) / 2 : at.y - 10;
+    if (hl && hr && ht && hb && L.has('art.cheese-pot', 'fill')) {
+      const rx = (hr.x - hl.x) / 2, ry = (hb.y - ht.y) / 2;
+      fill = `<clipPath id="potClip"><ellipse cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" rx="${rx.toFixed(2)}" ry="${ry.toFixed(2)}"/></clipPath>` +
+        `<g clip-path="url(#potClip)"><g id="potFill" display="none" data-dy="${(ry * 2.3).toFixed(2)}">${L.use('art.cheese-pot', 'fill', { x: cx, y: cy })}</g></g>`;
+    }
+    if (L.has('art.cheese-pot', 'steam-1')) steam = `<g id="steam" opacity="0"><g class="steamf">${L.use('art.cheese-pot', 'steam-1', { x: cx, y: cy - 1 })}</g></g>`;
+    return L.use('art.cheese-pot', 'empty', { x: at.x, y: at.y }) + fill + steam;
+  }
+
   function propInner(shotId, state) {
     state = state || {};
+    const real = realProp(shotId, state);
+    if (real) return real;
     if (shotId === 'cheese') return burger(state.lift != null ? state.lift : 12, { strands: true });
     if (shotId === 'sauce') return burger(0, { sauce: true });
     return burger(0);
@@ -170,6 +230,16 @@
     return `<g stroke="${INK}" stroke-width="1.6">${layers.slice(0, n).join('')}</g>`;
   }
   const CART_SCALE = 0.42;
+  // Where the carried burger starts: the cart stack's size and spot. The delivered stack is drawn at 0.6 of the hero
+  // (batch 3), so the carry starts at 0.6 and the burger does not change size when it leaves the cart.
+  const CART_REAL_SCALE = 0.6;
+  function carryStart() {
+    const L = loader();
+    const real = !!(L && L.has('prop.burger', 'default') && L.slotDef('art.burger-build') && L.slotDef('art.burger-build').layers.some(n => L.has('art.burger-build', n)));
+    const s = real ? CART_REAL_SCALE : CART_SCALE;
+    const bx = 12 + 30 * CART_SCALE, by = 150 + 36 * CART_SCALE;   // the cart stack's base center, which does not move
+    return { s, x: bx - 30 * s, y: by - 36 * s };
+  }
 
   /*
     Hero spot: where the hero prop's base sits. With the code-drawn platform that is HERO_BASE. When the delivered
@@ -317,8 +387,8 @@
 
   <!-- Grip: sweep unrolls from its tube, the hero platform is carried in, a flag goes up -->
   <g id="pc-sweep">
-    <g id="sweepRoll" filter="url(#cut)"><path id="sweep" d="M126 30 H234 V124 Q234 136 247 137.5 H113 Q126 136 126 124Z" fill="#E7B84F" ${s}/></g>
-    <rect x="121" y="24" width="118" height="8" rx="4" fill="#8B6A43" ${s}/>
+    <g id="sweepRoll" filter="url(#cut)">${slot('grip.sweep', `<path id="sweep" d="M126 30 H234 V124 Q234 136 247 137.5 H113 Q126 136 126 124Z" fill="#E7B84F" ${s}/>`)}</g>
+    ${slot('grip.sweep-tube', `<rect x="121" y="24" width="118" height="8" rx="4" fill="#8B6A43" ${s}/>`)}
   </g>
   <g id="pc-flag" filter="url(#cut)"><path d="M262 200 V64" ${s} stroke-width="2"/><rect x="250" y="62" width="25" height="44" fill="${INK}"/><path d="M256 200 h12" ${s} stroke-width="3"/></g>
   <g id="platform">${slot('grip.platform', `<g filter="url(#cut)">
@@ -340,9 +410,9 @@
   </g>
 
   <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
-  <g id="fillLight" opacity="0" filter="url(#cut)">
+  <g id="fillLight" opacity="0" filter="url(#cut)">${slot('elec.fill', `
     <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
-    <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>
+    <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>`)}
   </g>
   <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
   <g id="backLight" opacity="0">
@@ -351,16 +421,16 @@
   </g>
   ${heroOpen}<g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
   <g id="prop" transform="translate(150 92)"></g>
-  <path id="pour" class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
-  <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0">
+  ${pourMarkup()}
+  <g id="frameMarks" opacity="0">${slot('cam.frame-marks', `<g fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round">
     <path d="M146 92 v-8 h10"/><path d="M214 92 v-8 h-10"/><path d="M146 132 v8 h10"/><path d="M214 132 v8 h-10"/>
-  </g>${heroClose}
+  </g>`)}</g>${heroClose}
 
   <!-- Electric: key light on a rolling stand, wheeled to its mark, aimed, switched on -->
   <g id="keyRig"><g filter="url(#cut)">
-    <path d="M58 200 L72 158 L86 200 M72 158 V200" fill="none" ${s} stroke-width="2"/>
+    ${slot('elec.keylight-stand', `<path d="M58 200 L72 158 L86 200 M72 158 V200" fill="none" ${s} stroke-width="2"/>
     <circle cx="58" cy="202" r="2.6" fill="${INK}"/><circle cx="86" cy="202" r="2.6" fill="${INK}"/>
-    <path d="M72 158 V76" ${s} stroke-width="2.4"/>
+    <path d="M72 158 V76" ${s} stroke-width="2.4"/>`)}
     <g id="keyHead" transform="rotate(20 72 76)">${slot('elec.keylight-head', `
       <polygon points="52,58 92,58 100,92 44,92" fill="#F4EEDF" ${s}/>
       <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>`)}
@@ -372,14 +442,14 @@
   </g>
 
   <!-- Camera: dolly track, camera on the dolly, lens swaps for close-ups -->
-  <g filter="url(#cut)" opacity=".9"><path d="M232 214 H358 M232 222 H358" stroke="${INK}" stroke-width="2.4"/><g fill="#5E5A52">${[240, 256, 272, 288, 304, 320, 336, 352].map(x => `<rect x="${x}" y="212" width="4" height="12"/>`).join('')}</g></g>
+  ${slot('cam.track', `<g filter="url(#cut)" opacity=".9"><path d="M232 214 H358 M232 222 H358" stroke="${INK}" stroke-width="2.4"/><g fill="#5E5A52">${[240, 256, 272, 288, 304, 320, 336, 352].map(x => `<rect x="${x}" y="212" width="4" height="12"/>`).join('')}</g></g>`)}
   <g id="camRig" class="camrig"><g filter="url(#cut)">
-    <path d="M290 204 L304 152 L318 204 M304 152 V204" fill="none" ${s} stroke-width="2"/>
+    ${slot('cam.camera', `<path d="M290 204 L304 152 L318 204 M304 152 V204" fill="none" ${s} stroke-width="2"/>
     <rect x="288" y="126" width="36" height="24" rx="3" fill="#3B4048" ${s}/>
-    <rect id="lens" x="270" y="131" width="19" height="14" rx="2" fill="${INK}"/>
     <rect x="296" y="119" width="16" height="8" rx="2" fill="#3B4048" ${s}/>
     <circle id="recDot" cx="318" cy="132" r="2.6" fill="#5A2A24"/>
-    <rect x="286" y="202" width="36" height="8" rx="2" fill="#5E5A52" ${s}/>
+    <rect x="286" y="202" width="36" height="8" rx="2" fill="#5E5A52" ${s}/>`)}
+    ${slot('cam.lens', `<rect id="lens" x="270" y="131" width="19" height="14" rx="2" fill="${INK}"/>`)}
   </g></g>
 
   <!-- Art: styling table with the burger build, cheese pot and sauce bowl -->
@@ -390,12 +460,7 @@
     <g ${s} stroke-width="1"><rect x="64" y="186" width="7" height="9" fill="#D86B56"/><rect x="54" y="186" width="7" height="9" fill="#7D9E91"/></g>
   </g>
   <g id="cartBurger" transform="translate(12 150) scale(${CART_SCALE})"></g>
-  <g id="pot" transform="translate(44 156)">
-    <g class="steam" id="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0"><path d="M4 -2 q-2 -4 0 -7"/><path d="M10 -2 q2 -4 0 -7"/></g>
-    <path d="M0 2 h16 l-1.5 13 h-13z" fill="#7A7F88" stroke="${INK}" stroke-width="1.3"/>
-    <rect id="potCheese" x="1" y="2" width="14" height="0" fill="#F2C14E"/>
-    <path d="M-2 2 h20" stroke="${INK}" stroke-width="1.6"/>
-  </g>
+  <g id="pot" transform="translate(44 156)">${potMarkup()}</g>
   <g id="bowl" transform="translate(62 162)">
     <path d="M0 2 h16 q0 9 -8 9 q-8 0 -8 -9z" fill="#F2E9D8" stroke="${INK}" stroke-width="1.3"/>
     <path id="bowlSauce" d="M2 4 h12 q-1 4 -6 4 q-5 0 -6 -4z" fill="#C8452F" opacity="0"/>
@@ -619,7 +684,7 @@
 
   root.WrapArt = {
     DEPT_COLOR, heroSpot, keyLens, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
-    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
+    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
