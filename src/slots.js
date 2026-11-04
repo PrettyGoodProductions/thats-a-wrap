@@ -79,6 +79,13 @@
     'set.floor-scuffs': { anchor: { x: 60, y: 262 }, pivot: 'center', size: [120, 30], shadow: false, initial: 'default' },
     'set.tape-mark': { anchor: { x: 181, y: 233 }, pivot: 'center', size: [10, 6], shadow: false, initial: 'default' },
     // HUD pieces drawn inside SVG (stars, pause bars, shot status), in CSS pixels
+    // HUD nine-slices (batch 4), drawn by CSS border-image. The slice insets and CSS widths live in each piece's settings file
+    'ui.panel': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.chip-dark': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.tag': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.crew-card': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default', states: ['default', 'camera', 'lighting', 'art', 'grip'] },
+    'ui.button-paper': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.polaroid': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
     'ui.star': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [32, 32], shadow: false, initial: 'on', states: ['on', 'off'] },
     'ui.icon-pause': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [24, 26], shadow: false, initial: 'default' },
     'ui.shot-status': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [22, 22], shadow: false, initial: 'done', states: ['done', 'pending'] },

@@ -60,6 +60,17 @@ def decontaminate(im, floor=0):
         a[..., :3][soft] = a[..., :3][iy[soft], ix[soft]]
     return Image.fromarray(a, 'RGBA')
 
+def recolor(im, hexcolor):
+    """Tint neutral paper to a target color: scale each channel so the paper's median color becomes the target, which keeps the grain"""
+    a = np.array(im).astype(np.float32)
+    h, w = a.shape[:2]
+    mid = a[h // 5: 4 * h // 5, w // 5: 4 * w // 5]
+    solid = mid[mid[..., 3] >= 250][:, :3]
+    med = np.median(solid, axis=0)
+    tgt = np.array([int(hexcolor[i:i + 2], 16) for i in (1, 3, 5)], dtype=np.float32)
+    a[..., :3] = np.clip(a[..., :3] * (tgt / med), 0, 255)
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
 def clean_alpha(im):
     a = np.array(im)
     al = a[..., 3]
@@ -85,6 +96,7 @@ for pid, p in spec['pieces'].items():
         im = Image.open(os.path.join(src_dir, fname)).convert('RGBA')
         if ent.get('mask') == 'core': im = core_mask(im)
         if ent.get('crop'): im = im.crop(tuple(ent['crop']))   # trim empty canvas, the pivot in the map is already relative to the crop
+        if ent.get('recolor'): im = recolor(im, ent['recolor'])
         if p.get('seamless'): im = make_seamless(im)
         if ent.get('decontaminate'): im = decontaminate(im, ent.get('alpha_floor', 40))
         im = clean_alpha(im)
@@ -118,6 +130,9 @@ for pid, p in spec['pieces'].items():
         keep = sorted({0, len(pts) - 1, *range(0, len(pts), max(1, len(pts) // 8))})
         cfg['sole'] = [pts[i] for i in keep]
     cfg['scale'] = p['target']
+    if p.get('slice'):
+        # Nine-slice: insets in master px (top, right, bottom, left) become export px for border-image-slice and CSS px for its width
+        cfg['nine'] = {'slice': [round(v * k) for v in p['slice']], 'width': [round(v / p['native'], 2) for v in p['slice']], 'fill': p.get('fill', True)}
     if state_cfg:
         cfg['states'] = {**cfg.get('states', {}), **{st: {**cfg.get('states', {}).get(st, {}), **v} for st, v in state_cfg.items()}}
     json.dump(cfg, open(os.path.join(out_dir, pid + '.json'), 'w'), indent=2)

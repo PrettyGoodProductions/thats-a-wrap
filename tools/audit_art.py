@@ -36,7 +36,7 @@ else:
 # canvas by design, so the one-canvas check below does not apply to them
 SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens', 'ui.shot-status'}
 # Seamless tiles run to the edge of their canvas on purpose
-TILES = {'set.wall', 'set.floor', 'set.grid'}
+TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.tag', 'ui.crew-card', 'ui.button-paper', 'ui.polaroid'}   # nine-slices are cropped to the paper
 
 problems, warnings = [], []
 info = {}

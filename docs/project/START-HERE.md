@@ -42,7 +42,7 @@ Real art is used wherever a file is supplied and code placeholders stay everywhe
 
 ## Art batch 4 (Nov 4): wall, floor, flats and set dressing
 
-37 masters fitted. Wired: wall and floor (seamless tiles), all 11 flats, call sheet, poster, both practical lamps (lit), flag, ceiling pipes, both plants, tape marks, cable, floor scuffs, and the HUD stars, pause bars and shot-list check and ring. Not wired yet: the cream panel, dark HUD panel, job tag, crew card and coral button, which need nine-slice insets and a decision on the button. See Art-Batch-4-Validation.md.
+37 masters fitted. Wired: wall and floor (seamless tiles), all 11 flats, call sheet, poster, both practical lamps (lit), flag, ceiling pipes, both plants, tape marks, cable, floor scuffs, and the HUD stars, pause bars and shot-list check and ring. The cream panel, dark HUD chip, job tag, crew cards (tinted per department), coral button (replaces the cream paper button) and polaroid frame are sliced and wired as nine-slices. See Art-Batch-4-Validation.md.
 
 ## Art batch 3 (Nov 4): props, lights, camera
 

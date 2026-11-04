@@ -2,7 +2,7 @@
 
 Batch 4 is 37 approved masters (approvals 33 to 69). The set is now almost entirely delivered art. The HUD stars, pause bars and shot-list marks are art too.
 
-**Result: everything wired works on the landscape shoot. 95 of 95 unit tests, 28 of 28 bench checks, the art e2e and the Layout Lab runs in landscape, portrait and rotated landscape pass.** Panels, tag, crew card and button are fitted but not wired (below).
+**Result: everything wired works on the landscape shoot. 95 of 95 unit tests, 28 of 28 bench checks, the art e2e and the Layout Lab runs in landscape, portrait and rotated landscape pass.** The HUD frames are sliced and wired too (below).
 
 ## How it was fitted
 
@@ -26,13 +26,28 @@ Batch 4 is 37 approved masters (approvals 33 to 69). The set is now almost entir
 | `cam.camera` (batch 3) | Art touches the bottom edge | At least 24 px transparent margin on every side |
 | Backdrop 03 (`set.flat-3`) | The audit flags a darker edge ring (-30 luminance). It reads as a cut-paper edge, so it ships as is. Say if it should be flat | Same drawing without the dark edge, or confirm it is intended |
 
-## Not wired yet, decisions needed
+## HUD nine-slices (added the same day)
 
-| Master | What it needs |
-| --- | --- |
-| Cream UI panel (35), job tag (38), dark HUD panel (36), crew card (37) | Nine-slice insets (the manifest gives 10 to 14 px corners) and a CSS change to draw the HUD from them. The edges are hand torn, so the slice has to be measured from the art |
-| Coral-orange button (39) | The manifest calls for a cream paper button (`ui.button-paper`). The coral button is not in the manifest. Is it ACTION, the pause button, or a new piece? |
-| Polaroid frame (64) | Needs the inner photo window measured, and clean shot thumbnails without a border (still cut from the concept) |
+The cream panel, job tag, dark chip, crew card, coral button and polaroid frame are sliced and wired. Each piece's `art/<id>.json` holds `nine`: the slice insets in exported px and the CSS widths. The game turns them into `border-image` rules at startup (`installNineSlice` in `src/ui.js`), so an element with no art keeps its CSS frame.
+
+| Piece | Used for | Corner size (CSS px) |
+| --- | --- | --- |
+| `ui.panel` | Shot list tab and pop-up | 14.6 |
+| `ui.tag` | Job name | 10.4 |
+| `ui.chip-dark` | Budget, time and stars | 10.4 |
+| `ui.crew-card` | Crew portraits, one pre-tinted file per department (camera, lighting, art, grip) plus the neutral default | 6.6 |
+| `ui.button-paper` | Pause and the pop-up close button. This is the coral-orange button, which replaces the cream one | 5.1 |
+| `ui.polaroid` | Shot thumbnails. The frame's window is wider than the old 40 x 31 photo (about 1.64 to 1), so thumbnails crop to 42 x 25.6 | 1.9 top and sides, 8.1 bottom |
+
+The insets were read off the corners' curves, the frames were cropped to the paper, and the crew card tints keep the paper grain (each channel is scaled so the paper's median color becomes the department color). Corners stay at their CSS size at any element size, so the tablet layout stretches only the straight edges. All pieces export at 4 px per CSS px, 0.4 MB in total.
+
+Two small fixes came with it. The shot list pop-up now sits above the quest line and ACTION (a shared rule gave it z-index 5, which outranked its own 7). The pipeline check no longer divides by zero on tiles drawn through an SVG pattern.
+
+Audit note: `ui.button-paper` is flagged for a darker orange rim (-38 luminance). It reads as the button's cut-paper edge, so it ships as is.
+
+## Open
+
+The polaroid window shape: if you want the old 40 x 31 photo ratio, the window needs to be re-cut to about 1.29 to 1 and the polaroid re-sliced.
 
 ## Not in this zip
 

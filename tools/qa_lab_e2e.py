@@ -79,6 +79,11 @@ with sync_playwright() as p:
     page.wait_for_selector('#setSvg')
     time.sleep(0.4)
     snap(page, '3-shoot-start')
+    if LAYOUT == 'land' and page.query_selector('#shotsTab'):
+        # The shot list pop-up uses the panel frame and the polaroid thumbnails, so look at it open
+        page.click('#shotsTab'); page.wait_for_timeout(300)
+        snap(page, '3b-shot-list')
+        page.click('[data-shotsclose]'); page.wait_for_timeout(200)
     ov = page.evaluate(OVERFLOW)
     # Game speed 2x through the real pause menu
     page.click('#pauseBtn'); page.click('[data-speed="2"]'); page.click('[data-resume]')

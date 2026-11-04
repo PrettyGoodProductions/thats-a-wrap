@@ -22,7 +22,7 @@ const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xm
 const FILE = /^(.+?)(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
 const SEG = [/^[a-z0-9]+$/, /^[a-z0-9-]+$/, /^[a-z0-9_-]+$/, /^[a-z0-9_-]+$/];
 const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'note'];
-const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'sole', 'points', 'states', 'note'];
+const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'sole', 'points', 'nine', 'states', 'note'];
 
 // <dept>.<object>[.<state>], or for a fixed character crew.<character>.<part>[.<state>]. Returns null for a bad name.
 function parseName(name) {

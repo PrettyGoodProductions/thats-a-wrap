@@ -115,3 +115,5 @@ Art for a piece that is not wired yet is ignored with a warning. Wiring is one e
 ## Batch 4 (set and HUD)
 
 `tools/make_batch4_map.py` builds `tools/batch4.map.json` from the masters. Textures that must tile (`set.wall`, `set.floor`, `set.grid`) set `"seamless": true` in the map, which blends the tile so it wraps, and the game draws them as SVG patterns. Opaque paper (wall, floor, flats) sets `"quantize"` to keep the PNG small. A piece can set `"crop"` per file to trim empty canvas (the pivot is then relative to the crop) and `"decontaminate": true` to remove a colored halo.
+
+Nine-slices (`ui.panel`, `ui.tag`, `ui.chip-dark`, `ui.crew-card`, `ui.button-paper`, `ui.polaroid`) carry `"nine": {"slice": [top, right, bottom, left], "width": [css px x4], "fill": true}` in their settings file. `slice` is in the exported image's px, `width` is how wide each border is drawn in CSS px, and `fill: false` leaves the middle empty (the polaroid window). The map option `"recolor": "#RRGGBB"` on a file scales neutral paper to a color, which is how the crew card gets its department tints. `installNineSlice()` in `src/ui.js` writes the CSS.

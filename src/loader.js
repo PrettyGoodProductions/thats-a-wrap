@@ -117,6 +117,7 @@
       ox: off[0] || 0, oy: off[1] || 0, shadow, tint, pivotPx: pv, flip: !!cfg.flip,
       // sole: points along the bottom of a boot (image px), turned into units around the pivot (for the walk)
       points: cfg.points && typeof cfg.points === 'object' ? cfg.points : {},
+      nine: cfg.nine && Array.isArray(cfg.nine.slice) ? cfg.nine : null,
       sole: Array.isArray(cfg.sole) ? cfg.sole.map(([x, y]) => [(x - pv[0]) / scale, (y - pv[1]) / scale]) : null,
     };
   }
@@ -207,6 +208,14 @@
 
   // Tint every image of a slot with a color (multiply), for art delivered in neutral paper that the game colors per
   // shot, like the sweep. Pass null to clear. Cheap: sets one attribute, and only when the color changed.
+  // Nine-slice frame for HUD pieces drawn with CSS border-image. Returns { src, slice, width, fill }: slice in image px
+  // (top, right, bottom, left), width in CSS px, or null when the piece has no art or no slice in its settings.
+  function nine(id, state) {
+    const r = resolve(id, state || 'default');
+    if (!r || !r.nine) return null;
+    return { src: r.src, slice: r.nine.slice, width: r.nine.width || r.nine.slice.map(v => v / (r.scale || 1)), fill: r.nine.fill !== false };
+  }
+
   function tint(target, color) {
     const el = typeof target === 'string' ? findSlot(target) : target;
     if (!el || el._wlTint === (color || null)) return;
@@ -363,7 +372,7 @@
   const slotDef = (id) => slotOf(id);
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, tint, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, tint, nine, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

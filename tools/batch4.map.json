@@ -468,6 +468,208 @@
      ]
     }
    }
+  },
+  "ui.panel": {
+   "native": 7.143,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "35-cream-ui-panel.png",
+     "crop": [
+      31,
+      27,
+      1108,
+      1350
+     ]
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    104,
+    104,
+    104,
+    104
+   ],
+   "fill": true
+  },
+  "ui.chip-dark": {
+   "native": 9.0,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "36-dark-hud-panel.png",
+     "crop": [
+      31,
+      101,
+      2142,
+      621
+     ]
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    94,
+    94,
+    94,
+    94
+   ],
+   "fill": true
+  },
+  "ui.tag": {
+   "native": 11.0,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "38-cream-job-tag.png",
+     "crop": [
+      29,
+      133,
+      2149,
+      583
+     ]
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    114,
+    114,
+    114,
+    114
+   ],
+   "fill": true
+  },
+  "ui.crew-card": {
+   "native": 19.621,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "37-neutral-crew-card.png",
+     "crop": [
+      31,
+      41,
+      1177,
+      1269
+     ]
+    },
+    "camera": {
+     "file": "37-neutral-crew-card.png",
+     "crop": [
+      31,
+      41,
+      1177,
+      1269
+     ],
+     "recolor": "#BFD6EE"
+    },
+    "lighting": {
+     "file": "37-neutral-crew-card.png",
+     "crop": [
+      31,
+      41,
+      1177,
+      1269
+     ],
+     "recolor": "#F4D98A"
+    },
+    "art": {
+     "file": "37-neutral-crew-card.png",
+     "crop": [
+      31,
+      41,
+      1177,
+      1269
+     ],
+     "recolor": "#F3C3C6"
+    },
+    "grip": {
+     "file": "37-neutral-crew-card.png",
+     "crop": [
+      31,
+      41,
+      1177,
+      1269
+     ],
+     "recolor": "#BFDCC9"
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    129,
+    129,
+    129,
+    129
+   ],
+   "fill": true
+  },
+  "ui.button-paper": {
+   "native": 26.474,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "39-coral-orange-button.png",
+     "crop": [
+      119,
+      140,
+      1133,
+      1140
+     ]
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    134,
+    134,
+    134,
+    134
+   ],
+   "fill": true
+  },
+  "ui.polaroid": {
+   "native": 25.786,
+   "target": 4,
+   "pivot": [
+    0.0,
+    0.0
+   ],
+   "files": {
+    "default": {
+     "file": "64-empty-polaroid-frame.png",
+     "crop": [
+      122,
+      97,
+      1302,
+      1020
+     ]
+    }
+   },
+   "quantize": 256,
+   "slice": [
+    53,
+    49,
+    210,
+    48
+   ],
+   "fill": false
   }
  }
 }

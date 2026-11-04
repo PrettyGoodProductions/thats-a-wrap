@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 4, 2026 (revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 4, 2026 (revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -226,17 +226,17 @@ The set fills the screen and the HUD floats on it in small paper pieces. Sizes a
 | ID | Piece | Size (phone / tablet) | Notes |
 | --- | --- | --- | --- |
 | ui.logo | THAT'S A WRAP! sticker | 40 / 60 tall | **In use**, cut from the concept. Needs a clean version |
-| ui.tag | Torn cream paper tag for the job name | 210 x 34 / 320 x 50, nine-slice, 10 px corners | Slight tilt is done by the engine Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
-| ui.chip-dark | Dark rounded panel for budget, time and stars | 36 / 56 tall, nine-slice, 10 px corners | Behind light text Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.tag | Torn cream paper tag for the job name | 210 x 34 / 320 x 50, nine-slice, 10 px corners | Slight tilt is done by the engine **Wired** (batch 4, nine-slice) |
+| ui.chip-dark | Dark rounded panel for budget, time and stars | 36 / 56 tall, nine-slice, 10 px corners | Behind light text **Wired** (batch 4, nine-slice) |
 | ui.meter | Meter track and fill (green for budget, light green for spend) | 5 / 7 tall, any width | Two files: track, fill |
 | ui.time-seg | One hour segment: empty, filled (yellow), overtime (coral) | 8 x 8 / 13 x 11 | Ten in a row |
 | ui.star | Star filled and empty | 19 / 30 square | Also used on the wrap report at 46 **Wired** (batch 4) |
-| ui.button-paper | Square cream paper button | 38 / 52 square, nine-slice | Pause and the pop-up close button. Icons separate Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.button-paper | Square coral-orange paper button (replaces the cream one) | 38 / 52 square, nine-slice | Pause and the pop-up close button. Icons separate **Wired** (batch 4, nine-slice) |
 | ui.icon-pause | Pause bars | 20 / 26 | Ink, single color **Wired** (batch 4) |
-| ui.crew-card | Crew portrait card frame, neutral light paper | 58 x 62 / 84 x 92 | The engine tints it by department and draws the portrait from the character's head Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.crew-card (states: default, camera, lighting, art, grip, pre-tinted) | Crew portrait card frame, neutral light paper | 58 x 62 / 84 x 92 | The engine tints it by department and draws the portrait from the character's head **Wired** (batch 4, nine-slice) |
 | ui.crew-ring | Status dot: working, waiting, blocked | 9 / 12 | Three files |
-| ui.panel | Cream paper panel for the shot list tab and pop-up | 172 x 50 tab, up to 300 x 360 pop-up / 240 and 360 wide, nine-slice, 14 px corners | Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
-| ui.polaroid | Polaroid frame for shot thumbnails | 40 x 31 / 60 x 46 inner photo | Thumbnails slot inside Master delivered in batch 4, **not wired yet** (needs nine-slice insets) |
+| ui.panel | Cream paper panel for the shot list tab and pop-up | 172 x 50 tab, up to 300 x 360 pop-up / 240 and 360 wide, nine-slice, 14 px corners | **Wired** (batch 4, nine-slice) |
+| ui.polaroid | Polaroid frame for shot thumbnails | 40 x 31 / 60 x 46 inner photo | Thumbnails slot inside **Wired** (batch 4, nine-slice) |
 | ui.shot-thumbs | Hero Burger, Cheese Pull, Sauce Pour photos | 120 x 92 photo at 3x | **In use**, cut from the concept. Need clean versions without the border |
 | ui.shot-status | Done check, up-next play, pending circle | 17 / 22 | Three files **Wired** (batch 4) |
 | ui.check | Set conditions marker: empty, partial ring, done | 14 / 20 | |

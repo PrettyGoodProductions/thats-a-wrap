@@ -14,6 +14,48 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const money = S.fmtMoney;
 
+  /*
+    HUD frames from delivered nine-slice art (batch 4): the job tag, dark chip, shot list panel, crew card per department,
+    the coral button and the polaroid. Each piece's settings file gives its slice insets and CSS widths; this turns them
+    into border-image rules. The images are held in CSS variables so a piece used twice is carried once. A piece with no art
+    adds no rule, so the CSS drawn frames stay.
+  */
+  function installNineSlice() {
+    if (!Ld || !Ld.nine) return;
+    const vars = [], rules = [];
+    const frame = (sel, id, state, extra) => {
+      const n = Ld.nine(id, state);
+      if (!n) return false;
+      const v = '--ni-' + id.split('.')[1] + (state && state !== 'default' ? '-' + state : '');
+      vars.push(`${v}:url("${n.src}")`);
+      const px = n.width.map(w => w + 'px').join(' ');
+      rules.push(`${sel}{border-style:solid; border-width:${extra && extra.bw || 0}; border-image:var(${v}) ${n.slice.join(' ')}${n.fill ? ' fill' : ''} / ${px} stretch; background:none; box-shadow:none; ${extra && extra.css || ''}}`);
+      return true;
+    };
+    frame('.hud-job', 'ui.tag', 'default', { css: 'border-radius:0;' });
+    frame('.hud-dark', 'ui.chip-dark', 'default', { css: 'border-radius:0;' });
+    frame('.shots-tab, .shots-pop', 'ui.panel', 'default', { css: 'border-radius:0;' });
+    if (frame('.land .cb', 'ui.crew-card', 'default', { css: 'border-radius:6px;' })) {
+      for (const d of ['camera', 'lighting', 'art', 'grip']) frame(`.land .cb.dept-${d}`, 'ui.crew-card', d, { css: 'border-radius:6px;' });
+      rules.push('.land .cb.sel{box-shadow:0 0 0 3px var(--coral)}');
+    }
+    frame('.hud-pause, .pop-x, .sq', 'ui.button-paper', 'default', { css: 'border-radius:0;' });
+    const pol = Ld.nine('ui.polaroid', 'default');
+    if (pol) {
+      const [t, r, b, l] = pol.width;
+      vars.push(`--ni-polaroid:url("${pol.src}")`);
+      const css = (w, h) => `.lthumb{box-sizing:content-box; width:${w}px; height:${h}px; object-fit:cover; border-style:solid; border-width:${t}px ${r}px ${b}px ${l}px; border-image:var(--ni-polaroid) ${pol.slice.join(' ')} / ${pol.width.map(x => x + 'px').join(' ')} stretch; background:none; box-shadow:1px 2px 0 rgba(12,16,22,.35)}`;
+      rules.push(css(42, 25.6), '.lrow{grid-template-columns:46px 17px minmax(0,1fr)}');
+      rules.push(`@media (min-width:1000px) and (min-height:600px){${css(60, 36.5)} .lrow{grid-template-columns:64px 22px minmax(0,1fr)}}`);
+    }
+    if (!rules.length) return;
+    const st = document.createElement('style');
+    st.id = 'wl-nine';
+    st.textContent = `:root{${vars.join(';')}}\n${rules.join('\n')}`;
+    document.head.appendChild(st);
+  }
+  installNineSlice();
+
   const PERKS = {
     quickRoll: 'Rolls in 3s, not 5',
     spareBulb: 'Spare bulb: fixes dead lights fast',

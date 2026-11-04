@@ -322,11 +322,11 @@ body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 .hud-top{top:var(--st); left:var(--sl); right:var(--sr); display:flex; align-items:center; gap:6px; pointer-events:none}
 .hud-top > *{pointer-events:auto}
 .hud-logo{height:40px; width:auto; flex:none; transform:rotate(-4deg); filter:drop-shadow(1px 2px 0 rgba(10,14,20,.5))}
-.hud-job{flex:0 1 auto; min-width:0; max-width:210px; display:flex; flex-direction:column; justify-content:center; background:#F8EFDC; padding:3px 9px 2px; border-radius:2px 5px 3px 6px;
+.hud-job{flex:0 1 auto; min-width:0; max-width:210px; display:flex; flex-direction:column; justify-content:center; background:#F8EFDC; padding:4px 11px 3px; border-radius:2px 5px 3px 6px;
   transform:rotate(-1.2deg); box-shadow:1px 2px 0 rgba(10,14,20,.45); margin-right:auto}
 .hud-job b{font:400 13px/1.05 var(--font-hand); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .hud-job small{font:700 8.5px/1.2 var(--font-ui); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.hud-dark{flex:none; display:flex; align-items:center; gap:9px; background:rgba(28,31,36,.92); color:#F4EBDA; border-radius:9px; padding:4px 9px; box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.hud-dark{flex:none; display:flex; align-items:center; gap:9px; background:rgba(28,31,36,.92); color:#F4EBDA; border-radius:9px; padding:5px 11px; box-shadow:0 2px 0 rgba(0,0,0,.4)}
 .hud-dark span{font:400 10px/1 var(--font-hand); text-transform:uppercase; color:#E6DCC8}
 .hud-dark b{font:600 13px/1 var(--font-mono); font-variant-numeric:tabular-nums}
 .hud-dark b.neg{color:#FF8A72}
@@ -362,7 +362,7 @@ body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 @keyframes questPop{50%{transform:translate(0px,-81px)}}
 
 /* Shot list tab and pop-up */
-.shots-tab{top:58px; right:var(--sr); width:172px; display:grid; grid-template-columns:1fr auto; gap:2px 6px; padding:6px 9px 7px; text-align:left;
+.shots-tab{top:58px; right:var(--sr); width:172px; display:grid; grid-template-columns:1fr auto; gap:2px 6px; padding:9px 13px 10px; text-align:left;
   background:#F4E7CB; border-radius:4px 9px 5px 8px; box-shadow:2px 3px 0 rgba(12,16,22,.45)}
 .shots-tab b{font:400 13px/1 var(--font-hand); text-transform:uppercase}
 .shots-tab span{font:400 13px/1 var(--font-hand)}
@@ -370,8 +370,9 @@ body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 .shots-tab em{grid-column:1 / -1; display:block; height:5px; border-radius:3px; background:rgba(34,38,43,.18); overflow:hidden}
 .shots-tab em i{display:block; height:100%; width:0; background:#E89A2E}
 .shots-tab.open{visibility:hidden}
-.shots-pop{top:58px; right:var(--sr); width:min(300px,42%); max-height:calc(100% - 66px); overflow:auto; padding:8px 9px 9px; z-index:7;
+.shots-pop{top:58px; right:var(--sr); width:min(300px,42%); max-height:calc(100% - 66px); overflow:auto; padding:11px 14px 12px; z-index:7;
   background:#F4E7CB; border-radius:4px 9px 5px 8px; box-shadow:2px 3px 0 rgba(12,16,22,.5); display:flex; flex-direction:column; gap:5px}
+.land .shots-pop{z-index:7} /* the shared absolute rule above sets 5 and outranks .shots-pop, so the open list sat under the quest line and ACTION */
 .shots-pop .pop-h{display:flex; align-items:center; justify-content:space-between}
 .shots-pop .pop-h b{font:400 15px/1 var(--font-hand); text-transform:uppercase}
 .pop-x{width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:#FBF4E4; font-size:14px; text-align:center}
