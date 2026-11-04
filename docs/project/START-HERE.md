@@ -1,6 +1,6 @@
 # That's a Wrap! Start Here
 
-Status and context for anyone (or any Claude session) picking up the project. Updated Nov 3, 2026.
+Status and context for anyone (or any Claude session) picking up the project. Updated Nov 4, 2026.
 
 ## The game
 
@@ -28,7 +28,7 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B (in progress, Nov 3)
 
-- **Playable link (Milestone B build):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Playable link (Milestone B build, updated Nov 4 with Mika, Dani and Lu):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
 - **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
@@ -38,7 +38,11 @@ A single-player mobile game about running a small video production company, made
 
 ## Asset loader (done, Nov 3)
 
-Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired for the first batch: hero platform, key light head (off, on, dead), burger build stack (5 layers) and the modular crew puppet (parts named in the manifest). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far: hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+
+## Art batch 2 (Nov 4): Mika, Dani, Lu
+
+Character components for the three default-crew characters are in the game on the same fixed rig as Ro, with pelvis. Mika and Dani are in the default shoot (DP and Grip) and walk and work with their own art. Lu is delivered, but the Burger Job lists her as booked, so the art shows only in the Layout Lab bench until she is hirable. Set and background assets are a separate batch. Details, checks and the exact specs for the next export are in Art-Batch-2-Validation.md.
 
 ## Docs in this project
 
@@ -48,6 +52,7 @@ Real art is used wherever a file is supplied and code placeholders stay everywhe
 | Milestone-B-Plan.md | Milestone B decisions, what the Layout Lab found, and the build sequence |
 | Shoot-Day-Active-Play-Proposal.md | How the sim becomes Overcooked-style active play (Milestones B and C) |
 | Asset-Manifest.md | Every art piece, with its layers, pivots, states and what drives it. The spec for final art |
+| Art-Batch-1-Validation.md, Art-Batch-2-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
 | Prototype-0.2-Build-Plan.md | The 0.2 plan: money model, crew attributes, Net 30, referrals |
 | Call-Sheet-Design-Doc-and-Plan.md | The original design doc (the "Call Sheet" era), kept for history |
 | DIRECTION.md | Tomás's gameplay direction note (HQ is management, Shoot Day is active control) |
@@ -75,6 +80,7 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 
 ## Waiting on Tomás
 
+- [ ] **Art batch 2 calls** (see Art-Batch-2-Validation.md): is Lu meant to be hirable on the Burger Job, which arm is front on the sheets, and are the longer arms intended.
 - [ ] **Play the landscape shoot** on your phone and send notes.
 - [ ] **Small calls in Milestone-B-Plan.md:** narrowing veterans to the current shot, hard-stop warning timing, what counts as a compromised delivery.
 
@@ -89,7 +95,7 @@ See Milestone-B-Plan.md for the full sequence. In short:
 5. **Content:** split the Burger Job into 25 to 35 short tasks, tuned to 3 to 5 minutes.
 6. **Failure:** compromised delivery and hard stops with warnings.
 7. **Tiers in the real game:** autonomy comes from who you hire, plus the Assist Mode setting.
-- **Art test batch from ChatGPT** can land any time: drop it into `art/` and rebuild.
+- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next in the manifest order: Client and Agency, then the set and background assets (separate session).
 
 ## How development works
 

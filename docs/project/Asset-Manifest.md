@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 3, 2026 (revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 4, 2026 (revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -177,13 +177,13 @@ Each of these can be a fixed character like Ro. Until a character arrives, that 
 | Bo | Gaffer | Veteran | Cap, beard, deep brown skin | Needed |
 | Lee | Gaffer | Newbie | No hat, light brown hair, fair skin | Needed |
 | Inés | DP (camera) | Veteran | Beret, glasses, tan skin, dark hair | Needed |
-| Mika | DP | Solid | Beanie, fair skin, brown hair | Needed |
+| Mika | DP | Solid | Beanie, fair skin, shoulder-length brown hair | **Delivered** (batch 2), with pelvis |
 | Sam | DP | Newbie | No hat, ginger hair, glasses, fair skin | Needed |
 | Max | Grip | Veteran | Cap, beard, tan skin | Needed |
-| Dani | Grip | Solid | Cap, mustache, fair skin | Needed |
+| Dani | Grip | Solid | No cap, curly brown hair, mustache, tan skin, green work shirt | **Delivered** (batch 2), with pelvis |
 | Chuy | Grip | Newbie | Beanie, brown skin, black hair | Needed |
 | Vera | Art | Veteran | Hair bun, earring, tan skin | Needed |
-| Lu | Art | Solid | Hair bun, earring, fair skin | Needed |
+| Lu | Art | Solid | Dark curly hair in a bun, gold hoop earrings, brown skin, coral apron | **Delivered** (batch 2), with pelvis. Booked on the Burger Job, so not hirable there yet |
 | Paz | Art | Vouched | Red hair in a bun, earring | Needed |
 | Theo | Art | Vouched | Beanie, glasses, blond, fair skin | Needed |
 | Kit | Art | Unknown | Teal hair, earring, no hat | Needed |
@@ -192,7 +192,22 @@ Each of these can be a fixed character like Ro. Until a character arrives, that 
 | Agency | Video village | | Beret, latte in hand, black outfit | Needed |
 | Receptionist | HQ lobby | | Glasses, gray cardigan | Needed |
 
-The four to start with are the crew of the default shoot: **Mika, Ro, Dani, Lu**.
+The four to start with are the crew of the default shoot: **Mika, Ro, Dani, Lu**. All four are delivered. The delivered art is now the look of record for Mika, Dani and Lu, so the "Look today" cells for them describe the art, not the old code-drawn puppet.
+
+### Proportions to match Ro (from batch 2)
+
+The rig stretches nothing, so characters of different build look best when they are drawn to Ro's proportions. Batch 2 came in about 25% bigger in the torso, 35% longer in the arms and 5 to 18% shorter in the legs than Ro, and the engine compensates with a scale per character (Mika 25.7, Dani 25.6, Lu 26.5 source px per unit, so each stands 51.8 units). That works, but the long arms reach 16 units in the work animation against Ro's 11. For the next characters, draw all parts from one master at 27 px per unit, with these sizes in set units (pixels at 27 per unit in brackets):
+
+| Part | Size in set units | At 27 px per unit |
+| --- | --- | --- |
+| Head with hair or hat, plus neck stub | 15 x 18 | 405 x 486 |
+| Torso, hem to collar | 13.4 x 14.1 | 362 x 381 |
+| Pelvis | 14.9 x 9.4 | 402 x 254 |
+| Arm, sleeve cap to fingertips | 8.4 x 15.5 | 227 x 419 |
+| Leg, rounded top to sole | 11.5 x 22.8 | 310 x 616 |
+| Whole character, sole to top of head | 51.8 tall | 1399 |
+
+Ranges of plus or minus 8% are fine, since the per-character scale absorbs them.
 
 ### Shared crew props
 
@@ -262,7 +277,7 @@ The office is a cutaway building 360 x 470 units, portrait. Each room is a 152 x
 ## What to send next, in priority order
 
 1. **The taller hero platform** (spec above). Everything at the stage is aimed at its lid.
-2. **The default crew as characters: Mika, Dani, Lu**, with pelvis, same as Ro. Then Client and Agency, who sit in frame all game.
+2. **Client and Agency as characters**, who sit in frame all game. (Mika, Dani and Lu arrived in batch 2, see Art-Batch-2-Validation.md.)
 3. **The stage around the burger:** sweep and tube, key light stand, camera body and both lenses, dolly track, fill light, frame marks.
 4. **Burger props:** hero burger, cheese pull pieces, sauce drip and stream, the 5 build layers, cheese pot, sauce bowl.
 5. **Backdrop:** wall tile, the eleven flats, floor tile, grid strip, practicals, plants, poster, call sheet, cable, tape marks.
