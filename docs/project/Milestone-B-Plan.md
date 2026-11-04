@@ -11,15 +11,16 @@ Hands-on crew direction, in steps small enough to playtest. This doc records the
 | Crew autonomy | Three tiers. **0 Newbie** finishes what it is given and waits. **1 Solid** keeps going at the station it is working at. **2 Veteran** picks eligible work in its department. Nobody changes shot order, spends money, starts risky perishables early or calls ACTION. Assist Mode raises the minimum to 1 and never lowers a veteran |
 | Small problems | Different problems cost different things: some only quality, some block progress and cost time, some offer a choice between time, money and quality. Never all three at once by default. They happen in real time without pausing, with an in-world warning and a quick contextual choice. Full-screen interruptions stay for major chaos |
 | Shoot failure | Real failure is possible: successful, compromised, or hard stop. Hard stops get advance warnings. The cost is real but recoverable (money and reputation). Keep the hard-stop framework and rebalance it for manual assignment |
+| Departments | Each crew member works only their own department's tasks: art does art, camera does camera. Choosing who goes where is part of the challenge |
 | Orientation | Leaning portrait HQ and landscape shoot. Validate with the experiment below before committing. Nothing else is converted until it is reviewed |
 
 ## What is built so far (branch `milestone-b-lab`)
 
 **Engine slice (B1, first part).** Per-crew `autonomy` 0, 1 or 2, with `opts.autonomy` (a number, or `'tier'` to derive it from Veteran, Solid or Newbie) and `opts.assist`. The default is 2, which is exactly today's behavior, so the live game and all 33 earlier simulation tests are unchanged. New queries: `canAssign(crew, station)` returns go, slow, busy or no with the reason, `stationTasks`, and `idleWork`. Choosing a repair on the chaos card now counts as the order for a crew member who would not pick it up alone.
 
-**Tests.** 74 pass (14 new). They include a scripted test player that finishes the whole shoot with every crew member at autonomy 0, in all six shot orders, with a slow 2 second reaction, and deterministically. I also broke the engine on purpose twice to confirm the tests fail when they should.
+**Tests.** 74 passed at this point (14 new); 95 now. They include a scripted test player that finishes the whole shoot with every crew member at autonomy 0, in all six shot orders, with a slow 2 second reaction, and deterministically. I also broke the engine on purpose twice to confirm the tests fail when they should.
 
-**Layout Lab.** Office screen, "Layout lab" button. One seeded shoot, same crew, everyone at autonomy 0, played once in portrait and once in landscape. It measures orders per minute, wait for an order, crew idle share, taps per order, dropped selections and refused orders, plus the real pixel size of everything you tap on your device. Results save per layout and show side by side. Stations light up green (full speed), amber (half speed) or red (can't, tap for the reason) once someone is selected, and crew with work available but no orders show a "?". If a phone is locked to portrait, landscape turns the shoot sideways itself (turn the phone counterclockwise, or tap Flip).
+**Layout Lab.** Office screen, "Layout lab" button. One seeded shoot, same crew, everyone at autonomy 0, played once in portrait and once in landscape. It measures orders per minute, wait for an order, crew idle share, taps per order, dropped selections and refused orders, plus the real pixel size of everything you tap on your device. Results save per layout and show side by side. Stations light up green (go) or red (can't, tap for the reason) once someone is selected, plus amber (half speed) on levels that allow help across departments, and crew with work available but no orders show a "?". If a phone is locked to portrait, landscape turns the shoot sideways itself (turn the phone counterclockwise, or tap Flip).
 
 **Merged in from master (Nov 3, later).** The asset loader, art batch 1 (platform, key light, Ro the Gaffer on the fixed-character rig) and the removal of the set-wide paper texture.
 
@@ -37,6 +38,12 @@ The HUD floats on the set in small paper pieces:
 - **Bottom right:** ACTION.
 
 Task prompts pop up on the set: a "?" over anyone waiting for orders, bouncing over the one the next step needs. Portrait is unchanged. The Lab bot finishes the shoot on an 844 x 390 phone, a rotation-locked phone and a 1280 x 800 tablet.
+
+**Departments only.** A level setting, `departmentsOnly`, on for the Burger Job. Nobody takes another department's task: an order across departments is refused with the reason ("Build tabletop is grip work. Ro only does lighting"), a station offers a person only their own department's work, and while someone is selected the other departments' task icons fade. The half-speed help rule (`crossDeptRate`) stays in the engine for levels or perks that allow it. 95 tests pass, including the scripted player wrapping every shot order at every autonomy level with nobody out of department.
+
+**Set texture.** No surface texture is drawn over the set or any group of pieces. The last leftover was the "cut" filter's noise-driven edge wobble, which also warped the delivered key light; it now keeps only the soft paper shadow. The striped backdrop flat is a flat color until its art arrives. Texture lives inside each asset. (The batch 1 set screenshot with the strong texture was taken six minutes before the set-wide grain was removed.) The UI page behind the game keeps its faint kraft paper background.
+
+**Walk fix.** If a crew member's mark changed to a spot within a nudge of where a walk had reached, the walker snapped there but stayed "moving" and crashed on the next frame (about 1 run in 6 with stand-in art). It now ends the walk. A regression test covers it. A second walk built in parallel (branch `art-walk-polish`) is superseded by this one and kept only for reference.
 
 **Ro's pelvis.** A new pelvis part (shorts) sits between the shirt and the legs, and the new rounded-top legs hinge inside it. All of Ro's parts share one 27 px per unit master. He is about 51 set units tall with the cap.
 
