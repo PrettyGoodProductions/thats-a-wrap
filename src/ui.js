@@ -53,6 +53,20 @@
     Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null });
   }
 
+  // Landscape phones: the set takes all the height under the HUD, so measure it (CSS cannot size a grid track from its own spanning child).
+  function fitLandscape() {
+    const sc = $('screen-shoot');
+    if (!sc || sc.hidden) return;
+    const bar = $('crewbar');
+    if (!bar) return;
+    if (!window.matchMedia('(orientation:landscape) and (max-height:560px)').matches) { sc.style.removeProperty('--seth'); return; }
+    const top = bar.getBoundingClientRect().top;
+    const padB = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    sc.style.setProperty('--seth', Math.max(160, Math.floor(window.innerHeight - padB - top) - 1) + 'px');
+  }
+  window.addEventListener('resize', fitLandscape);
+  window.addEventListener('orientationchange', () => setTimeout(fitLandscape, 150));
+
   /* ================= Helpers ================= */
 
   function candidate(dept, id) {
@@ -275,6 +289,8 @@
     buildShoot();
     closeModal();
     show('shoot');
+    fitLandscape();
+    setTimeout(fitLandscape, 400);
   }
 
   function buildShoot() {
