@@ -418,7 +418,9 @@
     <rect x="194" y="236" width="60" height="40" rx="3" fill="#2F3440" ${s}/>
     <rect x="198" y="240" width="52" height="32" fill="#151820"/>
   </g>
-  <g id="monView" transform="translate(208 243) scale(.53)"></g>
+  <!-- The live view is 98 x 60 at scale .53, which is exactly the 52 x 32 screen inset; the clip keeps it inside -->
+  <clipPath id="monClip"><rect x="198" y="240" width="52" height="32"/></clipPath>
+  <g clip-path="url(#monClip)"><g id="monView" transform="translate(200.12 243.18) scale(.53)"></g></g>
   <circle id="monRec" cx="245" cy="245" r="2.4" fill="#FF4B3A" opacity="0"/>
   <g transform="translate(286 318)"><g transform="scale(1.2)">${puppet(CLIENT)}</g></g>
   <g transform="translate(334 320)"><g transform="scale(1.2)">${puppet(AGENCY)}</g></g>
