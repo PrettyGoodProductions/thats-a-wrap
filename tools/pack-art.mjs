@@ -22,7 +22,7 @@ const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xm
 const FILE = /^(.+?)(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
 const SEG = [/^[a-z0-9]+$/, /^[a-z0-9-]+$/, /^[a-z0-9_-]+$/, /^[a-z0-9_-]+$/];
 const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'note'];
-const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'states', 'note'];
+const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'states', 'note', 'contact'];
 
 // <dept>.<object>[.<state>], or for a fixed character crew.<character>.<part>[.<state>]. Returns null for a bad name.
 function parseName(name) {
@@ -89,6 +89,7 @@ function checkSettings(id, cfg, where, errors, warnings) {
     errors.push(`${at}: pivot must be [x, y] in image pixels or one of ${Object.keys(Loader.PIVOT_NAMES).join(', ')}`);
   }
   if (cfg.scale !== undefined && !(typeof cfg.scale === 'number' && cfg.scale > 0)) errors.push(`${at}: scale must be a number above 0 (image pixels per set unit)`);
+  if (cfg.contact !== undefined && !isPair(cfg.contact)) errors.push(`${at}: contact must be [x, y] in image pixels, the point things rest on`);
   if (cfg.size !== undefined && !(Array.isArray(cfg.size) && cfg.size.length === 2 && cfg.size.some(n => typeof n === 'number' && n > 0))) errors.push(`${at}: size must be [width, height] in set units`);
   if (cfg.offset !== undefined && !isPair(cfg.offset)) errors.push(`${at}: offset must be [x, y] in set units`);
   if (cfg.flip !== undefined && typeof cfg.flip !== 'boolean') errors.push(`${at}: flip must be true or false`);

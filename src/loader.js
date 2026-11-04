@@ -331,9 +331,24 @@
   }
 
   const slotDef = (id) => slotOf(id);
+
+  // The point other things rest on (the burger on the platform lid), in the parent's units. Delivered art gives it
+  // as "contact": [x, y] in image pixels in its settings; without that the slot's placeholder contact is used.
+  function contactOf(id) {
+    const slot = slotOf(id) || {};
+    const piece = getPack().pieces[id];
+    const c = piece && piece.settings && piece.settings.contact;
+    const st = piece && (piece.states[slot.initial] ? slot.initial : Object.keys(piece.states)[0]);
+    const r = st && resolve(id, st);
+    if (r && Array.isArray(c) && isNum(c[0]) && isNum(c[1]) && slot.anchor) {
+      const dx = (c[0] - r.pivotPx[0]) / r.scale;
+      return { x: slot.anchor.x + r.ox + (r.flip ? -dx : dx), y: slot.anchor.y + r.oy + (c[1] - r.pivotPx[1]) / r.scale, from: 'art' };
+    }
+    return slot.contact ? { x: slot.contact.x, y: slot.contact.y, from: 'placeholder' } : null;
+  }
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, pose, puppet, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, contactOf, use, state, pose, puppet, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

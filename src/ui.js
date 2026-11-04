@@ -49,6 +49,31 @@
   let clientLine = { text: '', until: 0, next: 0, i: 0 };
   const view = {};
 
+  let walkDt = 0;
+
+  /* ================= Walking (src/walk.js has the gait) ================= */
+
+  const Wk = window.WrapWalk;
+  // Advance one puppet's walk by this frame's time. Returns true while it is walking.
+  function stepWalk(v, id) {
+    const w = v.walk;
+    if (!w) return false;
+    const r = Wk.advance(w, walkDt * Wk.WALK.speed);
+    if (r === 'done') {
+      v.walk = null;
+      Wk.clear(v.parts);
+      view.pos[id] = { x: w.tx, y: w.ty };
+      v.g.style.transform = `translate(${w.tx}px, ${w.ty}px)`;
+      return false;
+    }
+    if (r) {
+      view.pos[id] = r.pos;
+      v.g.style.transform = `translate(${r.pos.x}px, ${r.pos.y}px)`;
+      Wk.apply(v.parts, r.pose);
+    }
+    return true;
+  }
+
   function resetView() {
     Object.assign(view, { pups: {}, cb: {}, icons: {}, rowsKey: '', depth: '', propKey: '', monKey: '', cartN: -1, pos: {}, stCard: null });
   }
@@ -316,6 +341,7 @@
       layer.appendChild(g);
       view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
       view.pos[c.id] = { x: idle.x, y: idle.y };
+      Object.assign(view.pups[c.id], { parts: Wk.parts(g), walk: null, target: { x: idle.x, y: idle.y } });
 
       const b = document.createElement('button');
       b.type = 'button';
@@ -452,12 +478,15 @@
 
     // ART carries the finished burger from the art table to the platform; later props change on the set
     const place = isDone('hero.place') ? 1 : pct('hero.place');
-    let key = 'none', inner = '', propT = 'translate(150 92)';
+    // The prop group sits on the platform's contact point (A.prop(), from the platform art or its placeholder)
+    const P = A.prop();
+    let key = 'none', inner = '', propT = `translate(${P.x} ${P.y})`, carrying = false;
     if (disp === 'hero' && (place > 0 || captured || rolling)) {
       key = 'hero'; inner = A.propInner('hero');
       if (place < 1 && !captured && !rolling) {
         const k = steps(place, 5);
-        propT = `translate(${lerp(12, 150, k).toFixed(1)} ${(lerp(150, 92, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
+        carrying = true;
+        propT = `translate(${lerp(12, P.x, k).toFixed(1)} ${(lerp(150, P.y, k) - 22 * Math.sin(k * Math.PI)).toFixed(1)}) scale(${lerp(0.42, 1, k).toFixed(3)})`;
       }
     } else if (disp === 'cheese' && (st.stageShot === 'cheese' || captured || rolling)) {
       const ready = (isDone('cheese.melt') && isDone('cheese.rig')) || captured || rolling;
@@ -467,6 +496,9 @@
       const sauced = rolling ? st.capture.left < st.capture.total * 0.6 : captured;
       key = 'sauce' + sauced; inner = sauced ? A.propInner('sauce') : A.propInner('hero');
     }
+    // A soft contact shadow grounds the prop on the lid (not while it is being carried over)
+    if (inner && !carrying) inner = `<ellipse cx="${A.BURGER_BASE.x}" cy="${A.BURGER_BASE.y}" rx="21" ry="2.6" fill="#2A1E12" opacity=".28"/>` + inner;
+    key += carrying ? ':c' : '';
     if (key !== view.propKey) { view.propKey = key; $('prop').innerHTML = inner; }
     setAttr($('prop'), 'transform', propT);
     setAttr($('pour'), 'opacity', disp === 'sauce' && rolling ? 1 : 0);
@@ -545,17 +577,16 @@
       } else p = A.IDLE[c.dept];
       targets[c.id] = p;
       const v = view.pups[c.id];
-      const prev = view.pos[c.id];
-      if (prev.x !== p.x || prev.y !== p.y) {
-        if (Math.abs(p.x - prev.x) > 2) setAttr(v.flip, 'transform', p.x < prev.x ? 'scale(-1 1)' : '');
-        v.g.style.transform = `translate(${p.x}px, ${p.y}px)`;
-        view.pos[c.id] = { x: p.x, y: p.y };
-        // The walk animation runs for as long as the slide to the new spot takes (see .pup transition)
-        v.walking = true;
-        v.g.classList.add('walking');
-        clearTimeout(v.walkT);
-        v.walkT = setTimeout(() => { v.walking = false; v.g.classList.remove('walking'); }, 950);
+      if (v.target.x !== p.x || v.target.y !== p.y) {
+        // New mark: walk there from wherever the puppet is drawn right now (also mid-walk)
+        v.target = { x: p.x, y: p.y };
+        const from = view.pos[c.id];
+        if (Math.abs(p.x - from.x) > 2) setAttr(v.flip, 'transform', p.x < from.x ? 'scale(-1 1)' : '');
+        v.walk = Wk.plan(from, p, v.parts.legL);
+        if (v.walk) Wk.clear(v.parts);
       }
+      v.walking = stepWalk(v, c.id);
+      v.g.classList.toggle('walking', v.walking);
       const cs = S.crewStatus(st, c);
       v.g.classList.toggle('working', cs.state === 'WORKING');
       v.g.classList.toggle('sel', selected === c.id);
@@ -867,6 +898,7 @@
         if (st.pending) showChaos();
         else if (st.over) showWrap();
       }
+      walkDt = modal || st.paused ? 0 : dt * speed;
       renderSet(now);
       renderHud(now);
       renderStationCard();

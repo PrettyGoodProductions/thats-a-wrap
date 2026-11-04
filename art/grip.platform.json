@@ -3,5 +3,10 @@
     335.8,
     311.9
   ],
-  "scale": 6
+  "scale": 6,
+  "contact": [
+    322,
+    112
+  ],
+  "note": "contact is the centre of the lid (back edge y 63, front lip y 160 at the middle column), where the burger rests"
 }

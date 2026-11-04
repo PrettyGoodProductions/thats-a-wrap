@@ -25,6 +25,7 @@
 <!-- inline:src/slots.js -->
 <!-- inline:src/loader.js -->
 <!-- inline:src/art.js -->
+<!-- inline:src/walk.js -->
 <script>
 /*
   Art lab. Drives the real set markup, loader and animation CSS from a script (tools/qa_pipeline.py), so the
@@ -112,8 +113,27 @@
     stage.innerHTML = A.faceSVG(c, 'face').replace('<svg ', `<svg width="${w}" height="${h}" style="display:block" `);
     return stage.getBoundingClientRect().toJSON();
   }
+  // Walk poses from src/walk.js, exactly as the game applies them: a level walk of 4 natural steps, pose k of it.
+  // Returns where each foot is on the set (set units) and whether it is the planted one, so a run can check slip.
+  const Wk = window.WrapWalk;
+  function walkPose(id, k, dir) {
+    const g = crew[id]; const P = Wk.parts(g);
+    const base = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(g.dataset.home || (g.dataset.home = g.style.transform));
+    const hx = +base[1], hy = +base[2];
+    const w = Wk.plan({ x: hx, y: hy }, { x: hx + (dir || 1) * 4 * Wk.naturalStep(P.legL), y: hy }, P.legL);
+    const pos = Wk.position(w, k), ps = Wk.pose(w, k);
+    g.classList.add('walking'); g.classList.remove('working'); Ld.pose(g, 'walk');
+    g.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+    g.querySelector('.flip').setAttribute('transform', dir < 0 ? 'scale(-1 1)' : '');
+    Wk.apply(P, ps);
+    const svg = $('setSvg'), inv = svg.getScreenCTM().inverse();
+    const foot = (el) => { const o = /(-?[\d.]+)px\s+(-?[\d.]+)px/.exec(el.style.transformOrigin); const pt = svg.createSVGPoint(); pt.x = +o[1]; pt.y = 0;
+      const q = pt.matrixTransform(el.getScreenCTM()).matrixTransform(inv); return [q.x, q.y]; };
+    return { frames: w.frames, pos, front: foot(P.legF), back: foot(P.legB), frontPlanted: ps.legFront.planted };
+  }
+  function walkReset(id) { const g = crew[id]; const P = Wk.parts(g); Wk.clear(P); if (g.dataset.home) g.style.transform = g.dataset.home; g.querySelector('.flip').setAttribute('transform', ''); g.classList.remove('walking'); Ld.pose(g, 'idle'); }
   const rect = (sel) => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); const s = $('stage').getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height }; };
-  window.lab = { mount, iso, key, addPuppet, cls, freeze, measure, images, portrait, rect, report: () => Ld.report(), pack: () => Ld.report(), unitsPerCss: () => 360 / $('stage').getBoundingClientRect().width };
+  window.lab = { mount, iso, key, addPuppet, cls, freeze, walkPose, walkReset, measure, images, portrait, rect, report: () => Ld.report(), pack: () => Ld.report(), unitsPerCss: () => 360 / $('stage').getBoundingClientRect().width };
 })();
 </script>
 </body>

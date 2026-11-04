@@ -223,7 +223,7 @@ with sync_playwright() as p:
     def stats(im):
         m = mask(im, 128)
         # only Ro: keep the left half where he stands
-        m[:, int(e.px(240, 0)[0]):] = False
+        m[:, int(e.px(290, 0)[0]):] = False   # Mika is hidden; leave room for Ro's walk to the right
         x0, y0, x1, y1 = bbox(m)
         return m, dict(x0=(x0 - ox) / e.k, x1=(x1 - ox) / e.k, top=(y0 - oy) / e.k, bottom=(y1 - oy) / e.k, comps=components(m))
     e.js("lab.cls('ro','')")
@@ -241,13 +241,33 @@ with sync_playwright() as p:
             e.js(f"lab.freeze('ro',{i / n},{cycle_ms})")
             im = frame(); m, s = stats(im); frames.append((im, m, s))
         return frames
-    walk = run('walking', 560, 8)
+    # Walk: the poses come from src/walk.js, the same code the game runs. 8 consecutive poses of a level walk.
+    walk = []
+    for i in range(8):
+        wp = e.js(f"lab.walkPose('ro',{i},1)")
+        im = frame(); m, s = stats(im); walk.append((im, m, s, wp['pos']['x'] - X))
+    e.js("lab.walkReset('ro')")
     wk = [f[2] for f in walk]
+    # The planted foot must not slide while it carries the body, walking right and walking left
+    for dname, dsign in (('right', 1), ('left', -1)):
+        fr = [e.js(f"lab.walkPose('ro',{i},{dsign})") for i in range(9)]
+        e.js("lab.walkReset('ro')")
+        slips, lifted = [], []
+        for a, b in zip(fr, fr[1:]):
+            for side, key in (('front', True), ('back', False)):
+                if a['frontPlanted'] == key and b['frontPlanted'] == key:
+                    slips.append(abs(b[side][0] - a[side][0]))   # the foot rolls heel to toe, but must not slide along the floor
+        for f in fr:
+            lo = max(f['front'][1], f['back'][1]); hi = min(f['front'][1], f['back'][1])
+            lifted.append(lo - hi)
+        check(f'walk {dname}: the planted foot does not slide along the floor (<= 0.1 units per pose)', max(slips) <= 0.1, f'max {max(slips):.3f} units over {len(slips)} pose changes')
+        check(f'walk {dname}: the advancing foot lifts a little (0.8 to 3.5 units)', 0.8 <= max(lifted) <= 3.5, f'up to {max(lifted):.2f} units')
     check('walk: one solid piece in all 8 frames', all(s['comps'] == 1 for s in wk), f"pieces per frame {[s['comps'] for s in wk]}")
     lift = max(s['bottom'] for s in wk) - min(s['bottom'] for s in wk)
+    check('walk: nothing goes below the floor (lowest point within 0.6 units of the mark)', max(s['bottom'] for s in wk) <= 0.6, f"lowest point {max(s['bottom'] for s in wk):+.2f} units")
     check('walk: feet stay near the ground (lift <= 4 units)', lift <= 4.0, f'lowest foot varies by {lift:.2f} units, from {min(s["bottom"] for s in wk):+.2f} to {max(s["bottom"] for s in wk):+.2f}')
     bob = max(s['top'] for s in wk) - min(s['top'] for s in wk)
-    check('walk: head bob is small but visible (0.4 to 3 units)', 0.4 <= bob <= 3.0, f'{bob:.2f} units')
+    check('walk: head bob is subtle but visible (0.3 to 2 units)', 0.3 <= bob <= 2.0, f'{bob:.2f} units')
     spread = max(s['x1'] - s['x0'] for s in wk) - min(s['x1'] - s['x0'] for s in wk)
     check('walk: legs visibly swing (silhouette width changes >= 2 units)', spread >= 2.0, f'{spread:.2f} units')
     work = run('working', 1200, 12)
@@ -259,17 +279,18 @@ with sync_playwright() as p:
     check('work: body stays planted (feet within 1.5 units of the mark)', all(abs(s['bottom']) <= 1.5 for s in ws), f"feet {min(s['bottom'] for s in ws):+.2f} to {max(s['bottom'] for s in ws):+.2f}")
 
     # filmstrips and GIFs, on the real set background
-    def film(frames_im, name, gif_ms):
-        crop = (int(ox - 34 * e.k), int(oy - 62 * e.k), int(ox + 38 * e.k), int(oy + 8 * e.k))
+    def film(frames_im, name, gif_ms, shifts=None):
         tiles = []
-        for im in frames_im:
+        for i, im in enumerate(frames_im):
+            sx = (shifts[i] if shifts else 0) * e.k   # a walk's crop follows the body, so the floor slides past the feet
+            crop = (int(ox + sx - 34 * e.k), int(oy - 62 * e.k), int(ox + sx + 38 * e.k), int(oy + 8 * e.k))
             t = im.crop(crop); bg = Image.new('RGBA', t.size, (233, 214, 170, 255)); bg.alpha_composite(t); tiles.append(bg.convert('RGB'))
         sheet = Image.new('RGB', (tiles[0].width * len(tiles), tiles[0].height))
         for i, t in enumerate(tiles): sheet.paste(t, (i * tiles[0].width, 0))
         sheet.save(os.path.join(out, name + '-strip.png'))
         small = [t.resize((t.width // 2, t.height // 2), Image.LANCZOS) for t in tiles]
         small[0].save(os.path.join(out, name + '.gif'), save_all=True, append_images=small[1:], duration=gif_ms, loop=0, optimize=False)
-    film([f[0] for f in walk], 'ro-walk', 70)
+    film([f[0] for f in walk], 'ro-walk', 95, [f[3] for f in walk])
     film([f[0] for f in work], 'ro-work', 100)
     errs = e.errors
     check('lab page logged no errors', not errs, '; '.join(errs[:3]))

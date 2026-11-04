@@ -13,10 +13,10 @@
 
   function globalDefs() {
     return `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+      <!-- "cut": the soft drop shadow that lifts each paper piece off the one behind it. No surface texture here:
+           texture belongs inside each asset's own art -->
       <filter id="cut" x="-10%" y="-10%" width="120%" height="130%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="n"/>
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>
-        <feDropShadow in="d" dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
+        <feDropShadow dx="1.3" dy="1.9" stdDeviation="0.8" flood-color="#2A1E12" flood-opacity=".38"/>
       </filter>
       <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="1.2" dy="1.6" stdDeviation="0.7" flood-color="#2A1E12" flood-opacity=".35"/>
@@ -199,14 +199,29 @@
     </g>`;
   }
 
+  // Where the hero prop rests: the platform lid's contact point (from the delivered art, or the placeholder lid).
+  // The burger's base is at (30, 36) in its own drawing, so the prop group is placed to put that point on the lid.
+  // Everything that frames or touches the burger (frame marks, spotlight, beams, sparkle, pour, rig) follows it.
+  const BURGER_BASE = { x: 30, y: 36 };
+  const PROP0 = { x: 150, y: 92 }; // where the prop group sat before contact points; the old offsets below are relative to it
+  let PROP = { x: 154, y: 100, cx: 184, cy: 136, from: 'placeholder' };
+  function computeProp() {
+    const c = (loader() && loader().contactOf('grip.platform')) || { x: 184, y: 136, from: 'placeholder' };
+    PROP = { x: +(c.x - BURGER_BASE.x).toFixed(2), y: +(c.y - BURGER_BASE.y).toFixed(2), cx: c.x, cy: c.y, from: c.from };
+    return PROP;
+  }
+
   function setMarkup() {
     const s = S();
+    const P = computeProp();
+    const dx = +(P.x - PROP0.x).toFixed(2), dy = +(P.y - PROP0.y).toFixed(2);
+    const sh = (x, y) => `${(x + dx).toFixed(1)},${(y + dy).toFixed(1)}`;
     return `
 <svg class="set" id="setSvg" viewBox="0 -70 360 410" role="img" aria-label="The Burger Job set">
   <defs>
     <pattern id="corrRed" width="5" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#D7705A"/><rect width="2" height="10" fill="#C2604B"/></pattern>
     <mask id="spotMask" maskUnits="userSpaceOnUse" x="0" y="-70" width="360" height="410">
-      <rect x="0" y="-70" width="360" height="410" fill="#fff"/><ellipse cx="180" cy="112" rx="62" ry="44" fill="#000"/></mask>
+      <rect x="0" y="-70" width="360" height="410" fill="#fff"/><ellipse cx="${180 + dx}" cy="${112 + dy}" rx="62" ry="44" fill="#000"/></mask>
   </defs>
 
   <!-- Back wall: layered paper flats -->
@@ -216,7 +231,7 @@
     <path d="M62 -26 L134 -31 L131 152 L60 152Z" fill="#B95A48"/>
     <path d="M144 -40 L216 -44 L214 40 L146 40Z" fill="#D9A04A"/>
     <path d="M230 -34 L298 -30 L300 152 L228 152Z" fill="#6F8F83"/>
-    <rect x="290" y="-56" width="76" height="208" fill="url(#corrDark)"/>
+    <rect x="290" y="-56" width="76" height="208" fill="#2E4664"/>
   </g>
 
   <!-- Ceiling grid with hanging practicals and a flag -->
@@ -271,25 +286,25 @@
   <!-- Rig for cheese pull / sauce pour -->
   <g id="rig" filter="url(#cut)">
     <g id="rig-pole"><path d="M292 202 V54" ${s} stroke-width="2.4"/><path d="M282 202 l10 -14 l10 14" fill="none" ${s} stroke-width="2"/></g>
-    <g id="rig-arm"><path d="M292 58 H196" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/></g>
-    <g id="rig-fork"><path d="M197 58 V74" ${s} stroke-width="2"/><path d="M191 74 h12 M193 74 v8 M197 74 v8 M201 74 v8" ${s} stroke-width="1.4"/></g>
-    <g id="rig-bottle"><path d="M197 58 V66" ${s} stroke-width="2"/><g transform="rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
+    <g id="rig-arm"><path d="M292 58 H${196 + dx}" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/></g>
+    <g id="rig-fork"><path d="M${197 + dx} 58 V${74 + dy}" ${s} stroke-width="2"/><g transform="translate(${dx} ${dy})"><path d="M191 74 h12 M193 74 v8 M197 74 v8 M201 74 v8" ${s} stroke-width="1.4"/></g></g>
+    <g id="rig-bottle"><path d="M${197 + dx} 58 V${66 + dy}" ${s} stroke-width="2"/><g transform="translate(${dx} ${dy})"><g transform="rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g></g>
   </g>
 
-  <polygon id="beam" points="96,78 76,94 154,136 222,136" fill="#FFE7A3" opacity="0"/>
+  <polygon id="beam" points="96,78 76,94 ${sh(154, 136)} ${sh(222, 136)}" fill="#FFE7A3" opacity="0"/>
   <g id="fillLight" opacity="0" filter="url(#cut)">
     <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
     <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>
   </g>
-  <polygon id="fillBeam" points="228,106 236,116 206,134 190,130" fill="#FFF4D6" opacity="0"/>
+  <polygon id="fillBeam" points="228,106 236,116 ${sh(206, 134)} ${sh(190, 130)}" fill="#FFF4D6" opacity="0"/>
   <g id="backLight" opacity="0">
     <path d="M214 -54 V-34" ${s} stroke-width="1.6"/><rect x="204" y="-34" width="20" height="12" rx="2" fill="#F4EEDF" ${s}/>
     <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>
   </g>
-  <g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
-  <g id="prop" transform="translate(150 92)"></g>
-  <path id="pour" class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
-  <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0">
+  <g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round" transform="translate(${dx} ${dy})"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
+  <g id="prop" transform="translate(${P.x} ${P.y})"></g>
+  <path id="pour" class="pour" d="M${186 + dx} ${100 + dy} q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round" opacity="0"/>
+  <g id="frameMarks" fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round" opacity="0" transform="translate(${dx} ${dy})">
     <path d="M146 92 v-8 h10"/><path d="M214 92 v-8 h-10"/><path d="M146 132 v8 h10"/><path d="M214 132 v8 h-10"/>
   </g>
 
@@ -553,7 +568,7 @@
   }
 
   root.WrapArt = {
-    DEPT_COLOR, STATIONS, IDLE, CLIENT, AGENCY,
+    DEPT_COLOR, STATIONS, IDLE, CLIENT, AGENCY, prop: () => PROP, BURGER_BASE,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, clapperSVG,
   };

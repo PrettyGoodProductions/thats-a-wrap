@@ -49,7 +49,7 @@ PROBE = """() => {
     chaos: !!document.querySelector('[data-choose]'),
     wrap: !!document.querySelector('#overlay:not([hidden]) [data-again]'),
     ro: !!ro, rigs: document.querySelectorAll('#crewLayer .wl-rig').length,
-    roWalking: !!(roPup && roPup.classList.contains('walking') && roPup.getAnimations({ subtree: true }).length),
+    roWalking: !!(roPup && roPup.classList.contains('walking') && /rotate/.test((roPup.querySelector('.wl-r-leg-front') || {}).style?.transform || '')),
     roWorking: !!(roPup && roPup.classList.contains('working') && !roPup.classList.contains('walking') && roPup.getAnimations({ subtree: true }).some(a => a.animationName === 'rigReach')),
   };
 }"""

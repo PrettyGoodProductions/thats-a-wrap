@@ -10,6 +10,7 @@
     size     manifest size in set units, [width, height]. Used only to warn when a delivered file looks mis-scaled
     shadow   true adds the soft paper drop shadow. Leave false when the parent group already has the "cut" filter
     initial  state shown before the simulation says otherwise
+    contact  optional point other things rest on, in set units, for the placeholder (delivered art sets its own)
     states   states the game asks for. Other states in the folder still load, nothing asks for them yet
 
   File names: <id>.<state>@3x.png, for example elec.keylight-head.on@3x.png. A piece with one look has no state:
@@ -31,7 +32,8 @@
   };
 
   const SLOTS = {
-    'grip.platform': { anchor: { x: 184, y: 192 }, pivot: 'bottom-center', size: [112, 60], shadow: true, initial: 'default' },
+    // contact: where props rest on the lid, in set units. Delivered art overrides it with "contact" in its settings
+    'grip.platform': { anchor: { x: 184, y: 192 }, pivot: 'bottom-center', size: [112, 60], shadow: true, initial: 'default', contact: { x: 184, y: 136 } },
     'elec.keylight-head': { anchor: { x: 72, y: 76 }, pivot: 'center', size: [56, 34], shadow: false, initial: 'off', states: ['off', 'on', 'dead'] },
     // Burger stack on the art cart. Every layer shares the anchor and the layer's own pivot is its bottom center.
     // The engine stacks them with `stack` (set units above the anchor, per layer) unless settings give an offset.
