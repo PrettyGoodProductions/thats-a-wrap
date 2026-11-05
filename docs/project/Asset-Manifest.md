@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 5, 2026 (revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 5, 2026 (revision 9: batch 6, the HQ set, wired. Revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -262,17 +262,17 @@ The office is a cutaway building 360 x 470 units, portrait. Each room is a 152 x
 | --- | --- | --- | --- | --- | --- |
 | hq.shell | Brick building with floors and room frames, roof edge | 336 x 340 | 2016 x 2040 | Static | Ready |
 | hq.sign | Marquee sign board with bulbs, blank | 220 x 34 | 1320 x 204 | Bulbs on, off. The company name is drawn by the engine | **Wired** (batch 5) |
-| hq.room.edit | Edit Bay interior | 152 x 112 | 912 x 672 | `for-rent` (dark), `building`, `built` (desk, two monitors, editor) | **Wired** for `for-rent` only (batch 5). `building` and `built` needed |
-| hq.room.craft | Craft Services interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (counter, urn, donuts, plant) | Ready |
-| hq.room.gear | Gear Cage interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (mesh wall, lights on shelves, cases, sandbags) | Ready |
-| hq.room.kitchen | Prep Kitchen interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (stove with steam, fridge, burger plate) | Ready |
-| hq.for-rent | Hanging FOR RENT card, blank price | 84 x 40 | 504 x 240 | Static | Ready |
-| hq.lobby | Front door, reception desk, plant | 312 x 84 | 1872 x 504 | Static. The receptionist is a character | Ready |
-| hq.jobboard | Cork board | 116 x 58 | 696 x 348 | Static | Ready |
-| hq.flyer | Job flyer pinned to the board, blank | 30 x 22 | 180 x 132 | One per job | Ready |
-| hq.street | Sidewalk, road, lane marks | 360 x 86 | 2160 x 516 | Static | Ready |
-| hq.van | Grip and electric van, blank side | 140 x 56 | 840 x 336 | Parked, later driving | Ready |
-| hq.sky | Sky with a sun and paper clouds (clouds separate) | 360 x 70 | 2160 x 420 | Clouds drift later | Ready |
+| hq.room.edit | Edit Bay interior | 152 x 112 | 912 x 672 | `for-rent` (dark), `building`, `built` (desk, two monitors, editor) | **Wired** (batch 5 and 6, all three states) |
+| hq.room.craft | Craft Services interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (counter, urn, donuts, plant) | **Wired** (batch 6) |
+| hq.room.gear | Gear Cage interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (mesh wall, lights on shelves, cases, sandbags) | **Wired** (batch 6) |
+| hq.room.kitchen | Prep Kitchen interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (stove with steam, fridge, burger plate) | **Wired** (batch 6) |
+| hq.for-rent | Hanging FOR RENT card, blank price | 84 x 40 | 504 x 240 | Static | **Wired** (batch 6) |
+| hq.lobby | Front door, reception desk, plant (delivered 5.2 : 1, so 312 x 60 in the game) | 312 x 84 | 1872 x 504 | Static. The receptionist is a character | **Wired** (batch 6) |
+| hq.jobboard | Cork board | 116 x 58 | 696 x 348 | Static | **Wired** (batch 6) |
+| hq.flyer | Job flyer pinned to the board, blank | 30 x 22 | 180 x 132 | One per job | **Wired** (batch 6) |
+| hq.street | Sidewalk, road, lane marks (delivered 360 x 64) | 360 x 86 | 2160 x 516 | Static | **Wired** (batch 6) |
+| hq.van | Grip and electric van, blank side (delivered as a boxy van with a roof rack, drawn 84 wide in the game) | 140 x 56 | 840 x 336 | Parked, later driving | **Wired** (batch 6) |
+| hq.sky | Sky with a sun and paper clouds (clouds separate) | 360 x 70 | 2160 x 420 | Clouds drift later | **Wired** (batch 6) |
 
 ## What to send next, in priority order
 

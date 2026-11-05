@@ -40,6 +40,10 @@ A single-player mobile game about running a small video production company, made
 
 Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far (batch 3 added the taller platform, sweep and tube, key stand, fill light, camera, lenses, track, frame marks, hero, cheese and sauce props, cheese pot): hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
 
+## Art batch 6 (Nov 5): the HQ set
+
+Zip name "Approved Assets 04". 20 files, all wired: the Edit Bay, Craft Services, Gear Cage and Prep Kitchen in their for-rent, building and built states, the FOR RENT card (the engine prints the price), lobby with the front desk, job board and flyers, street, van, sky and two clouds. A newly built room shows its building picture for about a second and a half. HQ pictures are fitted at 4 px per unit to keep the page under 6 MB. The HQ shell is still parked. Details and the exports still needed are in Art-Batch-6-Validation.md.
+
 ## Art batch 5 (Nov 5): rigs, lights, props, village, craft table, HQ sign
 
 Zip name "Approved Assets 03", which is the fifth fitted batch in the repo (the name counts the approvals, not the repo batches). 63 files matched to 40 manifest pieces. Wired: flag, gear pile, the C-stand rig (pole, arm, fork, bottle), key and fill light beams, backlight, dead-light sparks, styling cart, sauce bowl with fill, sparkle, monitor with live screen, two director chairs, craft table, coffee cup, HQ marquee sign (bulbs on and off) and the for-rent Edit Bay. The rest is fitted and parked in `art/_parked/` (HQ shell, HUD extras, steam, held items). Details and the exports still needed are in Art-Batch-5-Validation.md.
@@ -64,7 +68,7 @@ Character components for the three default-crew characters are in the game on th
 | Milestone-B-Plan.md | Milestone B decisions, what the Layout Lab found, and the build sequence |
 | Shoot-Day-Active-Play-Proposal.md | How the sim becomes Overcooked-style active play (Milestones B and C) |
 | Asset-Manifest.md | Every art piece, with its layers, pivots, states and what drives it. The spec for final art |
-| Art-Batch-1 to Art-Batch-5-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
+| Art-Batch-1 to Art-Batch-6-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
 | Prototype-0.2-Build-Plan.md | The 0.2 plan: money model, crew attributes, Net 30, referrals |
 | Call-Sheet-Design-Doc-and-Plan.md | The original design doc (the "Call Sheet" era), kept for history |
 | DIRECTION.md | Tomás's gameplay direction note (HQ is management, Shoot Day is active control) |
@@ -107,7 +111,7 @@ See Milestone-B-Plan.md for the full sequence. In short:
 5. **Content:** split the Burger Job into 25 to 35 short tasks, tuned to 3 to 5 minutes.
 6. **Failure:** compromised delivery and hard stops with warnings.
 7. **Tiers in the real game:** autonomy comes from who you hire, plus the Assist Mode setting.
-- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next: the exports listed in Art-Batch-5-Validation.md (HQ shell and rooms, progress ring), then Client and Agency and the rest of the roster.
+- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next: the exports listed in Art-Batch-5-Validation.md and Art-Batch-6-Validation.md (HQ shell, progress ring, lobby wall space), then Client and Agency and the rest of the roster.
 
 ## How development works
 

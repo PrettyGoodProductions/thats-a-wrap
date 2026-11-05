@@ -25,7 +25,7 @@ if '--map' in args:
 else:
     d = args[0]
     for path in sorted(glob.glob(os.path.join(d, '**', '*.png'), recursive=True)):
-        m = re.match(r'^(crew\.[a-z0-9]+\.[a-z0-9-]+|[a-z0-9]+\.[a-z0-9-]+)(?:\.([a-z0-9_-]+))?(?:@([\d.]+)x)?\.png$', os.path.basename(path))
+        m = re.match(r'^(crew\.[a-z0-9]+\.[a-z0-9-]+|hq\.room\.[a-z0-9]+|[a-z0-9]+\.[a-z0-9-]+)(?:\.([a-z0-9_-]+))?(?:@([\d.]+)x)?\.png$', os.path.basename(path))
         if not m: continue
         pid, st, hint = m.group(1), m.group(2) or 'default', m.group(3)
         cfgp = os.path.join(os.path.dirname(path), pid + '.json')
@@ -38,12 +38,15 @@ else:
 # canvas by design, so the one-canvas check below does not apply to them
 SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens', 'ui.shot-status',
                   # batch 5: different items sharing a piece ID (icons, steam frames, held tools, the clapper stick, bowl and its fill, sparkle frames)
+                  'hq.room.edit', 'hq.room.craft', 'hq.room.gear', 'hq.room.kitchen',   # whole opaque pictures swapped in place: outline registration means nothing for them
                   'art.sauce-bowl', 'fx.sparkle', 'fx.steam', 'crew.held', 'ui.action', 'ui.crew-ring', 'ui.dept-icons', 'ui.chaos-icons'}
 # Soft pieces (the spotlight mask and the floor shadow) have a gradient edge by design
-SOFT = {'fx.spotlight', 'crew.shadow'}
+SOFT = {'fx.spotlight', 'crew.shadow', 'hq.room.edit', 'hq.room.craft', 'hq.room.gear', 'hq.room.kitchen'}   # the rooms are full-bleed pictures
 # Seamless tiles run to the edge of their canvas on purpose
 TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.tag', 'ui.crew-card', 'ui.button-paper', 'ui.polaroid',
-         'ui.card', 'ui.quest', 'ui.meter-track', 'ui.meter-fill'}   # the batch 5 nine-slices too   # nine-slices are cropped to the paper
+         'ui.card', 'ui.quest', 'ui.meter-track', 'ui.meter-fill',
+         'hq.lobby', 'hq.street', 'hq.sky'}   # batch 6: full-bleed pictures. The rooms are in the next line
+TILES |= {f'hq.room.{r}' for r in ('edit', 'craft', 'gear', 'kitchen')}   # the batch 5 nine-slices too   # nine-slices are cropped to the paper
 
 problems, warnings = [], []
 info = {}

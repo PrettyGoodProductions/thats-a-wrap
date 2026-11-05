@@ -1,0 +1,30 @@
+{
+  "pivot": [
+    0.0,
+    0.0
+  ],
+  "scale": 4,
+  "states": {
+    "for-rent": {
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4
+    },
+    "building": {
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4
+    },
+    "built": {
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4
+    }
+  }
+}

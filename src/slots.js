@@ -116,6 +116,19 @@
     // HQ (drawn in the office's 360 x 470 frame). The Edit Bay's anchor is the room's own corner. hq.shell is parked: its openings do not match the rooms
     'hq.sign': { anchor: { x: 180, y: 23 }, pivot: 'center', size: [220, 34], shadow: false, initial: 'on', states: ['off', 'on'] },
     'hq.room.edit': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
+    // Batch 6: the other three rooms, the lobby and the street. These are drawn by the office code at the places it chooses (use() with x and y), so the anchors are only defaults
+    'hq.room.craft': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
+    'hq.room.gear': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
+    'hq.room.kitchen': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
+    'hq.for-rent': { anchor: { x: 76, y: 18 }, pivot: 'top-center', size: [84, 39], shadow: false, initial: 'default' },
+    'hq.lobby': { anchor: { x: 24, y: 300 }, pivot: 'top-left', size: [312, 60], shadow: false, initial: 'default' },
+    'hq.jobboard': { anchor: { x: 92, y: 310 }, pivot: 'top-left', size: [116, 57], shadow: false, initial: 'default' },
+    'hq.flyer': { anchor: { x: 0, y: 0 }, pivot: 'top-center', size: [30, 22], shadow: false, initial: 'default' },
+    'hq.street': { anchor: { x: 0, y: 372 }, pivot: 'top-left', size: [360, 64], shadow: false, initial: 'default' },
+    'hq.van': { anchor: { x: 250, y: 438 }, pivot: 'bottom-center', size: [84, 61], shadow: false, initial: 'default' },
+    'hq.sky': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [360, 70], shadow: false, initial: 'default' },
+    'hq.cloud-small': { anchor: { x: 300, y: 20 }, pivot: 'top-left', size: [36, 19], shadow: false, initial: 'default' },
+    'hq.cloud-wide': { anchor: { x: 4, y: 12 }, pivot: 'top-left', size: [64, 16], shadow: false, initial: 'default' },
 
     'cam.track': { anchor: { x: 232, y: 212 }, pivot: 'top-left', size: [126, 12], shadow: true, initial: 'default' },
     'cam.camera': { anchor: { x: 304, y: 210 }, pivot: 'bottom-center', size: [54, 90], shadow: false, initial: 'default' },

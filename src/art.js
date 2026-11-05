@@ -635,17 +635,26 @@
     return '';
   }
 
+  // The room that was just built shows its "building" picture for a moment (the office sets it, then clears it)
+  let BUILDING = null;
+  const setBuilding = (id) => { BUILDING = id || null; };
+
   function room(id, def, owned, affordable, cost) {
     const r = ROOMS[id];
-    const roomArt = !owned && hasArt(`hq.room.${id}`, 'for-rent') ? loader().use(`hq.room.${id}`, 'for-rent') : '';
+    const roomState = owned ? (BUILDING === id && hasArt(`hq.room.${id}`, 'building') ? 'building' : 'built') : 'for-rent';
+    const roomArt = hasArt(`hq.room.${id}`, roomState) ? loader().use(`hq.room.${id}`, roomState) : '';
     const wall = owned ? { edit: '#3E4C63', craft: '#F2D7A6', gear: '#D8D2C4', kitchen: '#CFE0D6' }[id] : '#4A4743';
     const floor = owned ? '#B98552' : '#3A3734';
     const s = S(1.6);
-    const body = owned ? roomFurniture(id) :
+    const cardArt = !owned && hasArt('hq.for-rent');
+    const priceText = `$${cost.toLocaleString('en-US')}`;
+    const body = owned ? (roomArt ? '' : roomFurniture(id)) :
       `${roomArt ? '' : '<path d="M30 30 h92 v40 h-92z" fill="#5E5A52" opacity=".5"/>'}
-       <g transform="rotate(-4 76 50)"><rect x="34" y="30" width="84" height="40" fill="#F2E9D8" ${s}/>
+       ${cardArt ? `<g transform="rotate(-3 76 16)">${loader().use('hq.for-rent', 'default', { x: 76, y: 16 })}
+         <text x="76" y="50" text-anchor="middle" ${UI} font-weight="700" font-size="10.5" fill="${INK}">${priceText}</text></g>` :
+       `<g transform="rotate(-4 76 50)"><rect x="34" y="30" width="84" height="40" fill="#F2E9D8" ${s}/>
        <text x="76" y="48" text-anchor="middle" ${HAND} font-size="13" fill="#D86B56">FOR RENT</text>
-       <text x="76" y="63" text-anchor="middle" ${UI} font-weight="700" font-size="9.5" fill="${INK}">$${cost.toLocaleString('en-US')}</text></g>
+       <text x="76" y="63" text-anchor="middle" ${UI} font-weight="700" font-size="9.5" fill="${INK}">${priceText}</text></g>`}
        ${affordable ? `<circle cx="132" cy="22" r="9" fill="#E7B84F" ${s}/><text x="132" y="26" text-anchor="middle" ${HAND} font-size="11" fill="${INK}">!</text>` : ''}`;
     return `<g class="room ${owned ? 'owned' : 'locked'}${affordable ? ' affordable' : ''}" data-room="${id}" transform="translate(${r.x} ${r.y})">
       ${roomArt ? `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>${roomArt}` : `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>
@@ -664,18 +673,49 @@
     return `<svg viewBox="${r.x - 4} ${r.y - 12} ${r.w + 8} ${r.h + 16}" aria-hidden="true">${room(def.id, def, true, false, def.cost)}</svg>`;
   }
 
+  // The lobby, job board, front desk and street from the batch 6 pictures
+  function lobbyAndStreetArt() {
+    const L = loader();
+    const LX = 24, LY = 300;                 // the lobby picture is 312 x 60
+    const BX = 88, BY = 311, BK = .55;       // the job board, drawn at 55% of its 116 x 57 so it fits the wall between the door and the desk
+    const flyer = (x, y, rot, k, inner) => `<g transform="rotate(${rot} ${x} ${y})">${L.use('hq.flyer', 'default', { x, y, k })}${inner}</g>`;
+    return `
+  <!-- Lobby -->
+  ${L.use('hq.lobby', 'default', { x: LX, y: LY })}
+  <g class="jobboard" data-jobs="1" filter="url(#cut)">
+    ${L.use('hq.jobboard', 'default', { x: BX, y: BY, k: BK })}
+    ${flyer(BX + 15, BY + 3, -5, .6, `<g transform="translate(${BX + 6.5} ${BY + 9}) scale(.17)">${burger(0)}</g>`)}
+    ${flyer(BX + 44, BY + 3, 4, .6, `<path d="M${BX + 38} ${BY + 11} h12 M${BX + 38} ${BY + 14} h9" stroke="${INK}" stroke-width=".8" stroke-linecap="round" opacity=".6"/>`)}
+    <rect x="${BX - 4}" y="${BY - 4}" width="${116 * BK + 8}" height="${57 * BK + 8}" fill="transparent"/>
+  </g>
+  <defs><clipPath id="deskClip"><rect x="150" y="290" width="70" height="46"/></clipPath></defs>
+  <g clip-path="url(#deskClip)"><g transform="translate(178 352) scale(.78)" filter="url(#shadow)">${puppet({ color: '#E7B84F', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } })}</g></g>
+  <!-- Street and van -->
+  ${L.use('hq.street', 'default', { x: 0, y: 372 })}
+  <rect x="0" y="435" width="360" height="11" fill="#39383C"/>
+  <g filter="url(#cut)">${L.use('hq.van', 'default', { x: 250, y: 438 })}</g>
+`;
+  }
+
   function officeMarkup(company, owned, bank) {
     const s = S();
+    const L = loader();
+    // The batch 6 lobby and street are shorter than the first layout allowed (60 and 64 units against 84 and 86), so with
+    // them the building ends at y 372 and the whole frame is 446 tall. Without them the first layout is drawn as before
+    const NEWHQ = hasArt('hq.lobby') && hasArt('hq.street');
+    const skyArt = NEWHQ && hasArt('hq.sky');
+    const H = NEWHQ ? 446 : 470;
     const rooms = company.rooms.map(r => room(r.id, r, owned.includes(r.id), !owned.includes(r.id) && bank >= r.cost, r.cost)).join('');
     const name = company.name.toUpperCase();
     return `
-<svg class="office" viewBox="0 0 360 470" role="img" aria-label="${company.name} office">
-  <rect width="360" height="470" fill="#A9C6C0"/>
-  <circle cx="318" cy="34" r="20" fill="#E7B84F" filter="url(#cut)"/>
-  <g fill="#F2E9D8" filter="url(#cut)"><path d="M20 30 q8 -14 22 -6 q10 -10 22 0 q12 0 10 10 h-56z"/><path d="M250 70 q6 -10 16 -4 q8 -8 16 0 q8 0 8 8 h-42z" opacity=".8"/></g>
+<svg class="office" viewBox="0 0 360 ${H}" role="img" aria-label="${company.name} office">
+  ${skyArt ? `<rect width="360" height="${H}" fill="#80AABF"/>${L.use('hq.sky', 'default', { x: 11, y: 0, k: 1.12 })}` : `<rect width="360" height="${H}" fill="#A9C6C0"/>
+  <circle cx="318" cy="34" r="20" fill="#E7B84F" filter="url(#cut)"/>`}
+  ${hasArt('hq.cloud-wide') && hasArt('hq.cloud-small') ? `<g filter="url(#cut)">${L.use('hq.cloud-wide', 'default', { x: 4, y: 12 })}${L.use('hq.cloud-small', 'default', { x: 300, y: 20 })}</g>` :
+  `<g fill="#F2E9D8" filter="url(#cut)"><path d="M20 30 q8 -14 22 -6 q10 -10 22 0 q12 0 10 10 h-56z"/><path d="M250 70 q6 -10 16 -4 q8 -8 16 0 q8 0 8 8 h-42z" opacity=".8"/></g>`}
 
   <!-- Building -->
-  <rect x="12" y="44" width="336" height="340" fill="url(#brick)" ${s} filter="url(#cut)"/>
+  <rect x="12" y="44" width="336" height="${NEWHQ ? 328 : 340}" fill="url(#brick)" ${s} filter="url(#cut)"/>
   <rect x="8" y="40" width="344" height="10" fill="#C4644D" ${s}/>
   ${hasArt('hq.sign', 'on') ? `<g filter="url(#cut)"><path d="M100 36 V44 M260 36 V44" ${s}/>${hasArt('hq.sign', 'off') ? `<g>${loader().use('hq.sign', 'off')}<g class="bulbs">${loader().use('hq.sign', 'on')}</g></g>` : loader().use('hq.sign', 'on')}</g>
   <text x="180" y="${name.length > 18 ? 28 : 29.5}" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12 : 14.5}" fill="${INK}">${name}</text>` : `<g filter="url(#cut)">
@@ -686,7 +726,7 @@
   </g>`}
   ${rooms}
 
-  <!-- Lobby: job board, door, front desk -->
+${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
   <rect x="24" y="296" width="312" height="84" fill="#F2E9D8" ${S(1.6)}/>
   <rect x="24" y="366" width="312" height="14" fill="url(#tile)" ${S(1.2)}/>
   <g class="jobboard" data-jobs="1" filter="url(#cut)">
@@ -719,7 +759,7 @@
     <text x="242" y="410" text-anchor="middle" ${HAND} font-size="9" fill="${INK}">GRIP + ELECTRIC</text>
     <circle cx="216" cy="434" r="9" fill="${INK}"/><circle cx="216" cy="434" r="3.5" fill="#9AA0A8"/>
     <circle cx="300" cy="434" r="9" fill="${INK}"/><circle cx="300" cy="434" r="3.5" fill="#9AA0A8"/>
-  </g>
+  </g>`}
 </svg>`;
   }
 
@@ -770,7 +810,7 @@
 
   root.WrapArt = {
     DEPT_COLOR, heroSpot, keyLens, wedgeTransform, BEAM_LEN, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
-    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
+    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, setBuilding, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, pauseSVG, shotMark, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

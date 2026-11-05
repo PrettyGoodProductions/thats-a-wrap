@@ -1235,6 +1235,9 @@
         save.bank -= r.cost;
         save.owned.push(r.id);
         persist();
+        // The new room shows its "building" picture for a moment, then the finished room
+        A.setBuilding(r.id);
+        setTimeout(() => { A.setBuilding(null); if (screen === 'office' && !modal) renderOffice(); }, 1600);
       }
       closeModal(); renderOffice();
       return;

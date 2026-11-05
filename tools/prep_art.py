@@ -103,13 +103,18 @@ for pid, p in spec['pieces'].items():
         if p.get('seamless'): im = make_seamless(im)
         if ent.get('decontaminate'): im = decontaminate(im, ent.get('alpha_floor', 40))
         im = clean_alpha(im)
+        if p.get('opaque'):
+            # A picture that fills its frame (a room, the street): the delivery is about 97% opaque, which lets the wall behind it tint the paper. Make the body solid, keep the soft edge pixels
+            ar = np.array(im); ar[..., 3][ar[..., 3] >= 200] = 255; im = Image.fromarray(ar, 'RGBA')
         if ent.get('native') or ent.get('pivot'):
             state_cfg[state] = {}
             if ent.get('pivot'): state_cfg[state]['pivot'] = [round(ent['pivot'][0] * kk, 1), round(ent['pivot'][1] * kk, 1)]
             if ent.get('native'): state_cfg[state]['scale'] = p['target']
             if ent.get('points'): state_cfg[state]['points'] = {n: [round(v[0] * kk, 1), round(v[1] * kk, 1)] for n, v in ent['points'].items()}
         w, h = round(im.width * kk), round(im.height * kk)
-        out = clean_alpha(resize_tile(im, w, h) if p.get('seamless') else im.resize((w, h), Image.LANCZOS))   # Pillow premultiplies RGBA for resizing; resampling brings back faint alpha and specks, so clean again
+        out = clean_alpha(resize_tile(im, w, h) if p.get('seamless') else im.resize((w, h), Image.LANCZOS))
+        if p.get('opaque'):
+            ao = np.array(out); ao[..., 3][ao[..., 3] >= 200] = 255; out = Image.fromarray(ao, 'RGBA')   # Pillow premultiplies RGBA for resizing; resampling brings back faint alpha and specks, so clean again
         name = pid + ('' if state == 'default' else '.' + state) + '@%gx.png' % p['target']
         if p.get('quantize'):
             # Flat paper with fine grain: a 128 color palette with no dithering keeps the grain and cuts the PNG by two thirds

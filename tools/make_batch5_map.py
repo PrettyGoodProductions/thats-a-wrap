@@ -217,8 +217,12 @@ info['hq-sign-height-units'] = round((b0[3] - b0[1]) / nat, 1)
 
 # Edit Bay, empty and for rent: 152 wide, an opaque picture. Pivot top left
 a = load(132); x0, y0, x1, y1 = bbox(a)
+if (x1 - x0) / (y1 - y0) > 152 / 112:   # trim to the room's 152 : 112 aspect around the art's own box, as batch 6 does for the other states
+    nw = int(round((y1 - y0) * 152 / 112)); x0 += (x1 - x0 - nw) // 2; x1 = x0 + nw
+else:
+    nh = int(round((x1 - x0) * 112 / 152)); y0 += (y1 - y0 - nh) // 2; y1 = y0 + nh
 nat = (x1 - x0) / 152
-add('hq.room.edit', {'for-rent': {'file': fname(132), 'crop': [x0, y0, x1, y1]}}, nat, (0, 0), quantize=256)
+add('hq.room.edit', {'for-rent': {'file': fname(132), 'crop': [x0, y0, x1, y1]}}, nat, (0, 0), target=4, quantize=256, opaque=True)
 info['hq-room-edit-height-units'] = round((y1 - y0) / nat, 1)
 
 # =====================================================================================================================

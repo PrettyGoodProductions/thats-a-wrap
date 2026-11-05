@@ -3,5 +3,21 @@
     0.0,
     0.0
   ],
-  "scale": 6
+  "scale": 4,
+  "states": {
+    "building": {
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4
+    },
+    "built": {
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4
+    }
+  }
 }

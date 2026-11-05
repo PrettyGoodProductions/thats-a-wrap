@@ -121,3 +121,7 @@ Nine-slices (`ui.panel`, `ui.tag`, `ui.chip-dark`, `ui.crew-card`, `ui.button-pa
 ## Batch 5
 
 `tools/make_batch5_map.py` builds `tools/batch5.map.json` from the masters (pivots and points are measured from alpha: pole clamp, arm knuckle, bottle tab and nozzle, monitor screen inset). A piece can set `"dir": "_parked"` to be fitted into `art/_parked/`; the packer skips any folder or file starting with `_`, so parked pieces stay out of the build until they are wired. Room art uses three-part names, `hq.room.<room>.<state>`. See `docs/project/Art-Batch-5-Validation.md`.
+
+## Batch 6
+
+`tools/make_batch6_map.py` fits the HQ set. A piece can set `"opaque": true` to make the body of a full-frame picture solid (the delivery is about 97% opaque), and `"decontaminate"` with `"alpha_floor"` on a file to drop a faint halo. Rooms, lobby, street and sky are fitted at 4 px per unit to keep the page under 6 MB. See `docs/project/Art-Batch-6-Validation.md`.

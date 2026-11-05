@@ -11,7 +11,7 @@
   "hq-shell-px-per-unit": 3.58,
   "hq-shell-height-units": 343.5,
   "hq-sign-height-units": 31.6,
-  "hq-room-edit-height-units": 111.0,
+  "hq-room-edit-height-units": 112.0,
   "steam-frames": 3
  },
  "pieces": {
@@ -437,8 +437,8 @@
    "quantize": 256
   },
   "hq.room.edit": {
-   "native": 9.48,
-   "target": 6,
+   "native": 9.395,
+   "target": 4,
    "pivot": [
     0.0,
     0.0
@@ -447,14 +447,15 @@
     "for-rent": {
      "file": "132-hq.room.edit.for-rent.png",
      "crop": [
-      12,
+      18,
       10,
-      1453,
+      1446,
       1062
      ]
     }
    },
-   "quantize": 256
+   "quantize": 256,
+   "opaque": true
   },
   "ui.shot-status": {
    "native": 45.864,
