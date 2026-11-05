@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 5, 2026 (revision 12: batch 7 (Prototype Art 05 and HQ Test 06) delivered: wrench, grip icon, checks, progress ring, camera, held props, sign margins, HQ greybox approved, new hq.shell and Art Dept in all states. Revision 11: HQ redesigned as a landscape cutaway diorama, see HQ-Redesign.md. The batch 6 shell, lobby, street and flat rooms are retired. Revision 10: asset review after batch 6, decisions on the open questions, status column for the HUD, new asks for the wrench, grip icon and set check. Revision 9: batch 6, the HQ set, wired. Revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 5, 2026 (revision 13: HQ Complete delivered and wired, every non-character piece now in the game. Revision 12: batch 7 (Prototype Art 05 and HQ Test 06) delivered: wrench, grip icon, checks, progress ring, camera, held props, sign margins, HQ greybox approved, new hq.shell and Art Dept in all states. Revision 11: HQ redesigned as a landscape cutaway diorama, see HQ-Redesign.md. The batch 6 shell, lobby, street and flat rooms are retired. Revision 10: asset review after batch 6, decisions on the open questions, status column for the HUD, new asks for the wrench, grip icon and set check. Revision 9: batch 6, the HQ set, wired. Revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -281,19 +281,19 @@ The HQ screen is landscape too and reuses these pieces at the same sizes (see HQ
 
 | ID | Piece | Size (HQ units) | Export | States | Status |
 | --- | --- | --- | --- | --- | --- |
-| hq.shell | Building front with room openings cut out, solid roof, slab, piers, end walls | 452 x 228 | 2712 x 1368 | Static | **Delivered** (batch 7). Origin (40, 56), openings exact. To wire |
-| hq.roof | Rooftop dressing: tank, dish, vent | 452 x 40 | 2712 x 240 | Static | **Needed** |
-| hq.room-sign | Blank paper tag for each room's name | 40 x 12 | 240 x 72 | Static | **Needed** |
-| hq.room.office | Production Office and Lounge, double cavity | 208 x 96 | 1248 x 576 | `l1`, `l2`, `l3`, `front` | **Needed** |
-| hq.room.art | Art Dept cavity | 100 x 96 | 600 x 576 | `for-rent`, `building`, `l1`, `l2`, `l3`, `front`, plus a spare `empty` | **Delivered** (batch 7), all states registered. At (162, 184). To wire |
-| hq.room.edit | Edit cavity | 100 x 96 | 600 x 576 | same | **Needed** |
-| hq.room.gear | Gear cavity | 100 x 96 | 600 x 576 | same | **Needed** |
-| hq.room.lobby | Lobby cavity | 100 x 96 | 600 x 576 | Static, `front` | **Needed** |
-| hq.room.garage | Garage cavity | 100 x 96 | 600 x 576 | Static | **Needed** |
-| hq.slot.boarded | Boarded expansion slot | 100 x 96 | 600 x 576 | Static | **Needed** |
-| hq.city-far, hq.city-near, hq.trees | Backdrop layers, seamless sideways | tiles 320 wide | @6x | Static | **Needed** |
-| hq.sidewalk, hq.street | Seamless tiles | 160 x 20, 160 x 60 | @6x | Static | **Needed** (replace the batch 6 street) |
-| hq.plants-fg, hq.cone, hq.hydrant | Foreground plants and street props | see redesign | @6x | Static | **Needed** (props optional) |
+| hq.shell | Building front with room openings cut out, solid roof, slab, piers, end walls | 452 x 228 | 2712 x 1368 | Static | **Wired** (batch 7) |
+| hq.roof | Rooftop dressing: tank, dish, vent | 452 x 40 | 2712 x 240 | Static | **Wired** (HQ Complete) |
+| hq.room-sign | Blank paper tag for each room's name | 40 x 12 | 240 x 72 | Static | **Wired** (HQ Complete) |
+| hq.room.office | Production Office and Lounge, double cavity | 208 x 96 | 1248 x 576 | `l1`, `l2`, `l3`, `front` | **Wired** (HQ Complete) |
+| hq.room.art | Art Dept cavity | 100 x 96 | 600 x 576 | `for-rent`, `building`, `l1`, `l2`, `l3`, `front`, plus a spare `empty` | **Wired** (batch 7) |
+| hq.room.edit | Edit cavity | 100 x 96 | 600 x 576 | same | **Wired** (HQ Complete) |
+| hq.room.gear | Gear cavity | 100 x 96 | 600 x 576 | same | **Wired** (HQ Complete) |
+| hq.room.lobby | Lobby cavity | 100 x 96 | 600 x 576 | Static, `front` | **Wired** (HQ Complete) |
+| hq.room.garage | Garage cavity | 100 x 96 | 600 x 576 | Static | **Wired** (HQ Complete) |
+| hq.slot.boarded | Boarded expansion slot | 100 x 96 | 600 x 576 | Static | **Wired** (HQ Complete) |
+| hq.city-far, hq.city-near, hq.trees | Backdrop layers, seamless sideways | tiles 320 wide | @6x | Static | **Wired** (HQ Complete) |
+| hq.sidewalk, hq.street | Seamless tiles | 160 x 20, 160 x 60 | @6x | Static | **Wired** (HQ Complete) |
+| hq.plants-fg, hq.cone, hq.hydrant | Foreground plants and street props | see redesign | @6x | Static | **Wired** (HQ Complete) |
 | hq.sky, clouds | Sky with sun, separate clouds | 360 x 70 | 2160 x 420 | Static | **Reused** (batch 6). Check the sun is clear of the rooftop sign |
 | hq.sign | Marquee sign, now on the roof | 220 x 34 | 1320 x 204 | Bulbs on, off | **Re-exported** (batch 7) with margin. Off and on are not one master, so show `on` statically. **Needed:** `hq.sign.bulbs@6x.png`, a bulbs-only overlay on the off master |
 | hq.van | Van parked at the curb | 84 wide | as delivered | Parked | **Reused** (batch 6) |
@@ -301,25 +301,19 @@ The HQ screen is landscape too and reuses these pieces at the same sizes (see HQ
 | hq.jobboard, hq.flyer | Job board hotspot on the office back wall | | as delivered | Static | **Reused** (batch 6), size refit to the office wall |
 | Retired | Batch 6 shell, lobby, street, and the flat edit, craft, gear and kitchen rooms | | | | Kept as reference only |
 
-New office UI pieces (nav tabs and icons, badge, resource pill, money and favors icons, plus button, settings icon, primary button, arrow, day row and chip, clapper and info icons, next-up photo frame) are listed with sizes in `HQ-Redesign.md`.
+All office UI pieces are delivered and wired (HQ Complete): nav tabs and icons, badge, resource pill, money and favors icons, plus button, settings icon, primary button, arrow, day row and chip, clapper and info icons, next-up photo frame) are listed with sizes in `HQ-Redesign.md`.
 
-## Wiring to do (code, no new art)
+## Wiring
 
-1. Wire the clean `ui.logo` and `ui.shot-thumbs` in place of the concept cut-outs.
-2. Make Lu hirable on the Burger Job and book Theo in her place.
-3. Refit `crafty.table` inside its 150 x 60 footprint.
-4. Accept the darker edges on gel frame, ACTION stick, set.flat-3 and ui.button-paper in the audit.
-5. Wire batch 7 (see Art-Batch-7-Validation.md): new HQ shell and Art Dept with the room-under-shell overlap, camera offset, held-item grip points, progress ring mask, checks, wrench, grip icon. The greybox was approved Nov 5.
-6. Wire the parked HUD and effects pieces that need no re-export: meter, time segments, crew ring, quest, ACTION, station badge, bubble, card, shot-status up next, spotlight, puff, steam, crew shadow, van and bolt chaos icons, department icons (grip stays code-drawn until it arrives).
+Every delivered piece is wired as of Nov 5 (Art-Batch-7-Validation.md, Art-HQ-Complete-Validation.md). Parked on purpose: `fx.steam` (no prep-kitchen steam spot yet), the batch 5 hammer icon, the sign's off state. Where a status cell above still says "To wire", it is wired.
 
 ## What to send next, in priority order
 
+All non-character art is delivered. What remains:
+
 1. **Client and Agency** as characters, who sit in frame all game.
-2. **The rest of HQ:** office, edit, gear, lobby, garage and boarded-slot cavities in the style of the Art Dept test, then roof, backdrop tiles, sidewalk and street, foreground plants.
-3. **Office UI pieces** from HQ-Redesign.md.
-4. **Receptionist and Theo.**
-5. **The rest of the roster:** Bo, Lee, Inés, Sam, Max, Chuy, Vera, Paz, Kit, Jules.
-6. **hq.sign.bulbs** overlay on the off master.
-7. **Optional:** pose images, plant sway, short and long fork rod, a lamp-off for-rent state.
+2. **Receptionist and Theo.**
+3. **The rest of the roster:** Bo, Lee, Inés, Sam, Max, Chuy, Vera, Paz, Kit, Jules.
+4. **Optional:** `hq.sign.bulbs` overlay on the off master (so the sign can blink), pose images, plant sway, street cone and hydrant, short and long fork rod.
 
 Send files named as above, or unnamed with a short list of what each is. Masters at any size are fine.

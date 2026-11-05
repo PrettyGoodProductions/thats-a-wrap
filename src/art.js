@@ -716,17 +716,21 @@
     const id = room.id;
     const fixed = !!room.fixed;
     const rented = !fixed && level < 1;
-    const state = building ? 'building' : rented ? 'for-rent' : 'l' + Math.max(1, level);
+    // Fixed rooms (lobby, garage) have one picture. A room with no building picture (the office) shows its new level
+    const lvState = 'l' + Math.max(1, level);
+    const state = fixed ? 'default' : building && hasArt(`hq.room.${id}`, 'building') ? 'building' : building && hasArt(`hq.room.${id}`, lvState) ? lvState : building ? 'building' : rented ? 'for-rent' : lvState;
     const art = hasArt(`hq.room.${id}`, state) ? L.use(`hq.room.${id}`, state, { x: 0, y: 0 }) : '';
     let pic;
-    if (room.boarded) pic = cavity('slot', box.w, true);
+    if (room.boarded) pic = cavity('slot', box.w, true) + (hasArt('hq.slot', 'boarded') ? L.use('hq.slot', 'boarded', { x: 0, y: 0 }) : '');
     else if (art) pic = art;
     else if (building) pic = cavity(id, box.w) + `<g filter="url(#cut)"><path d="M20 80 L34 40 L48 80 M24 70 H44 M27 60 H41" stroke="#D86B56" stroke-width="2" fill="none"/>
       <path d="M52 56 h30 l6 24 h-42z" fill="#E6E9EE" stroke="${INK}" stroke-width="1"/></g>`;
     else pic = cavity(id, box.w, rented) + (rented ? `<path d="M30 80 q4 -18 20 -18 q16 0 18 18z" fill="#D8D2C4" opacity=".55"/>` : `<g filter="url(#cut)">${greyFurniture(id, level, box.w)}</g>`);
     const people = (crew || []).map(p => `<g transform="translate(${p.x} ${p.y || 90}) scale(${p.flip ? -0.62 : 0.62} 0.62)">${puppet(p.c)}</g>`).join('');
-    const showFront = !building && !rented && !room.boarded;
-    const front = showFront ? (hasArt(`hq.room.${id}`, 'front') ? L.use(`hq.room.${id}`, 'front', { x: 0, y: 0 }) : `<g filter="url(#cut)">${greyFront(id, level)}</g>`) : '';
+    const showFront = state !== 'building' && !rented && !room.boarded;
+    // Level 3 of the office and gear has its own front layer (Rooms 07): the conference chairs, the gear cart
+    const frontState = level >= 3 && hasArt(`hq.room.${id}`, 'front-l3') ? 'front-l3' : 'front';
+    const front = showFront ? (hasArt(`hq.room.${id}`, frontState) ? L.use(`hq.room.${id}`, frontState, { x: 0, y: 0 }) : `<g filter="url(#cut)">${greyFront(id, level)}</g>`) : '';
     return `<g transform="translate(${box.x} ${box.y})"><svg width="${box.w}" height="${box.h}" overflow="hidden">${pic}${people}${front}</svg></g>`;
   }
 
@@ -737,9 +741,13 @@
     const s = S(1.2);
     const rented = !room.fixed && level < 1;
     const tagW = room.name.length * 4.6 + 12;
-    let out = room.boarded ? '' : `<g transform="translate(${box.x + box.w / 2 - tagW / 2} ${box.y + 14}) rotate(-1.5)"><rect width="${tagW}" height="11" fill="${rented ? '#CDBFA5' : '#F2E9D8'}" ${S(.8)}/>
+    const signSrc = hasArt('hq.room-sign') && L.src('hq.room-sign');
+    const tagBg = signSrc ? `<image href="${signSrc}" x="-2" y="-1.5" width="${tagW + 4}" height="14" preserveAspectRatio="none"${rented ? ' opacity=".8"' : ''}/>` : `<rect width="${tagW}" height="11" fill="${rented ? '#CDBFA5' : '#F2E9D8'}" ${S(.8)}/>`;
+    let out = room.boarded ? '' : `<g transform="translate(${box.x + box.w / 2 - tagW / 2} ${box.y + 1.5}) rotate(-1.5)">${tagBg}
       <text x="${tagW / 2}" y="8" text-anchor="middle" ${UI} font-weight="700" font-size="7" fill="${INK}">${room.name.toUpperCase()}</text></g>`;
-    if (room.boarded) {
+    if (room.boarded && hasArt('hq.slot', 'boarded')) {
+      out += `<text transform="rotate(-3 ${box.x + 48.6} ${box.y + 49.5})" text-anchor="middle" ${HAND} font-size="6.4" fill="${INK}"><tspan x="${box.x + 48.6}" y="${box.y + 48.6}">COMING</tspan><tspan x="${box.x + 48.6}" y="${box.y + 55.2}">SOON</tspan></text>`;
+    } else if (room.boarded) {
       out += `<g filter="url(#cut)" transform="translate(${box.x} ${box.y})">
         <path d="M6 30 L94 70" stroke="#B98552" stroke-width="11"/><path d="M6 70 L94 30" stroke="#C79A64" stroke-width="11"/>
         <g transform="translate(50 52) rotate(-4)"><rect x="-26" y="-7" width="52" height="14" fill="#F2E9D8" ${S(.8)}/><text y="3.5" text-anchor="middle" ${HAND} font-size="9" fill="#D86B56">COMING SOON</text></g></g>`;
@@ -793,10 +801,21 @@
     const sign = hasArt('hq.sign', 'on') ? `<g class="hq-sign" data-rename="1" filter="url(#cut)"><path d="M196 52 V57 M336 52 V57" ${s}/>${L.use('hq.sign', 'on', { x: 266, y: 37, k: .82 })}</g>
       <text x="266" y="${name.length > 18 ? 40 : 41.5}" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 10 : 12}" fill="${INK}">${name}</text>` :
       `<g class="hq-sign" data-rename="1" filter="url(#cut)"><rect x="176" y="22" width="180" height="30" fill="#22262B" ${s}/><text x="266" y="42" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 11 : 13}" fill="#E7B84F">${name}</text></g>`;
-    return { back: sky + far + near + trees, roof: roof + sign };
+    // Delivered exterior (HQ Complete): far city, near city and trees as seamless strips standing on the sidewalk line,
+    // the roof dressing as one strip on the roof. Each falls back to the drawn version on its own
+    const strip = (id, w, h) => Array.from({ length: 7 }, (_, i) => L.use(id, 'default', { x: -800 + i * w, y: 284 - h })).join('');
+    const backArt = (hasArt('hq.city-far') ? strip('hq.city-far', 320, 120) : far) + (hasArt('hq.city-near') ? strip('hq.city-near', 320, 150) : near) +
+      (hasArt('hq.trees') ? strip('hq.trees', 320, 80) : trees);
+    const roofArt = hasArt('hq.roof') ? L.use('hq.roof', 'default', { x: 40, y: 20 }) : roof;
+    return { back: sky + backArt, roof: roofArt + sign };
   }
 
   function hqStreet() {
+    const L = loader();
+    if (hasArt('hq.sidewalk') && hasArt('hq.street')) {
+      const row = (id, y) => Array.from({ length: 13 }, (_, i) => L.use(id, 'default', { x: -800 + i * 160, y })).join('');
+      return `<rect x="-600" y="280" width="1800" height="400" fill="#4B4A4F"/>${row('hq.sidewalk', 280)}${row('hq.street', 300)}`;
+    }
     return `<rect x="-600" y="280" width="1800" height="20" fill="#D8CDB8"/><path d="M-600 280 H1200" stroke="${INK}" stroke-opacity=".35" stroke-width="1"/>
       <rect x="-600" y="298" width="1800" height="4" fill="#B5AA94"/><rect x="-600" y="302" width="1800" height="200" fill="#5E5A52"/>
       <path d="M-600 344 H1200" stroke="#F2E9D8" stroke-width="3" stroke-dasharray="18 14"/>`;
@@ -828,6 +847,7 @@
       ${pics}
       <g filter="url(#shadow)">${hqShell()}</g>
       ${bd.roof}${overlays}${board}${van}
+      ${hasArt('hq.plants-fg', 'left') && hasArt('hq.plants-fg', 'right') ? `<g pointer-events="none">${L.use('hq.plants-fg', 'left', { x: 30, y: 334, k: .8 })}${L.use('hq.plants-fg', 'right', { x: 504, y: 338, k: .8 })}</g>` : ''}
     </svg>`;
   }
 

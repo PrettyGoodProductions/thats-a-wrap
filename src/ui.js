@@ -118,6 +118,40 @@
   }
   installHudArt();
 
+  /*
+    HQ Complete UI (Nov 5): nav tabs, resource pills, week rows and chips, the primary button as CSS frames; icons and the
+    photo frame as images (renderOffice). Slices are in image px, measured from the art's corners.
+  */
+  function installHqArt() {
+    if (!Ld || !Ld.src) return;
+    const vars = [], rules = [];
+    const v = (name, id, st) => { if (!Ld.has(id, st)) return false; vars.push(`--hq-${name}:url("${Ld.src(id, st)}")`); return true; };
+    const frame = (sel, name, slice, width, css) => rules.push(`${sel}{border-style:solid; border-width:${width}; border-image:var(--hq-${name}) ${slice} fill / ${width} stretch; background:none; box-shadow:none; border-radius:0; ${css || ''}}`);
+    if (v('tab', 'ui.nav-tab', 'default') && v('tabsel', 'ui.nav-tab', 'selected') && v('tablock', 'ui.nav-tab', 'locked')) {
+      frame('.nav-t', 'tab', '30', '10px', 'opacity:1');
+      rules.push('.nav-t.sel{border-image-source:var(--hq-tabsel)} .nav-t.locked{border-image-source:var(--hq-tablock)} .nav-t.locked > *{opacity:.6}');
+    }
+    if (v('pill', 'ui.resource-pill', 'default')) frame('.res', 'pill', '0 64', '0 20px', 'padding:6px 0; color:#F8EFDC');
+    if (['empty', 'prep', 'shoot', 'shoot-alt'].every(st => v('row-' + st, 'ui.day-row', st))) {
+      frame('.hq-panel .day', 'row-empty', '0 50', '0 14px', 'padding:5px 0');
+      rules.push('.hq-panel .day.prep{border-image-source:var(--hq-row-prep)} .hq-panel .day.shoot{border-image-source:var(--hq-row-shoot)} .hq-panel .day.alt{border-image-source:var(--hq-row-shoot-alt)}');
+    }
+    if (['empty', 'prep', 'shoot', 'shoot-alt'].every(st => v('chip-' + st, 'ui.day-chip', st))) {
+      rules.push('#screen-office.compact .hq-panel .day{border-width:5px; border-image:var(--hq-chip-empty) 18 fill / 5px stretch; padding:0; min-width:0}',
+        '#screen-office.compact .hq-panel .day.prep{border-image-source:var(--hq-chip-prep)} #screen-office.compact .hq-panel .day.shoot{border-image-source:var(--hq-chip-shoot)} #screen-office.compact .hq-panel .day.alt{border-image-source:var(--hq-chip-shoot-alt)}');
+    }
+    if (v('primary', 'ui.button-primary', 'default')) frame('.hq-panel .btn.go.cont', 'primary', '40', '10px', 'color:var(--ink); padding:4px 0');
+    if (v('cream', 'ui.button-paper', 'cream')) rules.push('.hq-set{background:var(--hq-cream) center / 100% 100% no-repeat; border:0; box-shadow:1px 2px 0 rgba(12,16,22,.4)}');
+    if (!rules.length) return;
+    const st = document.createElement('style');
+    st.id = 'wl-hq';
+    st.textContent = `:root{${vars.join(';')}}\n${rules.join('\n')}`;
+    document.head.appendChild(st);
+  }
+  installHqArt();
+  // An HQ UI icon as an image, or the fallback markup
+  const hqIcon = (id, st, size, fallback) => (Ld && Ld.src && Ld.has(id, st) ? `<img class="hqi" src="${Ld.src(id, st)}" width="${size}" height="${size}" alt="">` : fallback);
+
   const PERKS = {
     quickRoll: 'Rolls in 3s, not 5',
     spareBulb: 'Spare bulb: fixes dead lights fast',
@@ -259,9 +293,9 @@
   // The regulars hang out in their department's room once it is built, otherwise in the lounge
   const HQ_CREW = [
     { id: 'lu', dept: 'art', room: 'art', x: 62 },
-    { id: 'mika', dept: 'camera', room: 'edit', x: 70, flip: true },
-    { id: 'ro', dept: 'lighting', room: 'gear', x: 30 },
-    { id: 'dani', dept: 'grip', room: 'gear', x: 80, flip: true },
+    { id: 'mika', dept: 'camera', room: 'edit', x: 22 },
+    { id: 'ro', dept: 'lighting', room: 'gear', x: 22 },
+    { id: 'dani', dept: 'grip', room: 'gear', x: 82, flip: true },
   ];
   const LOUNGE_X = [150, 170, 120, 190];
   function hqCrew() {
@@ -294,30 +328,33 @@
     const best = save.best[job.id] || 0;
     const days = [['Mon', 'Prep / planning', 'prep'], ['Tue', `${job.title} (shoot)`, 'shoot'], ['Wed', 'Open', 'open'], ['Thu', 'Open', 'open'], ['Fri', 'Open', 'open']];
     const goal = Math.min(2, save.runs % 2 === 0 && save.runs > 0 ? 2 : save.runs % 2);
+    const openJobs = CO.jobs.filter(j => j.playable && (save.best[j.id] || 0) < 3).length; // jobs still worth playing
     const nav = NAV.map(([id, label, d]) => {
       const live = id === 'hq' || id === 'jobs' || id === 'gear';
       const attr = id === 'jobs' ? 'data-jobs' : id === 'gear' ? 'data-room="gear"' : id === 'hq' ? 'aria-current="page"' : 'disabled';
-      return `<button class="nav-t${id === 'hq' ? ' sel' : ''}${live ? '' : ' locked'}" type="button" ${attr}>${navIcon(d)}<b>${label}</b>${live ? '' : '<small>Soon</small>'}</button>`;
+      const badge = id === 'jobs' && openJobs ? `<span class="nbadge">${hqIcon('ui.badge', 'default', 22, '')}<i>${openJobs}</i></span>` : '';
+      return `<button class="nav-t${id === 'hq' ? ' sel' : ''}${live ? '' : ' locked'}" type="button" ${attr}>${hqIcon('ui.nav-icons', id, 30, navIcon(d))}<b>${label}</b>${live ? '' : '<small>Soon</small>'}${badge}</button>`;
     }).join('');
     const logo = logoSrc();
+    const plus = hqIcon('ui.button-plus', 'default', 22, '');
     $('screen-office').innerHTML = `
       <div class="hq-scene">${A.hqMarkup({ company: CO, levels: levelsMap(), bank: save.bank, name: companyName(), building: buildingRoom, crew: hqCrew() })}</div>
       <div class="hq-top">
         <div class="hq-brand">${logo ? `<img class="hq-logo" src="${logo}" alt="That's a Wrap!">` : ''}<button class="hq-name" type="button" data-rename aria-label="Rename your company"><b class="hand">${esc(companyName())}</b></button></div>
         <div class="hq-res">
-          <span class="res" title="Bank"><i class="res-i cash">$</i><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b></span>
-          <span class="res soon" title="Reputation (coming soon)"><i class="res-i">${A.starSVG(true)}</i><b>—</b></span>
-          <span class="res soon" title="Favors (coming soon)"><i class="res-i fav">&#9734;</i><b>—</b></span>
-          <button class="sq hq-set" type="button" data-officemenu aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+          <span class="res" title="Bank"><i class="res-i cash">${hqIcon('ui.icon-money', 'default', 20, '$')}</i><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b>${plus}</span>
+          <span class="res soon" title="Reputation (coming soon)"><i class="res-i">${A.starSVG(true)}</i><b>—</b>${plus}</span>
+          <span class="res soon" title="Favors (coming soon)"><i class="res-i fav">${hqIcon('ui.icon-favors', 'default', 22, '&#9734;')}</i><b>—</b>${plus}</span>
+          <button class="sq hq-set" type="button" data-officemenu aria-label="Settings">${hqIcon('ui.icon-settings', 'default', 24, '')}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
         </div>
       </div>
       <aside class="hq-panel">
         <section class="wk"><h4>Production week</h4>
-          <div class="days">${days.map(([d, t, k]) => `<div class="day ${k}"><b>${d}</b><span>${esc(t)}</span></div>`).join('')}</div>
+          <div class="days">${days.map(([d, t, k]) => `<div class="day ${k}"><b>${d}</b><span>${k === 'shoot' ? hqIcon('ui.icon-clapper', 'default', 16, '') : ''}${esc(t)}</span></div>`).join('')}</div>
         </section>
         <section class="next"><h4>Next up</h4>
-          <div class="ncard">${thumb('hero', 'nthumb')}<div><b>${esc(job.title)}</b><span>${esc(job.kind)} commercial</span>
-            <small>1 shoot day · Budget ${money(LEVEL.budget)}</small><small>Client: ${esc(job.client)}</small>${best ? `<span class="jstars">${starsRow(best)}</span>` : ''}</div></div>
+          <div class="ncard">${Ld && Ld.has && Ld.has('ui.next-photo', 'default') ? `<span class="nphoto">${thumb('hero', 'nph-img')}<img class="nph-frame" src="${Ld.src('ui.next-photo')}" alt=""></span>` : thumb('hero', 'nthumb')}<div><b>${esc(job.title)}</b><span>${esc(job.kind)} commercial</span>
+            <small>${hqIcon('ui.icon-info', 'calendar', 14, '')}1 shoot day</small><small>${hqIcon('ui.icon-info', 'budget', 14, '')}Budget ${money(LEVEL.budget)}</small><small>${hqIcon('ui.icon-info', 'payment', 14, '')}Client: ${esc(job.client)}</small>${best ? `<span class="jstars">${starsRow(best)}</span>` : ''}</div></div>
           <button class="btn go cont" type="button" data-book="${job.id}">Continue job &rarr;</button>
         </section>
         <section class="goal"><h4>Weekly goal</h4><div class="gl"><span>Wrap 2 jobs</span><b>${goal}/2</b></div><em><i style="width:${goal * 50}%"></i></em></section>
