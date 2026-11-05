@@ -88,7 +88,27 @@
     'ui.polaroid': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
     'ui.star': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [32, 32], shadow: false, initial: 'on', states: ['on', 'off'] },
     'ui.icon-pause': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [24, 26], shadow: false, initial: 'default' },
-    'ui.shot-status': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [22, 22], shadow: false, initial: 'done', states: ['done', 'pending'] },
+    'ui.shot-status': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [22, 22], shadow: false, initial: 'done', states: ['done', 'pending', 'next'] },
+    // Batch 5 and 7 HUD pieces. Most are shown as plain images in HTML (Ld.src) or placed by the caller (Ld.use), so the anchor is a default only
+    'ui.logo': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
+    'ui.shot-thumbs': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'hero', states: ['hero', 'cheese', 'sauce'] },
+    'ui.meter-track': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.meter-fill': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.time-seg': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'empty', states: ['empty', 'filled', 'overtime'] },
+    'ui.crew-ring': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'waiting', states: ['working', 'waiting', 'blocked'] },
+    'ui.quest': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.card': { anchor: { x: 0, y: 0 }, pivot: 'top-left', shadow: false, initial: 'default' },
+    'ui.check': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'empty', states: ['empty', 'partial', 'done'] },
+    'ui.dept-icons': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'camera', states: ['grip', 'lighting', 'camera', 'art', 'fix'] },
+    'ui.chaos-icons': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'wrench', states: ['wrench', 'van', 'lightning'] },
+    'ui.action': { anchor: { x: 0, y: 0 }, pivot: 'bottom-center', shadow: false, initial: 'muted', states: ['muted', 'ready', 'rolling', 'stick'] },
+    'ui.progress-ring': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'track', states: ['track', 'fill'] },
+    'ui.bubble': { anchor: { x: 0, y: 0 }, pivot: 'bottom-center', shadow: false, initial: 'default' },
+    'ui.station-badge': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
+    'fx.puff': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
+    'fx.spotlight': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
+    'crew.shadow': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
+    'crew.held': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'hammer', states: ['hammer', 'gel-frame', 'lens-case', 'tweezers', 'sandbag', 'light-head', 'burger-plate'] },
 
     // Batch 5 (Nov 5): the pieces the manifest marked Ready. Positions are the manifest's. Pivots come from the settings files.
     // Grip: flag on its C-stand (the tripod is wider than the manifest's 26: fitted by height), gear pile, and the rig.

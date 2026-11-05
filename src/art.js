@@ -74,7 +74,7 @@
       : L.prop === 'latte' ? `<g transform="translate(11 -15)"><rect x="-2.5" y="-5" width="5" height="6" rx="1" fill="#F2E9D8" ${s} stroke-width=".8"/><rect x="-2.6" y="-3" width="5.2" height="2" fill="#8B5A3C"/></g>`
       : L.prop === 'mug' ? `<g transform="translate(11 -15)"><rect x="-2.6" y="-4.5" width="5.2" height="5.5" rx="1" fill="#D86B56" ${s} stroke-width=".8"/></g>` : '';
     return (
-      `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
+      (loader() ? loader().floorShadow() : `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>`) +
       `<g class="bodyg">` +
       `<rect x="-6.5" y="-13" width="5" height="13" rx="1.6" fill="#2F3440"/><rect x="1.5" y="-13" width="5" height="13" rx="1.6" fill="#2F3440"/>` +
       `<rect x="-9.4" y="-24.5" width="4.2" height="12" rx="2" fill="${body}" ${s} stroke-width="1"/>` +
@@ -105,12 +105,19 @@
     camera: `<rect x="9" y="-24" width="9" height="6" rx="1" fill="${INK}"/><circle cx="18.5" cy="-21" r="1.6" fill="#7FB0C9"/>`,
     art: `<path d="M10 -18 l9 -8 M11 -17 l9 -7" stroke="${INK}" stroke-width="1.1" stroke-linecap="round"/>`,
   };
+  // Batch 7: delivered held props, hung by their grip point from the hand. Code-drawn items stay where art is missing
+  const HELD_ART = { tool: { grip: 'hammer', lighting: 'gel-frame', camera: 'lens-case', art: 'tweezers' },
+                     carry: { grip: 'sandbag', lighting: 'light-head', camera: 'lens-case', art: 'burger-plate' } };
+  const GRIP_AT = { tool: { x: 19, y: -27 }, carry: { x: 12, y: -14 } }; // tool: where the reaching hand is mid-pump
   function heldItem(dept, kind) {
+    const st = HELD_ART[kind] && HELD_ART[kind][dept];
+    if (st && loader() && loader().has('crew.held', st)) return loader().use('crew.held', st, GRIP_AT[kind]);
     return (kind === 'carry' ? CARRY : kind === 'tool' ? TOOL : {})[dept] || '';
   }
 
   function puffMarkup(word) {
-    return `<g class="puff"><g fill="#fff" stroke="${INK}" stroke-width="1.2"><circle r="9"/><circle cx="-10" cy="4" r="7"/><circle cx="10" cy="5" r="7"/><circle cx="2" cy="-8" r="6"/></g>
+    const art = loader() && loader().has('fx.puff', 'default') ? loader().use('fx.puff', 'default', { x: 0, y: -1, k: 0.8 }) : '';
+    return `<g class="puff">${art || `<g fill="#fff" stroke="${INK}" stroke-width="1.2"><circle r="9"/><circle cx="-10" cy="4" r="7"/><circle cx="10" cy="5" r="7"/><circle cx="2" cy="-8" r="6"/></g>`}
       <text y="4" text-anchor="middle" ${HAND} font-size="9" fill="#D86B56">${word}</text></g>`;
   }
 
@@ -288,11 +295,21 @@
   const AGENCY = { name: 'Agency', color: '#2F3440', look: { skin: '#C9946E', hair: '#151515', top: 'beret', prop: 'latte' } };
 
   // Small icon badge that names each workstation; the ring shows its current task's progress
+  // Station badge face: the delivered paper disc with a dept-colored rim and the delivered icon, or the drawn badge
+  function badgeFace(dept) {
+    const L = loader();
+    const icon = L && L.has('ui.dept-icons', dept) && L.src('ui.dept-icons', dept);
+    if (L && L.has('ui.station-badge', 'default') && icon) {
+      return `<circle r="9.6" fill="${DEPT_COLOR[dept]}" stroke="${INK}" stroke-width="1.2"/>${L.use('ui.station-badge', 'default', { x: 0, y: 0, k: 0.82 })}` +
+        `<image href="${icon}" x="-5.6" y="-5.6" width="11.2" height="11.2" preserveAspectRatio="xMidYMid meet"/>`;
+    }
+    return `<circle r="8.6" fill="${DEPT_COLOR[dept]}" stroke="${INK}" stroke-width="1.4"/>
+      <g transform="translate(-6 -6) scale(.5)" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${DEPT_ICON[dept]}</g>`;
+  }
   function stationBadge(id, dept, x, y) {
     return `<g class="sbadge" id="badge-${id}" transform="translate(${x} ${y})" pointer-events="none">
       <circle class="bring" r="11.5" fill="none" stroke="#4E8A62" stroke-width="3.4" stroke-dasharray="0 73" transform="rotate(-90)"/>
-      <circle r="8.6" fill="${DEPT_COLOR[dept]}" stroke="${INK}" stroke-width="1.4"/>
-      <g transform="translate(-6 -6) scale(.5)" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${DEPT_ICON[dept]}</g>
+      ${badgeFace(dept)}
       <circle class="bmk" cx="9" cy="-9" r="4.2" stroke="#fff" stroke-width="1.4"/>
     </g>`;
   }
@@ -584,6 +601,7 @@
   <g id="fxLayer"></g>
 
   <rect id="dim" x="${wide ? -600 : 0}" y="${wide ? -300 : -70}" width="${wide ? 1560 : 360}" height="${wide ? 900 : 410}" fill="#0B0F18" opacity="0" mask="url(#spotMask)" pointer-events="none"/>
+  ${hasArt('fx.spotlight') ? `<g id="spotGlow" opacity="0" pointer-events="none" style="mix-blend-mode:screen">${loader().use('fx.spotlight', 'default', { x: h.x, y: h.y - 16, k: 0.85 })}</g>` : ''}
 
   <!-- Clapper for ACTION -->
   <g id="clap" class="clap" transform="translate(146 30)">
@@ -772,7 +790,15 @@ ${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
     art: '<path d="M4 20c4 0 6-2 6-5l7-7a2 2 0 0 0-3-3l-7 7c-3 0-3 4-3 8z"/>',
     fix: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
   };
+  // Delivered icons are shown as images fitted to the box (each was drawn on its own canvas), drawn ones otherwise
+  function iconImg(id, state, size, cls) {
+    const L = loader();
+    const src = L && L.src && L.has(id, state) && L.src(id, state);
+    return src ? `<img class="${cls || 'aicon'}" src="${src}" width="${size}" height="${size}" alt="" style="object-fit:contain">` : '';
+  }
   function deptIcon(key, size) {
+    const art = iconImg('ui.dept-icons', key, size || 16);
+    if (art) return art;
     return `<svg width="${size || 16}" height="${size || 16}" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DEPT_ICON[key] || ''}</svg>`;
   }
 
@@ -781,6 +807,9 @@ ${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
     rent: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16V7h12v9M14 10h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/></svg>`,
     bounce: `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`,
   };
+
+  const CHAOS_ART = { fix: 'wrench', rent: 'van', bounce: 'lightning' };
+  function chaosIcon(id) { return iconImg('ui.chaos-icons', CHAOS_ART[id], 34) || ICON[id] || ''; }
 
   // HUD pieces delivered as images, drawn inside a small SVG: the art is centered on 0,0 in CSS pixels
   function hudImg(id, state, half, w, h) {
@@ -800,6 +829,14 @@ ${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
   }
 
   function clapperSVG() {
+    const L = loader();
+    if (L && ['muted', 'ready', 'rolling', 'stick'].every(st => L.has('ui.action', st))) {
+      // Batch 5 ACTION art: the body in three states swapped by CSS, the stick hinged at its left end on top of the body
+      const body = st => `<g class="ab ab-${st}">${L.use('ui.action', st, { x: 0, y: 0 })}</g>`;
+      return `<svg class="art" viewBox="-73 -110 146 112" aria-hidden="true">${body('muted')}${body('ready')}${body('rolling')}
+        <g class="clap-stick">${L.use('ui.action', 'stick', { x: -60.5, y: -99.2 })}</g>
+        <text x="0" y="-36" text-anchor="middle" ${HAND} font-size="25" fill="#F2E9D8">ACTION</text></svg>`;
+    }
     return `<svg viewBox="0 0 100 70" aria-hidden="true">
       <rect x="4" y="22" width="92" height="44" rx="3" fill="#22262B" stroke="#F2E9D8" stroke-width="2"/>
       <g class="clap-stick"><rect x="4" y="8" width="92" height="13" fill="#F2E9D8" stroke="#22262B" stroke-width="2"/>
@@ -811,6 +848,6 @@ ${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
   root.WrapArt = {
     DEPT_COLOR, heroSpot, keyLens, wedgeTransform, BEAM_LEN, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, setBuilding, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
-    deptIcon, ICON, starSVG, pauseSVG, shotMark, clapperSVG,
+    deptIcon, ICON, chaosIcon, starSVG, pauseSVG, shotMark, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

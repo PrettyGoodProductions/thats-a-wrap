@@ -1,14 +1,15 @@
 {
   "flip": true,
   "pivot": [
-    166.2,
-    554.7
+    185.6,
+    563.4
   ],
   "points": {
     "mount": [
-      226.1,
-      131.4
+      243.9,
+      151.8
     ]
   },
-  "scale": 6
+  "scale": 5.835,
+  "note": "Batch 7 re-export: the batch 3 drawing at 0.9725 of its old size plus 24 px padding. Scale and points are mapped so the camera draws exactly as before"
 }

@@ -56,6 +56,68 @@
   }
   installNineSlice();
 
+  /*
+    Batch 7 progress ring over a working crew member: the delivered track, and the full fill revealed by a mask whose
+    stroke-dasharray the shoot loop already drives (class "rp", circumference 44 at r 7, starting at 12 o'clock).
+  */
+  const ringArt = !!(Ld && Ld.has && Ld.has('ui.progress-ring', 'track') && Ld.has('ui.progress-ring', 'fill'));
+  const bubbleArt = !!(Ld && Ld.has && Ld.has('ui.bubble', 'default'));
+  function ringMarkup(id) {
+    if (!ringArt) return `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>`;
+    const m = 'rpm-' + id;
+    return `<g class="ring" transform="translate(0 -74)" opacity="0"><g transform="scale(1.3)"><circle r="4.6" fill="#fff" opacity=".9"/>${Ld.use('ui.progress-ring', 'track', { x: 0, y: 0 })}` +
+      `<mask id="${m}" maskUnits="userSpaceOnUse" x="-9" y="-9" width="18" height="18"><circle class="rp" r="7" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="0 44" transform="rotate(-90)"/></mask>` +
+      `<g mask="url(#${m})">${Ld.use('ui.progress-ring', 'fill', { x: 0, y: 0 })}</g></g></g>`;
+  }
+
+  /*
+    Batch 5 and 7 HUD art shown through CSS: meters, hour segments, crew status dots, set-condition checks, the quest
+    pill and the torn paper card for chaos and the wrap report. Like the nine-slices above, a piece with no art adds no
+    rule, so the CSS look stays.
+  */
+  function installHudArt() {
+    if (!Ld || !Ld.src) return;
+    const vars = [], rules = [];
+    const v = (name, id, st) => { if (!Ld.has(id, st)) return false; vars.push(`--hi-${name}:url("${Ld.src(id, st)}")`); return true; };
+    const nine9 = (sel, id, css) => {
+      const n = Ld.nine(id, 'default');
+      if (!n) return false;
+      vars.push(`--hn-${id.replace(/\W/g, '-')}:url("${n.src}")`);
+      rules.push(`${sel}{border-style:solid; border-width:${n.width.map(w => w + 'px').join(' ')}; border-image:var(--hn-${id.replace(/\W/g, '-')}) ${n.slice.join(' ')} fill / ${n.width.map(w => w + 'px').join(' ')} stretch; background:none; box-shadow:none; ${css || ''}}`);
+      return true;
+    };
+    if (Ld.has('ui.meter-track', 'default') && Ld.has('ui.meter-fill', 'default')) {
+      v('mtrack', 'ui.meter-track', 'default'); v('mfill', 'ui.meter-fill', 'default');
+      rules.push('.hud-money .meter em{background:var(--hi-mtrack) center / 100% 100% no-repeat; border-radius:0}',
+        '.hud-money .meter em i, .hud-money .meter:last-child em i{background:var(--hi-mfill) left center / 100% 100% no-repeat; border-radius:0}',
+        '.hud-money .meter:last-child em i{filter:brightness(1.15) saturate(.8)}');
+    }
+    if (v('seg0', 'ui.time-seg', 'empty') && v('seg1', 'ui.time-seg', 'filled') && v('seg2', 'ui.time-seg', 'overtime')) {
+      rules.push('.hud-time .segs i{background:var(--hi-seg0) center / 100% 100% no-repeat; border-radius:0}',
+        '.hud-time .segs i.on{background-image:var(--hi-seg1)}', '.hud-time.ot .segs i{background-image:var(--hi-seg2)}');
+    }
+    if (v('dotw', 'ui.crew-ring', 'working') && v('dota', 'ui.crew-ring', 'waiting') && v('dotb', 'ui.crew-ring', 'blocked')) {
+      rules.push('.cb .dotst{border:0; border-radius:0; background:var(--hi-dota) center / contain no-repeat}',
+        '.cb .dotst.WORKING{background-image:var(--hi-dotw)} .cb .dotst.WAITING, .cb.ask .dotst{background-image:var(--hi-dota)} .cb .dotst.BLOCKED{background-image:var(--hi-dotb)}',
+        '.cb .dotst{width:12px; height:12px} .land .cb .dotst{width:11px; height:11px}');
+    }
+    if (v('chk0', 'ui.check', 'empty') && v('chk1', 'ui.check', 'partial') && v('chk2', 'ui.check', 'done')) {
+      rules.push('.conds li i{border:0; border-radius:0; background:var(--hi-chk0) center / contain no-repeat}',
+        '.conds li.part i{background-image:var(--hi-chk1)} .conds li.ok i{background-image:var(--hi-chk2)} .conds li.ok i::after{content:none}');
+    }
+    nine9('.land .ribbon', 'ui.quest', 'border-radius:0; padding:4px 2px; min-height:0');
+    nine9('#modal:is([data-kind="chaos"],[data-kind="wrap"],[data-kind="pause"])', 'ui.card', 'border-radius:0; padding:2px 4px 6px; background:none');
+    rules.push('#modal:is([data-kind="chaos"],[data-kind="wrap"],[data-kind="pause"]) .chaos-h{margin:-2px -4px 0; border-radius:3px 3px 0 0}');
+    rules.push('.clapbtn svg.art{filter:none} .clapbtn svg.art .ab{display:none} .clapbtn:not(.on):not(.rolling) svg.art .ab-muted, .clapbtn.on:not(.rolling) svg.art .ab-ready, .clapbtn.rolling svg.art .ab-rolling{display:inline}',
+      'img.aicon{display:block; flex:none}', '.opt img.aicon{grid-row:1 / span 2}');
+    if (!rules.length) return;
+    const st = document.createElement('style');
+    st.id = 'wl-hud';
+    st.textContent = `:root{${vars.join(';')}}\n${rules.join('\n')}`;
+    document.head.appendChild(st);
+  }
+  installHudArt();
+
   const PERKS = {
     quickRoll: 'Rolls in 3s, not 5',
     spareBulb: 'Spare bulb: fixes dead lights fast',
@@ -418,11 +480,11 @@
       g.innerHTML =
         `<ellipse class="selring" cx="0" cy="0" rx="19" ry="6" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="3 2"/>` +
         `<g class="flip"><g transform="scale(1.25)">${A.puppet(c)}<g class="held"></g></g></g>` +
-        `<g class="ring" transform="translate(0 -74)" opacity="0"><circle r="7" fill="#fff" stroke="#22262B" stroke-width="1.3"/><circle class="rp" r="7" fill="none" stroke="#4E8A62" stroke-width="3.6" stroke-dasharray="0 44" transform="rotate(-90)"/></g>` +
-        `<g class="bub" transform="translate(0 -77)" opacity="0"><rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/><text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
+        ringMarkup(c.id) +
+        `<g class="bub" transform="translate(0 -77)" opacity="0">${bubbleArt ? `<rect class="bb" x="-20" y="-10" width="40" height="15" opacity="0"/><g class="bbart">${Ld.use('ui.bubble', 'default', { x: 0, y: 8.5 })}</g>` : `<rect class="bb" x="-20" y="-10" width="40" height="15" rx="4" fill="#fff" stroke="#22262B" stroke-width="1.3"/>`}<text class="bt" y="1.6" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, system-ui, sans-serif" fill="#22262B"></text></g>` +
         `<rect x="${-HIT_W / 2}" y="-66" width="${HIT_W}" height="72" fill="transparent"/>`;
       layer.appendChild(g);
-      view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bt: g.querySelector('.bt') };
+      view.pups[c.id] = { g, held: g.querySelector('.held'), heldKey: '', flip: g.querySelector('.flip'), ring: g.querySelector('.ring'), rp: g.querySelector('.rp'), bub: g.querySelector('.bub'), bb: g.querySelector('.bb'), bbart: g.querySelector('.bbart'), bbTint: '', bt: g.querySelector('.bt') };
       view.pos[c.id] = { x: idle.x, y: idle.y };
       view.pups[c.id].walker = Wk.create(g, idle);
 
@@ -794,6 +856,7 @@
 
     // Rolling: house lights down, spotlight on the burger, camera pushes in
     setAttr($('dim'), 'opacity', st.capture ? 0.5 : 0);
+    if ($('spotGlow')) setAttr($('spotGlow'), 'opacity', st.capture ? 0.55 : 0);
     $('setWrap').classList.toggle('pushin', !!st.capture);
 
     // Art table: the burger stack builds up while styling, then leaves with the art crew
@@ -910,6 +973,7 @@
         if (landHud && showBub && !(cs.state === 'BLOCKED' || (asking && questCrew === c.id))) showBub = false;
         setAttr(v.bub, 'opacity', showBub ? 1 : 0);
         setAttr(v.bb, 'fill', fill);
+        if (v.bbart && v.bbTint !== fill) { v.bbTint = fill; Ld.tint(v.bbart, fill === '#fff' ? null : fill); }
         setAttr(v.bt, 'fill', col);
         setText(v.bt, txt);
       }
@@ -1074,9 +1138,9 @@
     const s = st.shots[id];
     const up = !s.captured && cand === id;
     const canMove = !s.captured && st.stageShot !== id && i > 0 && !st.shots[st.priority[i - 1]].captured && st.stageShot !== st.priority[i - 1] && !(st.capture && st.capture.shot === st.priority[i - 1]);
-    const mDone = A.shotMark('done'), mPend = A.shotMark('pending');
+    const mDone = A.shotMark('done'), mPend = A.shotMark('pending'), mNext = A.shotMark('next');
     const mark = s.captured ? (mDone ? `<span class="sk done art">${mDone}</span>` : '<span class="sk done">✓</span>')
-      : up ? '<span class="sk up">▶</span>' : (mPend ? `<span class="sk art">${mPend}</span>` : '<span class="sk"></span>');
+      : up ? (mNext ? `<span class="sk up art">${mNext}</span>` : '<span class="sk up">▶</span>') : (mPend ? `<span class="sk art">${mPend}</span>` : '<span class="sk"></span>');
     const status = s.captured ? `<small class="ss done">Complete · ${s.quality}%</small>`
       : up ? `<small class="ss up">${st.capture && st.capture.shot === id ? 'Rolling' : 'In progress'}</small><span class="sbar"><i id="shotProg"></i></span>`
       : `<small class="ss">Pending${canMove ? ` <button class="mvup" type="button" data-move="${id}">shoot earlier</button>` : ''}</small>`;
@@ -1143,7 +1207,7 @@
       <div class="chaos-h"><span class="bang">!</span><b>Chaos!</b></div>
       <p class="chaos-t">${esc(ev.title)}</p>
       <p class="note">Re-aiming the lights and framing the macro are on hold until it's sorted.</p>
-      ${opts.map(o => `<button class="opt" type="button" data-choose="${o.id}">${A.ICON[o.id] || ''}<b>${esc(o.label)}</b><span>${line(o)}</span></button>`).join('')}`);
+      ${opts.map(o => `<button class="opt" type="button" data-choose="${o.id}">${A.chaosIcon(o.id)}<b>${esc(o.label)}</b><span>${line(o)}</span></button>`).join('')}`);
   }
 
   function showPause() {

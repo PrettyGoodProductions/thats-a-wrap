@@ -49,7 +49,7 @@ TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.ta
 TILES |= {f'hq.room.{r}' for r in ('edit', 'craft', 'gear', 'kitchen')}   # the batch 5 nine-slices too   # nine-slices are cropped to the paper
 
 # Nov 5: these darker cut-paper edges are intended (Tomas), so their ring warning is accepted
-CUT_EDGE_OK = {('set.flat-3', 'default'), ('ui.button-paper', 'default'), ('crew.held', 'gel-frame'), ('ui.action', 'stick')}
+CUT_EDGE_OK = {('set.flat-3', 'default'), ('ui.button-paper', 'default'), ('crew.held', 'gel-frame'), ('crew.held.gel-frame', 'default'), ('ui.action', 'stick')}
 
 problems, warnings = [], []
 info = {}

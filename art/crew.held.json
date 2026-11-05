@@ -1,0 +1,49 @@
+{
+  "scale": 6,
+  "shadow": false,
+  "note": "Batch 7: the pivot of each state is its grip point, where the hand holds it",
+  "states": {
+    "sandbag": {
+      "pivot": [
+        35.4,
+        10.8
+      ]
+    },
+    "hammer": {
+      "pivot": [
+        20.6,
+        40.1
+      ]
+    },
+    "gel-frame": {
+      "pivot": [
+        7.0,
+        51.1
+      ]
+    },
+    "light-head": {
+      "pivot": [
+        28.6,
+        53.5
+      ]
+    },
+    "lens-case": {
+      "pivot": [
+        30.1,
+        5.9
+      ]
+    },
+    "burger-plate": {
+      "pivot": [
+        16.2,
+        28.5
+      ]
+    },
+    "tweezers": {
+      "pivot": [
+        24.6,
+        11.6
+      ]
+    }
+  }
+}

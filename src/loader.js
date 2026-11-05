@@ -218,6 +218,11 @@
 
   // The image itself (a data URI) for HTML that shows a piece as a plain <img>: the logo, shot thumbnails, HUD icons.
   // null when no art was delivered, so callers keep their fallback
+  // The soft paper floor shadow under a person (batch 5 crew.shadow), or the drawn ellipse without it
+  function floorShadow() {
+    return has('crew.shadow', 'default') ? useEl('crew.shadow', 'default', { x: 0, y: 0 }) : '<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>';
+  }
+
   function src(id, state) {
     const st = state && has(id, state) ? state : has(id, 'default') ? 'default' : statesOf(id)[0];
     const r = st && resolve(id, st);
@@ -326,7 +331,7 @@
       return `<g class="wl-pose wl-r-${role}" data-part="${id}"${soleAttr} style="transform-origin:${f(def.anchor.x)}px ${f(def.anchor.y)}px">${inner}</g>`;
     };
     const hips = jointOf(ch, 'hips');
-    return `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
+    return floorShadow() +
       `<g class="bodyg wl-rig" data-character="${ch}" data-leg="${f(-jointOf(ch, 'hipFront').y)}">` +
       RIG_ORDER.legs.map(part).join('') +
       `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + RIG_ORDER.upper.map(part).join('') + `</g>` +
@@ -359,7 +364,7 @@
     const face = PUPPET.faceOrder.filter(n => wantFace.has(n)).map(n => variant('crew.face', n)).join('');
     const hair = has('crew.hair', o.top || 'default') ? variant('crew.hair', o.top || 'default') : variant('crew.hair', 'default');
 
-    return `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
+    return floorShadow() +
       `<g class="bodyg">` +
       posed('crew.leg-back') + posed('crew.leg-front') + posed('crew.arm-back') + posed('crew.torso') + posed('crew.head') +
       face + hair + posed('crew.arm-front', 'arm') +
@@ -380,7 +385,7 @@
   const slotDef = (id) => slotOf(id);
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, src, statesOf, resolve, defs, slot, slotDef, use, state, tint, nine, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, src, floorShadow, statesOf, resolve, defs, slot, slotDef, use, state, tint, nine, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
