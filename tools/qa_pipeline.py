@@ -15,6 +15,14 @@ from PIL import Image
 from io import BytesIO
 from playwright.sync_api import sync_playwright
 
+
+def _launch(p):
+    """Chrome if it is installed, else Playwright's own Chromium (the same engine)"""
+    try:
+        return p.chromium.launch(channel='chrome', args=['--no-sandbox'])
+    except Exception:
+        return p.chromium.launch(args=['--no-sandbox'])
+
 dist, out = sys.argv[1], sys.argv[2]
 # --char ro|mika|dani|lu picks which delivered character the puppet checks run on (default ro). Run once per character
 CH = sys.argv[sys.argv.index('--char') + 1] if '--char' in sys.argv else 'ro'
@@ -50,7 +58,7 @@ class Env:
         self.w, self.dpr = w, dpr
         self.unit = w / 360.0            # css px per set unit
         self.k = self.unit * dpr         # device px per set unit
-        self.ctx = p.chromium.launch(channel='chrome', args=['--no-sandbox']).new_context(viewport={'width': max(w, 400), 'height': 1000}, device_scale_factor=dpr)
+        self.ctx = _launch(p).new_context(viewport={'width': max(w, 400), 'height': 1000}, device_scale_factor=dpr)
         self.page = self.ctx.new_page()
         self.errors = []
         self.page.on('pageerror', lambda e: self.errors.append(str(e)))

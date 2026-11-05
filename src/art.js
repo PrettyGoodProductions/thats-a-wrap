@@ -70,7 +70,8 @@
       (L.glasses ? `<g fill="none" stroke="${INK}" stroke-width="1"><circle cx="-3.1" cy="-35.3" r="2.7"/><circle cx="3.3" cy="-35.3" r="2.7"/><path d="M-.4 -35.5h1"/></g>` : '') +
       (L.earring ? `<circle cx="-8.7" cy="-30.6" r="1.5" fill="#E7B84F" stroke="${INK}" stroke-width=".7"/>` : '');
     const tie = L.tie ? `<path d="M0 -26 l-1.6 2 l1.6 9 l1.6 -9z" fill="${L.tie}" stroke="${INK}" stroke-width=".7"/>` : '';
-    const prop = L.prop === 'latte' ? `<g transform="translate(11 -15)"><rect x="-2.5" y="-5" width="5" height="6" rx="1" fill="#F2E9D8" ${s} stroke-width=".8"/><rect x="-2.6" y="-3" width="5.2" height="2" fill="#8B5A3C"/></g>`
+    const prop = L.prop === 'latte' && loader() && loader().has('crafty.coffee') ? `<g transform="translate(11 -14)">${loader().use('crafty.coffee', 'default', { x: 0, y: 0 })}</g>`
+      : L.prop === 'latte' ? `<g transform="translate(11 -15)"><rect x="-2.5" y="-5" width="5" height="6" rx="1" fill="#F2E9D8" ${s} stroke-width=".8"/><rect x="-2.6" y="-3" width="5.2" height="2" fill="#8B5A3C"/></g>`
       : L.prop === 'mug' ? `<g transform="translate(11 -15)"><rect x="-2.6" y="-4.5" width="5.2" height="5.5" rx="1" fill="#D86B56" ${s} stroke-width=".8"/></g>` : '';
     return (
       `<ellipse cx="0" cy="0" rx="12" ry="3.2" fill="#000" opacity=".2"/>` +
@@ -166,7 +167,10 @@
   // The sauce pour: the delivered stream from the bottle nozzle, or the dashed code-drawn line
   function pourMarkup() {
     const L = loader();
-    const real = L && L.has('prop.sauce', 'stream') ? L.use('prop.sauce', 'stream', { x: 186, y: 100 }) : '';
+    // The stream starts at the bottle's nozzle. #pour sits in the hero spot group, so the spot's shift is taken back out
+    const nz = L && L.point('grip.rig-bottle', 'nozzle'), hs = heroSpot();
+    const at = nz ? { x: nz.x - hs.dx, y: nz.y - hs.dy } : { x: 186, y: 100 };
+    const real = L && L.has('prop.sauce', 'stream') ? L.use('prop.sauce', 'stream', at) : '';
     return `<g id="pour" opacity="0">${real || '<path class="pour" d="M186 100 q-3 6 -2 12" fill="none" stroke="#C8452F" stroke-width="3" stroke-linecap="round"/>'}</g>`;
   }
 
@@ -319,6 +323,44 @@
     return `<pattern id="${patId}" width="${w}" height="${h}" patternUnits="userSpaceOnUse"${y0 ? ` patternTransform="translate(0 ${y0})"` : ''}>${L.use(id, 'default', { x: 0, y: ay })}</pattern>`;
   }
   const hasArt = (id, st) => !!(loader() && loader().has(id, st || 'default'));
+
+  /*
+    Light beams (batch 5): the art is a wedge whose pivot is the narrow end (the light face) and whose natural length
+    is BEAM_LEN. The engine turns it from the light face toward the burger and stretches it to the distance.
+  */
+  const BEAM_LEN = 150, FILL_BEAM_LEN = 50;
+  function wedgeTransform(from, to, naturalLen) {
+    const dx = to[0] - from[0], dy = to[1] - from[1];
+    const len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    return `translate(${from[0].toFixed(1)} ${from[1].toFixed(1)}) rotate(${ang.toFixed(1)}) scale(${(len / naturalLen).toFixed(3)} 1)`;
+  }
+
+  // Sauce bowl: the bowl, and the sauce as its own layer that fades in while the art crew preps it (#bowlSauce)
+  function bowlMarkup() {
+    const L = loader();
+    if (!L || !L.has('art.sauce-bowl', 'empty')) {
+      return `<g id="bowl" transform="translate(62 162)">
+    <path d="M0 2 h16 q0 9 -8 9 q-8 0 -8 -9z" fill="#F2E9D8" stroke="${INK}" stroke-width="1.3"/>
+    <path id="bowlSauce" d="M2 4 h12 q-1 4 -6 4 q-5 0 -6 -4z" fill="#C8452F" opacity="0"/>
+  </g>`;
+    }
+    return `<g id="bowl">${L.use('art.sauce-bowl', 'empty')}<g id="bowlSauce" opacity="0">${L.has('art.sauce-bowl', 'fill') ? L.use('art.sauce-bowl', 'fill') : ''}</g></g>`;
+  }
+
+  // The monitor's screen inset: read off the delivered art (named points screen and screen2), else the code-drawn 52 x 32.
+  // The live view is drawn in a 98 x 60 box that starts at (-4, -6), so it is scaled to the screen's width and centered.
+  function monitorScreen() {
+    const L = loader();
+    const a = L && L.point('village.monitor', 'screen'), b = L && L.point('village.monitor', 'screen2');
+    const box = a && b ? { x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y } : { x: 198, y: 240, w: 52, h: 32 };
+    const k = box.w / 98;
+    const tx = box.x + 4 * k, ty = box.y + (box.h - 60 * k) / 2 + 6 * k;
+    const r = (n) => Math.round(n * 100) / 100;
+    return { x: r(box.x), y: r(box.y), w: r(box.w), h: r(box.h), view: `translate(${r(tx)} ${r(ty)}) scale(${k.toFixed(3)})`, rec: [r(box.x + box.w - 4.5), r(box.y + 4.5)] };
+  }
+  // Where the engine's own words sit on the delivered craft table's label plate and on the chair backs
+  const CRAFTY_LABEL = { x: 89, y: 311 };
+  const CHAIR_TEXT_Y = 308;
   // Floor dressing drawn from delivered art: three tape marks, and scuffs scattered over the floor
   function floorDressing(wide) {
     const L = loader();
@@ -335,6 +377,7 @@
     const s = S();
     const h = heroSpot();
     const moved = h.dx || h.dy;
+    const MON = monitorScreen();
     const shiftPts = (pts) => pts.map(([x, y], i) => (i >= 2 ? [x + h.dx, y + h.dy] : [x, y]).join(',')).join(' ');
     const heroOpen = moved ? `<g id="heroSpot" transform="translate(${h.dx} ${h.dy})">` : '';
     const heroClose = moved ? '</g>' : '';
@@ -414,36 +457,40 @@
     <g id="sweepRoll" filter="url(#cut)">${slot('grip.sweep', `<path id="sweep" d="M126 30 H234 V124 Q234 136 247 137.5 H113 Q126 136 126 124Z" fill="#E7B84F" ${s}/>`)}</g>
     ${slot('grip.sweep-tube', `<rect x="121" y="24" width="118" height="8" rx="4" fill="#8B6A43" ${s}/>`)}
   </g>
-  <g id="pc-flag" filter="url(#cut)"><path d="M262 200 V64" ${s} stroke-width="2"/><rect x="250" y="62" width="25" height="44" fill="${INK}"/><path d="M256 200 h12" ${s} stroke-width="3"/></g>
+  <g id="pc-flag" filter="url(#cut)">${slot('grip.flag', `<path d="M262 200 V64" ${s} stroke-width="2"/><rect x="250" y="62" width="25" height="44" fill="${INK}"/><path d="M256 200 h12" ${s} stroke-width="3"/>`)}</g>
   <g id="platform">${slot('grip.platform', `<g filter="url(#cut)">
     <path d="M128 140 L136 132 H240 L232 140Z" fill="#E58A70" ${s}/>
     <rect x="128" y="140" width="104" height="52" fill="url(#corrRed)" ${s}/>
     <path d="M232 140 L240 132 V184 L232 192Z" fill="#B85846" ${s}/>
   </g>`)}</g>
-  <g filter="url(#cut)">
+  <g filter="url(#cut)">${slot('grip.gear-pile', `
     <rect x="246" y="186" width="26" height="16" fill="#C2915A" ${s}/><rect x="250" y="174" width="18" height="12" fill="#B5864D" ${s}/>
-    <ellipse cx="282" cy="200" rx="10" ry="5" fill="#E7B84F" ${s}/>
+    <ellipse cx="282" cy="200" rx="10" ry="5" fill="#E7B84F" ${s}/>`)}
   </g>
 
   <!-- Rig for cheese pull / sauce pour -->
   <g id="rig" filter="url(#cut)">
-    <g id="rig-pole"><path d="M292 202 V54" ${s} stroke-width="2.4"/><path d="M282 202 l10 -14 l10 14" fill="none" ${s} stroke-width="2"/></g>
-    <g id="rig-arm"><path d="M292 58 H196" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/></g>
-    <g id="rig-fork"><path d="M197 58 V${74 + h.dy}" ${s} stroke-width="2"/><path d="M191 ${74 + h.dy} h12 M193 ${74 + h.dy} v8 M197 ${74 + h.dy} v8 M201 ${74 + h.dy} v8" ${s} stroke-width="1.4"/></g>
-    <g id="rig-bottle"><path d="M197 58 V${66 + h.dy}" ${s} stroke-width="2"/><g transform="${moved ? `translate(0 ${h.dy}) ` : ''}rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g></g>
+    <g id="rig-pole">${slot('grip.rig-pole', `<path d="M292 202 V54" ${s} stroke-width="2.4"/><path d="M282 202 l10 -14 l10 14" fill="none" ${s} stroke-width="2"/>`)}</g>
+    <g id="rig-arm">${slot('grip.rig-arm', `<path d="M292 58 H196" ${s} stroke-width="2.4"/><rect x="286" y="53" width="12" height="9" rx="2" fill="#5E5A52" ${s}/>`)}</g>
+    <g id="rig-fork">${slot('grip.rig-fork', `<path d="M197 58 V${74 + h.dy}" ${s} stroke-width="2"/><path d="M191 ${74 + h.dy} h12 M193 ${74 + h.dy} v8 M197 ${74 + h.dy} v8 M201 ${74 + h.dy} v8" ${s} stroke-width="1.4"/>`)}</g>
+    <g id="rig-bottle">${slot('grip.rig-bottle', `<path d="M197 58 V${66 + h.dy}" ${s} stroke-width="2"/><g transform="${moved ? `translate(0 ${h.dy}) ` : ''}rotate(28 196 82)"><rect x="189" y="66" width="14" height="26" rx="4" fill="#C8452F" ${s}/><rect x="193" y="92" width="6" height="6" fill="#F2E9D8" ${s}/><rect x="190" y="72" width="12" height="8" fill="#F2E9D8"/></g>`)}</g>
   </g>
 
-  <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
+  <polygon id="beam" points="${shiftPts([[96, 78], [76, 94], [154, 136], [222, 136]])}" fill="#FFE7A3" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"${hasArt('elec.beam') ? ' display="none"' : ''}/>
+  ${hasArt('elec.beam') ? `<g id="beamArt" opacity="0" style="mix-blend-mode:screen">${loader().use('elec.beam', 'default', { x: 0, y: 0 })}</g>` : ''}
   <g id="fillLight" opacity="0" filter="url(#cut)">${slot('elec.fill', `
     <path d="M240 206 V104 M230 206 l10 -12 l10 12" fill="none" ${s} stroke-width="2"/>
     <g transform="rotate(-16 240 100)"><rect x="226" y="88" width="28" height="20" rx="2" fill="#F4EEDF" ${s}/><rect id="fillFace" x="226" y="104" width="28" height="4" fill="#FFE7A3"/></g>`)}
   </g>
-  <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"/>
-  <g id="backLight" opacity="0">
+  <polygon id="fillBeam" points="${shiftPts([[228, 106], [236, 116], [206, 134], [190, 130]])}" fill="#FFF4D6" opacity="0" filter="url(#beamSoft)" style="mix-blend-mode:screen"${hasArt('elec.fill-beam') ? ' display="none"' : ''}/>
+  ${hasArt('elec.fill-beam') ? `<g id="fillBeamArt" opacity="0" style="mix-blend-mode:screen" transform="${wedgeTransform([232, 111], [198 + h.dx, 132 + h.dy], FILL_BEAM_LEN)}">${loader().use('elec.fill-beam', 'default', { x: 0, y: 0 })}</g>` : ''}
+  <g id="backLight" opacity="0">${slot('elec.backlight', `
     <path d="M214 -54 V-34" ${s} stroke-width="1.6"/><rect x="204" y="-34" width="20" height="12" rx="2" fill="#F4EEDF" ${s}/>
-    <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>
+    <polygon points="206,-22 222,-22 214,24" fill="#FFF4D6" opacity=".55"/>`)}
   </g>
-  ${heroOpen}<g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/></g>
+  ${heroOpen}<g id="sparkle" opacity="0" stroke="#fff" stroke-width="3" stroke-linecap="round">${hasArt('fx.sparkle', '01') && hasArt('fx.sparkle', '02')
+    ? `<g class="sprk a" stroke="none">${loader().use('fx.sparkle', '01')}</g><g class="sprk b" stroke="none">${loader().use('fx.sparkle', '02')}</g>`
+    : '<path d="M164 78 l-6 -11 M180 72 v-13 M196 78 l6 -11 M150 92 l-11 -4 M210 92 l11 -4"/>'}</g>
   <g id="prop" transform="translate(150 92)"></g>
   ${pourMarkup()}
   <g id="frameMarks" opacity="0">${slot('cam.frame-marks', `<g fill="none" stroke="#D86B56" stroke-width="2.6" stroke-linecap="round">
@@ -460,9 +507,9 @@
       <rect id="lightFace" x="48" y="86" width="48" height="6" fill="#7A7468"/>`)}
     </g>
   </g></g>
-  <g id="dead" opacity="0">
+  <g id="dead" opacity="0">${slot('elec.dead-fx', `
     <g stroke="#D86B56" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M98 64 l7 -4 l-2 6 l8 -3"/><path d="M48 60 l-6 -6 l1 6 l-7 -3"/></g>
-    <circle cx="88" cy="48" r="9" fill="#D86B56" stroke="${INK}" stroke-width="1.5"/><text x="88" y="53" text-anchor="middle" ${HAND} font-size="13" fill="#fff">!</text>
+    <circle cx="88" cy="48" r="9" fill="#D86B56" stroke="${INK}" stroke-width="1.5"/><text x="88" y="53" text-anchor="middle" ${HAND} font-size="13" fill="#fff">!</text>`)}
   </g>
 
   <!-- Camera: dolly track, camera on the dolly, lens swaps for close-ups -->
@@ -477,47 +524,47 @@
   </g></g>
 
   <!-- Art: styling table with the burger build, cheese pot and sauce bowl -->
-  <g filter="url(#cut)">
+  <g filter="url(#cut)">${slot('art.table', `
     <rect x="10" y="172" width="70" height="8" fill="#F2E9D8" ${s}/>
     <path d="M16 180 V206 M74 180 V206 M16 196 H74" ${s} stroke-width="2"/>
     <circle cx="16" cy="209" r="3.5" fill="${INK}"/><circle cx="74" cy="209" r="3.5" fill="${INK}"/>
-    <g ${s} stroke-width="1"><rect x="64" y="186" width="7" height="9" fill="#D86B56"/><rect x="54" y="186" width="7" height="9" fill="#7D9E91"/></g>
+    <g ${s} stroke-width="1"><rect x="64" y="186" width="7" height="9" fill="#D86B56"/><rect x="54" y="186" width="7" height="9" fill="#7D9E91"/></g>`)}
   </g>
   <g id="cartBurger" transform="translate(12 150) scale(${CART_SCALE})"></g>
   <g id="pot" transform="translate(44 156)">${potMarkup()}</g>
-  <g id="bowl" transform="translate(62 162)">
-    <path d="M0 2 h16 q0 9 -8 9 q-8 0 -8 -9z" fill="#F2E9D8" stroke="${INK}" stroke-width="1.3"/>
-    <path id="bowlSauce" d="M2 4 h12 q-1 4 -6 4 q-5 0 -6 -4z" fill="#C8452F" opacity="0"/>
-  </g>
+  ${bowlMarkup()}
 
   <!-- Craft table (idle crew hang out here) -->
-  ${wide ? `<g transform="${WIDE_CRAFTY}">` : ''}<g filter="url(#cut)">
+  ${wide ? `<g transform="${WIDE_CRAFTY}">` : ''}<g filter="url(#cut)">${slot('crafty.table', `
     <rect x="14" y="282" width="150" height="8" fill="#F2E9D8" ${s}/>
     <path d="M22 290 V318 M156 290 V318" ${s} stroke-width="2.2"/>
     <rect x="22" y="258" width="18" height="24" rx="3" fill="#9AA0A8" ${s}/><rect x="40" y="268" width="5" height="3" fill="${INK}"/>
     <path d="M58 276 h40 l-3 6 h-34z" fill="#F4B6C2" ${s}/><rect x="56" y="262" width="44" height="14" fill="#F4B6C2" ${s} transform="skewX(-10)"/>
     <g fill="#E3A85A" ${s} stroke-width="1"><circle cx="66" cy="274" r="4"/><circle cx="76" cy="274" r="4"/><circle cx="86" cy="274" r="4"/></g>
-    <g ${s} stroke-width="1"><rect x="112" y="271" width="8" height="11" rx="1" fill="#E7B84F"/><rect x="123" y="271" width="8" height="11" rx="1" fill="#D86B56"/><rect x="134" y="271" width="8" height="11" rx="1" fill="#F2E9D8"/></g>
+    <g ${s} stroke-width="1"><rect x="112" y="271" width="8" height="11" rx="1" fill="#E7B84F"/><rect x="123" y="271" width="8" height="11" rx="1" fill="#D86B56"/><rect x="134" y="271" width="8" height="11" rx="1" fill="#F2E9D8"/></g>`)}
   </g>
-  <text x="90" y="303" text-anchor="middle" ${HAND} font-size="9" fill="${INK}" opacity=".7">CRAFTY</text>${wide ? '</g>' : ''}
+  <text x="${hasArt('crafty.table') ? CRAFTY_LABEL.x : 90}" y="${hasArt('crafty.table') ? CRAFTY_LABEL.y : 303}" text-anchor="middle" ${HAND} font-size="9" fill="${INK}" opacity=".7">CRAFTY</text>${wide ? '</g>' : ''}
 
   <!-- Video village: monitor, client and agency -->
-  ${wide ? `<g transform="${WIDE_VILLAGE}">` : ''}<g filter="url(#cut)">
+  ${wide ? `<g transform="${WIDE_VILLAGE}">` : ''}<g filter="url(#cut)">${slot('village.monitor', `
     <path d="M224 334 V276 M212 334 h24" ${s} stroke-width="2.2"/>
     <rect x="194" y="236" width="60" height="40" rx="3" fill="#2F3440" ${s}/>
-    <rect x="198" y="240" width="52" height="32" fill="#151820"/>
+    <rect x="198" y="240" width="52" height="32" fill="#151820"/>`)}
   </g>
-  <!-- The live view is 98 x 60 at scale .53, which is exactly the 52 x 32 screen inset; the clip keeps it inside -->
-  <clipPath id="monClip"><rect x="198" y="240" width="52" height="32"/></clipPath>
-  <g clip-path="url(#monClip)"><g id="monView" transform="translate(200.12 243.18) scale(.53)"></g></g>
-  <circle id="monRec" cx="245" cy="245" r="2.4" fill="#FF4B3A" opacity="0"/>
+  <!-- The live view is 98 x 60 and is scaled to the screen inset (52 x 32 on the code-drawn monitor, read off the art when delivered); the clip keeps it inside -->
+  <clipPath id="monClip"><rect x="${MON.x}" y="${MON.y}" width="${MON.w}" height="${MON.h}"/></clipPath>
+  <g clip-path="url(#monClip)"><g id="monView" transform="${MON.view}"></g></g>
+  <circle id="monRec" cx="${MON.rec[0]}" cy="${MON.rec[1]}" r="2.4" fill="#FF4B3A" opacity="0"/>
   <g transform="translate(286 318)"><g transform="scale(1.2)">${puppet(CLIENT)}</g></g>
   <g transform="translate(334 320)"><g transform="scale(1.2)">${puppet(AGENCY)}</g></g>
-  <g filter="url(#cut)">
+  ${hasArt('village.chair')
+    ? `<g filter="url(#cut)">${loader().use('village.chair', 'default', { x: 286, y: 340 })}${loader().use('village.chair', 'default', { x: 334, y: 340 })}</g>
+  <g ${UI} font-weight="700" font-size="7.5" fill="#fff" text-anchor="middle"><text x="286" y="${CHAIR_TEXT_Y}">CLIENT</text><text x="334" y="${CHAIR_TEXT_Y}">AGENCY</text></g>`
+    : `<g filter="url(#cut)">
     <path d="M270 340 l8 -24 M302 340 l-8 -24 M318 340 l8 -24 M350 340 l-8 -24" ${s} stroke-width="2"/>
     <rect x="268" y="296" width="36" height="16" fill="#D86B56" ${s}/><text x="286" y="308" text-anchor="middle" ${UI} font-weight="700" font-size="7.5" fill="#fff">CLIENT</text>
     <rect x="316" y="298" width="36" height="16" fill="#22262B" ${s}/><text x="334" y="310" text-anchor="middle" ${UI} font-weight="700" font-size="7.5" fill="#fff">AGENCY</text>
-  </g>
+  </g>`}
   <g id="clientBub" opacity="0">
     <path d="M232 228 h108 a4 4 0 0 1 4 4 v20 a4 4 0 0 1 -4 4 h-46 l-8 8 l-1 -8 h-53 a4 4 0 0 1 -4 -4 v-20 a4 4 0 0 1 4 -4z" fill="#fff" ${s} stroke-width="1.3"/>
     <text id="clientText" x="286" y="245" text-anchor="middle" ${UI} font-weight="700" font-size="8.5" fill="${INK}"></text>
@@ -590,19 +637,20 @@
 
   function room(id, def, owned, affordable, cost) {
     const r = ROOMS[id];
+    const roomArt = !owned && hasArt(`hq.room.${id}`, 'for-rent') ? loader().use(`hq.room.${id}`, 'for-rent') : '';
     const wall = owned ? { edit: '#3E4C63', craft: '#F2D7A6', gear: '#D8D2C4', kitchen: '#CFE0D6' }[id] : '#4A4743';
     const floor = owned ? '#B98552' : '#3A3734';
     const s = S(1.6);
     const body = owned ? roomFurniture(id) :
-      `<path d="M30 30 h92 v40 h-92z" fill="#5E5A52" opacity=".5"/>
+      `${roomArt ? '' : '<path d="M30 30 h92 v40 h-92z" fill="#5E5A52" opacity=".5"/>'}
        <g transform="rotate(-4 76 50)"><rect x="34" y="30" width="84" height="40" fill="#F2E9D8" ${s}/>
        <text x="76" y="48" text-anchor="middle" ${HAND} font-size="13" fill="#D86B56">FOR RENT</text>
        <text x="76" y="63" text-anchor="middle" ${UI} font-weight="700" font-size="9.5" fill="${INK}">$${cost.toLocaleString('en-US')}</text></g>
        ${affordable ? `<circle cx="132" cy="22" r="9" fill="#E7B84F" ${s}/><text x="132" y="26" text-anchor="middle" ${HAND} font-size="11" fill="${INK}">!</text>` : ''}`;
     return `<g class="room ${owned ? 'owned' : 'locked'}${affordable ? ' affordable' : ''}" data-room="${id}" transform="translate(${r.x} ${r.y})">
-      <rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>
+      ${roomArt ? `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>${roomArt}` : `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>
       ${owned ? `<ellipse cx="${r.w / 2}" cy="6" rx="34" ry="10" fill="#FFE7A3" opacity=".45" filter="url(#glow)"/>` : ''}
-      <rect y="${r.h - 14}" width="${r.w}" height="14" fill="${floor}" ${s}/>
+      <rect y="${r.h - 14}" width="${r.w}" height="14" fill="${floor}" ${s}/>`}
       <g filter="url(#cut)">${body}</g>
       <g transform="translate(6 -6) rotate(-2)"><rect width="${def.name.length * 5.6 + 14}" height="15" fill="${owned ? '#F2E9D8' : '#CDBFA5'}" ${s} stroke-width="1.2"/>
       <text x="7" y="11" ${UI} font-weight="700" font-size="9" fill="${INK}">${def.name.toUpperCase()}</text></g>
@@ -629,12 +677,13 @@
   <!-- Building -->
   <rect x="12" y="44" width="336" height="340" fill="url(#brick)" ${s} filter="url(#cut)"/>
   <rect x="8" y="40" width="344" height="10" fill="#C4644D" ${s}/>
-  <g filter="url(#cut)">
+  ${hasArt('hq.sign', 'on') ? `<g filter="url(#cut)"><path d="M100 36 V44 M260 36 V44" ${s}/>${hasArt('hq.sign', 'off') ? `<g>${loader().use('hq.sign', 'off')}<g class="bulbs">${loader().use('hq.sign', 'on')}</g></g>` : loader().use('hq.sign', 'on')}</g>
+  <text x="180" y="${name.length > 18 ? 28 : 29.5}" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12 : 14.5}" fill="${INK}">${name}</text>` : `<g filter="url(#cut)">
     <rect x="70" y="6" width="220" height="34" fill="#22262B" ${s}/>
     <text x="180" y="29" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12.5 : 15}" fill="#E7B84F">${name}</text>
     <g fill="#FFE7A3">${Array.from({ length: 12 }, (_, i) => `<circle cx="${78 + i * 18.6}" cy="10" r="1.7"/><circle cx="${78 + i * 18.6}" cy="36" r="1.7"/>`).join('')}</g>
     <path d="M100 40 V44 M260 40 V44" ${s}/>
-  </g>
+  </g>`}
   ${rooms}
 
   <!-- Lobby: job board, door, front desk -->
@@ -720,7 +769,7 @@
   }
 
   root.WrapArt = {
-    DEPT_COLOR, heroSpot, keyLens, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
+    DEPT_COLOR, heroSpot, keyLens, wedgeTransform, BEAM_LEN, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
     globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
     deptIcon, ICON, starSVG, pauseSVG, shotMark, clapperSVG,
   };

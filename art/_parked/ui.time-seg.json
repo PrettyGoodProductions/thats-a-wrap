@@ -1,0 +1,30 @@
+{
+  "pivot": [
+    31.1,
+    26.1
+  ],
+  "scale": 4,
+  "states": {
+    "empty": {
+      "pivot": [
+        31.1,
+        26.1
+      ],
+      "scale": 4
+    },
+    "filled": {
+      "pivot": [
+        31.1,
+        26.1
+      ],
+      "scale": 4
+    },
+    "overtime": {
+      "pivot": [
+        31.0,
+        26.1
+      ],
+      "scale": 4
+    }
+  }
+}

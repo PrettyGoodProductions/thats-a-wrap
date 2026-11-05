@@ -30,7 +30,8 @@ function parseName(name) {
   if (!m) return null;
   const segs = m[1].split('.');
   const isChar = segs[0] === 'crew' && segs.length >= 3 && CHARACTERS[segs[1]];
-  const idLen = isChar ? 3 : 2;
+  const isRoom = segs[0] === 'hq' && segs[1] === 'room' && segs.length >= 3;   // hq.room.<room>[.<state>]: a three-part ID like a character's
+  const idLen = isChar || isRoom ? 3 : 2;
   if (segs.length < idLen || segs.length > idLen + 1) return null;
   if (!segs.every((sg, i) => SEG[i === idLen ? 2 : Math.min(i, 1)].test(sg))) return null;
   return { id: segs.slice(0, idLen).join('.'), state: segs[idLen] || null, hint: m[2], fmt: m[3] };
@@ -39,6 +40,7 @@ const settingsId = (name) => {
   const segs = name.split('.');
   if (segs.length === 2 && segs.every((sg, i) => SEG[i].test(sg))) return { id: name, char: segs[0] === 'crew' && CHARACTERS[segs[1]] ? segs[1] : null };
   if (segs.length === 3 && segs[0] === 'crew' && CHARACTERS[segs[1]] && /^[a-z0-9-]+$/.test(segs[2])) return { id: name, char: null };
+  if (segs.length === 3 && segs[0] === 'hq' && segs[1] === 'room' && /^[a-z0-9-]+$/.test(segs[2])) return { id: name, char: null };
   return null;
 };
 const STATE_KEYS = SETTING_KEYS.filter(k => k !== 'states');

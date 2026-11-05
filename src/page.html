@@ -247,6 +247,14 @@ body.picking .sbadge.mk-go circle:nth-child(2){stroke-width:2.4}
 .steam path{animation:steam 1.2s steps(3) infinite}
 .steamf{animation:steamf 1.2s steps(3) infinite}
 @keyframes steamf{33%{transform:translateY(-1.5px)}66%{transform:translateY(-3px)}}
+/* Sparkle: two delivered frames, shown one after the other while the hero shot rolls */
+.sprk.a{animation:sprkA .5s steps(1) infinite}
+.sprk.b{animation:sprkB .5s steps(1) infinite}
+@keyframes sprkA{0%{opacity:1}50%{opacity:0}}
+@keyframes sprkB{0%{opacity:0}50%{opacity:1}}
+/* HQ marquee: the lit bulbs flash over the dark ones */
+.bulbs{animation:bulbs 1.6s steps(1) infinite}
+@keyframes bulbs{0%{opacity:1}70%{opacity:0}85%{opacity:1}}
 .clap{opacity:0}
 .clap.go{animation:clapIn .9s steps(6,end)}
 .clap.go .stick{animation:clapStick .9s steps(4,end); transform-box:fill-box; transform-origin:0% 100%}
@@ -460,6 +468,7 @@ body.lab-land #modal[data-kind="chaos"] .opt span{font-size:12px}
 @media (prefers-reduced-motion:reduce){
   .pup.walking .wl-rig,.pup.walking .wl-pose,.pup.walking .wl-upper,.pup.working .wl-rig,.pup.working .wl-pose,.pup.working .wl-upper{animation:none}
   .pup{transition:none} .pup.working .bodyg,.pup.working .arm,.clapbtn.on svg,.steam path,.steamf,.pour,.ti.working,.pup.ask .bb,.cb.ask{animation:none}
+  .sprk.a,.bulbs{animation:none} .sprk.b{display:none}
 }
 </style>
 

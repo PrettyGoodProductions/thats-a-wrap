@@ -465,3 +465,16 @@ test('flip mirrors a piece about its pivot, and per-state offsets still apply', 
   fs.writeFileSync(path.join(bad, 'elec.keylight-head.json'), JSON.stringify({ flip: 'yes' }));
   assert.ok(buildPack(bad).errors.some(e => /flip must be true or false/.test(e)));
 });
+
+test('batch 5: three-part room ids and parked pieces', () => {
+  const d = tmp();
+  const png = fs.readdirSync(FIXTURES).find(f => f.endsWith('.png'));
+  fs.copyFileSync(path.join(FIXTURES, png), path.join(d, 'hq.room.edit.for-rent@6x.png'));
+  fs.copyFileSync(path.join(FIXTURES, png), path.join(d, 'hq.sign.off@6x.png'));
+  fs.mkdirSync(path.join(d, '_parked'));
+  fs.copyFileSync(path.join(FIXTURES, png), path.join(d, '_parked', 'hq.shell@3.6x.png'));
+  const r = load(d);
+  assert.ok(Loader.has('hq.room.edit'), 'room art is found by its room id');
+  assert.ok(Loader.has('hq.sign'));
+  assert.ok(!Loader.has('hq.shell'), 'files under _parked are not packed');
+});

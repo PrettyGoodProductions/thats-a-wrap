@@ -90,6 +90,33 @@
     'ui.icon-pause': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [24, 26], shadow: false, initial: 'default' },
     'ui.shot-status': { anchor: { x: 0, y: 0 }, pivot: 'center', size: [22, 22], shadow: false, initial: 'done', states: ['done', 'pending'] },
 
+    // Batch 5 (Nov 5): the pieces the manifest marked Ready. Positions are the manifest's. Pivots come from the settings files.
+    // Grip: flag on its C-stand (the tripod is wider than the manifest's 26: fitted by height), gear pile, and the rig.
+    'grip.flag': { anchor: { x: 262, y: 202 }, pivot: 'bottom-center', size: [38, 140], shadow: false, initial: 'default' },
+    'grip.gear-pile': { anchor: { x: 246, y: 202 }, pivot: 'bottom-left', size: [46, 30], shadow: false, initial: 'default' },
+    // The pole is fitted so its clamp lands on (292, 58), where the arm, fork and bottle hang. That makes it 162 tall, not 150
+    'grip.rig-pole': { anchor: { x: 292, y: 202 }, pivot: 'bottom-center', size: [46, 162], shadow: false, initial: 'default' },
+    'grip.rig-arm': { anchor: { x: 292, y: 58 }, pivot: 'center', size: [100, 10], shadow: false, initial: 'default' },
+    'grip.rig-fork': { anchor: { x: 197, y: 58 }, pivot: 'top-center', size: [8, 30], shadow: false, initial: 'default' },
+    'grip.rig-bottle': { anchor: { x: 197, y: 58 }, pivot: 'center', size: [14, 32], shadow: false, initial: 'default' },
+    // Electric: the beams are wedges the engine turns and stretches from the light face to the burger (the anchor is moved by a transform)
+    'elec.beam': { anchor: { x: 0, y: 0 }, pivot: 'center-left', size: [150, 60], shadow: false, initial: 'default' },
+    'elec.fill-beam': { anchor: { x: 0, y: 0 }, pivot: 'center-left', size: [50, 30], shadow: false, initial: 'default' },
+    'elec.backlight': { anchor: { x: 214, y: -54 }, pivot: 'top-center', size: [20, 60], shadow: false, initial: 'default' },
+    'elec.dead-fx': { anchor: { x: 72, y: 52 }, pivot: 'center', size: [60, 40], shadow: false, initial: 'default' },
+    // Art department: styling cart, sauce bowl (the sauce is its own layer that fades in), sparkle (two frames, flipped by CSS)
+    'art.table': { anchor: { x: 10, y: 212 }, pivot: 'bottom-left', size: [72, 40], shadow: false, initial: 'default' },
+    'art.sauce-bowl': { anchor: { x: 70, y: 173 }, pivot: 'bottom-center', size: [16, 10], shadow: false, initial: 'empty', states: ['empty', 'fill'] },
+    'fx.sparkle': { anchor: { x: 180, y: 110 }, pivot: 'center', size: [80, 40], shadow: false, initial: '01', states: ['01', '02'] },
+    // Video village and the craft table. The coffee cup is the Agency's latte for now
+    'village.monitor': { anchor: { x: 224, y: 334 }, pivot: 'bottom-center', size: [60, 98], shadow: false, initial: 'default' },
+    'village.chair': { anchor: { x: 286, y: 340 }, pivot: 'bottom-center', size: [36, 44], shadow: false, initial: 'default' },
+    'crafty.table': { anchor: { x: 14, y: 258 }, pivot: 'top-left', size: [150, 60], shadow: false, initial: 'default' },
+    'crafty.coffee': { anchor: { x: 0, y: 0 }, pivot: 'bottom-center', size: [5, 7], shadow: false, initial: 'default' },
+    // HQ (drawn in the office's 360 x 470 frame). The Edit Bay's anchor is the room's own corner. hq.shell is parked: its openings do not match the rooms
+    'hq.sign': { anchor: { x: 180, y: 23 }, pivot: 'center', size: [220, 34], shadow: false, initial: 'on', states: ['off', 'on'] },
+    'hq.room.edit': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
+
     'cam.track': { anchor: { x: 232, y: 212 }, pivot: 'top-left', size: [126, 12], shadow: true, initial: 'default' },
     'cam.camera': { anchor: { x: 304, y: 210 }, pivot: 'bottom-center', size: [54, 90], shadow: false, initial: 'default' },
     'cam.lens': { anchor: { x: 289, y: 138 }, pivot: 'center', size: [19, 14], shadow: false, initial: 'standard', states: ['standard', 'macro'] },

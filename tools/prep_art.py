@@ -11,9 +11,9 @@ from PIL import Image
 import numpy as np
 from scipy import ndimage as ndi
 
-map_path, src_dir, out_dir = sys.argv[1:4]
+map_path, src_dir, base_out = sys.argv[1:4]
 spec = json.load(open(map_path))
-os.makedirs(out_dir, exist_ok=True)
+os.makedirs(base_out, exist_ok=True)
 
 def core_mask(im, keep_alpha=64, grow=10):
     """For a delivery with a wide translucent haze around the art: keep only the main piece plus a thin
@@ -86,6 +86,9 @@ def clean_alpha(im):
 
 report = []
 for pid, p in spec['pieces'].items():
+    # "dir": "_parked" puts a piece (and its settings file) in a subfolder; the packer skips folders starting with _
+    out_dir = os.path.join(base_out, p['dir']) if p.get('dir') else base_out
+    os.makedirs(out_dir, exist_ok=True)
     k = p['target'] / p['native']
     sizes = {}
     state_cfg = {}
@@ -140,8 +143,8 @@ for pid, p in spec['pieces'].items():
     report.append((pid, sizes))
 
 for cid, c in spec.get('characters', {}).items():
-    json.dump(c, open(os.path.join(out_dir, cid + '.json'), 'w'), indent=2)
-    open(os.path.join(out_dir, cid + '.json'), 'a').write('\n')
+    json.dump(c, open(os.path.join(base_out, cid + '.json'), 'w'), indent=2)
+    open(os.path.join(base_out, cid + '.json'), 'a').write('\n')
 
 tot = 0
 for pid, sizes in report:

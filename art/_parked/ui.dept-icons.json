@@ -1,0 +1,37 @@
+{
+  "pivot": [
+    69.1,
+    39.7
+  ],
+  "scale": 4,
+  "states": {
+    "camera": {
+      "pivot": [
+        69.1,
+        39.7
+      ],
+      "scale": 4
+    },
+    "lighting": {
+      "pivot": [
+        50.7,
+        69.2
+      ],
+      "scale": 4
+    },
+    "fix": {
+      "pivot": [
+        69.2,
+        68.5
+      ],
+      "scale": 4
+    },
+    "art": {
+      "pivot": [
+        64.8,
+        69.2
+      ],
+      "scale": 4
+    }
+  }
+}

@@ -45,8 +45,33 @@ PROBE = """() => {
       working: !!(pup && pup.classList.contains('working') && !pup.classList.contains('walking') && pup.getAnimations({ subtree: true }).some(a => a.animationName === 'rigReach')),
     };
   }
+  // Batch 5 (Nov 5): the pieces the manifest marked Ready. A piece counts as "up" when its art is shown, resolves to a real size,
+  // and the element the simulation drives is visible (opacity above zero)
+  const artUp = id => { const s = slot(id); return !!s && [...s.querySelectorAll(':scope > use')].some(u => shown(u) && resolves(u)); };
+  const op = el => { let o = 1; for (let n = el; n && n.nodeType === 1; n = n.parentNode) { const v = n.getAttribute && n.getAttribute('opacity'); if (v !== null && v !== undefined) o *= parseFloat(v); } return o; };
+  const drivenUp = (elId, art) => { const el = document.getElementById(elId); return !!el && shown(el) && op(el) > 0.05 && art(el); };
+  const useUp = el => [...el.querySelectorAll('use')].some(u => shown(u) && resolves(u));
+  const hrefCount = key => [...document.querySelectorAll('#setSvg use')].filter(u => (u.getAttribute('href') || '') === '#wl-' + key && shown(u) && resolves(u)).length;
+  const b5 = {
+    flag: drivenUp('pc-flag', () => artUp('grip.flag')),
+    rigPole: drivenUp('rig-pole', () => artUp('grip.rig-pole')),
+    rigArm: drivenUp('rig-arm', () => artUp('grip.rig-arm')),
+    rigFork: drivenUp('rig-fork', () => artUp('grip.rig-fork')),
+    rigBottle: drivenUp('rig-bottle', () => artUp('grip.rig-bottle')),
+    beam: drivenUp('beamArt', useUp),
+    fillBeam: drivenUp('fillBeamArt', useUp),
+    backlight: drivenUp('backLight', () => artUp('elec.backlight')),
+    deadFx: drivenUp('dead', () => artUp('elec.dead-fx')),
+    sparkle: drivenUp('sparkle', el => !!el.querySelector('.sprk.a use') && !!el.querySelector('.sprk.b use') && el.querySelector('.sprk.a').getAnimations().length > 0 && el.querySelector('.sprk.b').getAnimations().length > 0),
+    bowlSauce: drivenUp('bowlSauce', useUp),
+    // always on the set once drawn
+    cart: artUp('art.table'), gear: artUp('grip.gear-pile'), monitor: artUp('village.monitor'), craft: artUp('crafty.table'),
+    chairs: hrefCount('village-chair--default'), coffee: hrefCount('crafty-coffee--default'), bowl: hrefCount('art-sauce-bowl--empty'),
+    // the live view is clipped to the delivered screen and the clip really is the art's inset
+    monitorClip: (() => { const r = document.querySelector('#monClip rect'); return r ? [+r.getAttribute('width'), +r.getAttribute('height')] : null; })(),
+  };
   return {
-    chars,
+    chars, b5,
     slots: document.querySelectorAll('[data-slot]').length,
     platformShown: stateShown('grip.platform', 'default') && shown(document.getElementById('platform')),
     keyOff: stateShown('elec.keylight-head', 'off'),
@@ -82,7 +107,10 @@ def snap(page, name, sel='#setWrap'):
         errors.append(f'screenshot {name} failed: {e}')
 
 with sync_playwright() as p:
-    b = p.chromium.launch(channel='chrome', args=['--no-sandbox'])
+    try:
+        b = p.chromium.launch(channel='chrome', args=['--no-sandbox'])
+    except Exception:
+        b = p.chromium.launch(args=['--no-sandbox'])   # Chrome is not installed here: Playwright's own Chromium is the same engine
     # The shoot plays in landscape. --upright plays it on an upright phone, where the game turns the shoot sideways
     vw, vh = (390, 844) if '--upright' in sys.argv else (844, 390)
     ctx = b.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=2, has_touch=True)
@@ -143,6 +171,7 @@ with sync_playwright() as p:
 
     final = {}
     peak = {'cartLayers': 0, 'usesResolved': 0, 'usesShown': 0, 'puppets': 0, 'workArm': 0, 'idleArm': 0, 'rigs': 0}
+    b5seen = {}   # batch 5 piece -> highest value seen
     deadline = time.time() + 150
     chaos_taken = False
     walked, worked = set(), set()
@@ -151,6 +180,13 @@ with sync_playwright() as p:
         final = pr
         for k in peak:
             peak[k] = max(peak[k], pr[k])
+        for k, v in pr['b5'].items():
+            if k == 'monitorClip': b5seen[k] = v; continue
+            b5seen[k] = max(b5seen.get(k, 0), int(v))
+        for k, name in (('flag', '30-flag'), ('rigPole', '31-rig-pole'), ('rigArm', '32-rig-arm'), ('rigFork', '33-rig-fork-cheese'), ('rigBottle', '34-rig-bottle-sauce'),
+                        ('beam', '35-key-beam'), ('fillBeam', '36-fill-beam'), ('backlight', '37-backlight'), ('deadFx', '38-dead-fx'),
+                        ('sparkle', '39-sparkle'), ('bowlSauce', '40-bowl-sauce')):
+            if pr['b5'][k]: snap(page, name)
         if pr['platformShown']: snap(page, '10-platform')
         if pr['keyOn']: snap(page, '11-key-on')
         if pr['keyOff'] and pr['slots']: seen.setdefault('key-off-seen', round(time.time() - t0, 1))
@@ -174,12 +210,20 @@ with sync_playwright() as p:
     page.screenshot(path=os.path.join(out_dir, '99-wrap.png'))
     b.close()
 
-result = {'expect': expect, 'notes': notes, 'walked': sorted(walked), 'worked': sorted(worked), 'seconds': round(time.time() - t0, 1), 'seenAt': seen, 'peak': peak, 'hire': hire_probe, 'last': final, 'errors': errors[:20]}
+result = {'b5': b5seen, 'expect': expect, 'notes': notes, 'walked': sorted(walked), 'worked': sorted(worked), 'seconds': round(time.time() - t0, 1), 'seenAt': seen, 'peak': peak, 'hire': hire_probe, 'last': final, 'errors': errors[:20]}
 print(json.dumps(result, indent=2))
 
 problems = []
 if errors: problems.append('page logged errors')
 if not final.get('wrap'): problems.append('shoot never reached the wrap report')
+if expect in ('ro', 'crew'):
+    # Batch 5: every piece must have been seen up (its art shown, resolved, and driven visible by the simulation) at some point
+    for k in ('flag', 'rigPole', 'rigArm', 'rigFork', 'rigBottle', 'beam', 'fillBeam', 'backlight', 'deadFx', 'sparkle', 'bowlSauce'):
+        if not b5seen.get(k): problems.append(f'batch 5 piece never seen up on the set: {k}')
+    for k, want in (('cart', 1), ('gear', 1), ('monitor', 1), ('craft', 1), ('chairs', 2), ('coffee', 1), ('bowl', 1)):
+        if b5seen.get(k, 0) < want: problems.append(f'batch 5 piece missing from the set: {k} (saw {b5seen.get(k, 0)}, want {want})')
+    mc = b5seen.get('monitorClip')
+    if not mc or abs(mc[0] / mc[1] - 1.85) > 0.1: problems.append(f'monitor live view is not clipped to the delivered screen inset: {mc}')
 if expect == 'ro':
     for need in ('10-platform', '11-key-on', '15-key-dead', 'key-off-seen', '16-ro-walking', '17-ro-working'):
         if need not in seen: problems.append(f'never saw: {need}')

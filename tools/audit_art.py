@@ -15,6 +15,7 @@ from scipy import ndimage as ndi
 
 args = sys.argv[1:]
 files = []   # (piece, state, path, px_per_unit)
+cfg_dirs = {}   # piece -> folder holding its settings file (art/ or a subfolder like art/_parked/)
 if '--map' in args:
     spec = json.load(open(args[args.index('--map') + 1]))
     src = args[args.index('--src') + 1]
@@ -23,20 +24,26 @@ if '--map' in args:
             files.append((pid, st, os.path.join(src, fn), p['native']))
 else:
     d = args[0]
-    for path in sorted(glob.glob(os.path.join(d, '*.png'))):
+    for path in sorted(glob.glob(os.path.join(d, '**', '*.png'), recursive=True)):
         m = re.match(r'^(crew\.[a-z0-9]+\.[a-z0-9-]+|[a-z0-9]+\.[a-z0-9-]+)(?:\.([a-z0-9_-]+))?(?:@([\d.]+)x)?\.png$', os.path.basename(path))
         if not m: continue
         pid, st, hint = m.group(1), m.group(2) or 'default', m.group(3)
-        cfgp = os.path.join(d, pid + '.json')
+        cfgp = os.path.join(os.path.dirname(path), pid + '.json')
         cfg = json.load(open(cfgp)) if os.path.exists(cfgp) else {}
         scale = cfg.get('scale') or (float(hint) if hint else 3)
         files.append((pid, st, path, scale))
+        cfg_dirs[pid] = os.path.dirname(path)
 
 # Pieces whose "states" are separate parts (layers of a stack, strands, a lens in two lengths), each on its own
 # canvas by design, so the one-canvas check below does not apply to them
-SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens', 'ui.shot-status'}
+SEPARATE_PARTS = {'art.burger-build', 'art.cheese-pot', 'prop.cheese', 'prop.sauce', 'cam.lens', 'ui.shot-status',
+                  # batch 5: different items sharing a piece ID (icons, steam frames, held tools, the clapper stick, bowl and its fill, sparkle frames)
+                  'art.sauce-bowl', 'fx.sparkle', 'fx.steam', 'crew.held', 'ui.action', 'ui.crew-ring', 'ui.dept-icons', 'ui.chaos-icons'}
+# Soft pieces (the spotlight mask and the floor shadow) have a gradient edge by design
+SOFT = {'fx.spotlight', 'crew.shadow'}
 # Seamless tiles run to the edge of their canvas on purpose
-TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.tag', 'ui.crew-card', 'ui.button-paper', 'ui.polaroid'}   # nine-slices are cropped to the paper
+TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.tag', 'ui.crew-card', 'ui.button-paper', 'ui.polaroid',
+         'ui.card', 'ui.quest', 'ui.meter-track', 'ui.meter-fill'}   # the batch 5 nine-slices too   # nine-slices are cropped to the paper
 
 problems, warnings = [], []
 info = {}
@@ -60,10 +67,11 @@ for pid, st, path, scale in files:
     kb = os.path.getsize(path) / 1024
     info[(pid, st)] = dict(al=al > 128, scale=scale)
     flags = []
+    soft = pid in SOFT   # a soft glow or shadow fades out by design: no hard edge, so no ring or far-pixel checks
     if specks: flags.append(f'{specks} stray speck(s)')
-    if far: flags.append(f'{far} faint px far from the art')
+    if far and not soft: flags.append(f'{far} faint px far from the art')
     if haze > 0.01 * al.size: flags.append(f'{haze} haze px')
-    if abs(ring) > 25: flags.append(f'edge ring {ring:+.0f} luminance')
+    if abs(ring) > 25 and not soft: flags.append(f'edge ring {ring:+.0f} luminance')
     if min(margins) < 1 and pid not in TILES: flags.append('art touches the canvas edge (clipped?)')
     label = f'{pid}.{st}' if st != 'default' else pid
     print(f'{label:28s} {im.width:5d}x{im.height:<5d} {scale:6.2f}px/u  {im.width/scale:6.1f}x{im.height/scale:<5.1f}u  {kb:6.0f} KB  margin(px) {tuple(int(m) for m in margins)}  specks {specks} far {far} haze {haze} ring {ring:+.0f}' + ('  <-- ' + '; '.join(flags) if flags else ''))
@@ -97,7 +105,7 @@ for pid, sts in by.items():
         iou, dx, dy = best
         sc = sts[st]['scale']
         # The game can nudge a state with "offset" in <piece>.json. Count what is left after that nudge.
-        cfgp = os.path.join(args[0], pid + '.json') if '--map' not in args else None
+        cfgp = os.path.join(cfg_dirs.get(pid, args[0]), pid + '.json') if '--map' not in args else None
         cfg = json.load(open(cfgp)) if cfgp and os.path.exists(cfgp) else {}
         sign = -1 if cfg.get('flip') else 1
         off = ((cfg.get('states') or {}).get(st) or {}).get('offset') or [0, 0]

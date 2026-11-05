@@ -1,0 +1,30 @@
+{
+  "pivot": [
+    5.3,
+    5.3
+  ],
+  "scale": 3,
+  "states": {
+    "hero": {
+      "pivot": [
+        5.3,
+        5.3
+      ],
+      "scale": 3
+    },
+    "cheese": {
+      "pivot": [
+        5.3,
+        5.3
+      ],
+      "scale": 3
+    },
+    "sauce": {
+      "pivot": [
+        5.3,
+        5.3
+      ],
+      "scale": 3
+    }
+  }
+}

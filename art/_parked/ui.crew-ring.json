@@ -1,0 +1,30 @@
+{
+  "pivot": [
+    29.1,
+    29.1
+  ],
+  "scale": 4,
+  "states": {
+    "working": {
+      "pivot": [
+        29.1,
+        29.1
+      ],
+      "scale": 4
+    },
+    "waiting": {
+      "pivot": [
+        29.1,
+        29.1
+      ],
+      "scale": 4
+    },
+    "blocked": {
+      "pivot": [
+        29.1,
+        29.3
+      ],
+      "scale": 4
+    }
+  }
+}

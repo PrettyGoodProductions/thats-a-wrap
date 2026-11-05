@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 4, 2026 (revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 5, 2026 (revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -78,12 +78,12 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 | grip.sweep | Paper sweep curving down onto the floor | 108 x 108 | 648 x 648 | Top center under the tube, (180, 30) | Unrolls downward in 6 steps. Deliver neutral light paper: it is tinted per shot (yellow, coral, sage) | Build tabletop 45 to 85% | **Wired** (batch 3, tinted per shot in game) |
 | grip.sweep-tube | Roll tube the sweep hangs from | 118 x 8 | 708 x 48 | Center (180, 28) | Static | | **Wired** (batch 3) |
 | grip.platform | Hero platform, taller box (spec below) | 112 x 76 | 672 x 456 | Bottom center of the box at (184, 192). Point: `contact` | Carried in from the gear pile in 6 hops, placed | Build tabletop 0 to 45% | **Wired**, taller box from batch 3 |
-| grip.flag | Black flag on a C-stand | 26 x 140 | 156 x 840 | Stand base at (262, 202) | Hidden, standing | Build tabletop 92% | Ready |
-| grip.gear-pile | Two apple boxes and a sandbag | 46 x 30 | 276 x 180 | Bottom left at (246, 202) | Static | | Ready |
-| grip.rig-pole | C-stand for the cheese pull and sauce pour: pole on a tripod base | 20 x 150 | 120 x 900 | Base at (292, 202) | Appears | Rig the pull, mount bottle, first third | Ready |
-| grip.rig-arm | Horizontal arm with knuckle | 100 x 10 | 600 x 60 | Knuckle at (292, 58) | Appears | Second third | Ready |
-| grip.rig-fork | Fork head for the cheese pull, on a drop rod | 12 x 30 | 72 x 180 | Rod top at (197, 58); the rod stretches to reach the burger | Appears | Rig the pull, last third | Ready |
-| grip.rig-bottle | Sauce bottle in a clamp, tilted 28° | 14 x 32 | 84 x 192 | Clamp at (197, 58) | Appears | Mount bottle, last third | Ready |
+| grip.flag | Black flag on a C-stand | 26 x 140 | 156 x 840 | Stand base at (262, 202) | Hidden, standing | Build tabletop 92% | **Wired** (batch 5) |
+| grip.gear-pile | Two apple boxes and a sandbag | 46 x 30 | 276 x 180 | Bottom left at (246, 202) | Static | | **Wired** (batch 5) |
+| grip.rig-pole | C-stand for the cheese pull and sauce pour: pole on a tripod base | 46 x 162 (delivered, clamp 17 below the top) | 276 x 972 | Base at (292, 202) | Appears | Rig the pull, mount bottle, first third | **Wired** (batch 5) |
+| grip.rig-arm | Horizontal arm with knuckle | 100 x 10 | 600 x 60 | Knuckle at (292, 58) | Appears | Second third | **Wired** (batch 5) |
+| grip.rig-fork | Fork head for the cheese pull, on a drop rod | 12 x 30 | 72 x 180 | Rod top at (197, 58); the rod stretches to reach the burger | Appears | Rig the pull, last third | **Wired** (batch 5) |
+| grip.rig-bottle | Sauce bottle in a clamp, tilted 28° | 14 x 32 | 84 x 192 | Clamp at (197, 58) | Appears | Mount bottle, last third | **Wired** (batch 5) |
 
 ### Electric
 
@@ -91,11 +91,11 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | elec.keylight-stand | Rolling stand: three legs with wheels, pole | 30 x 126 | 180 x 756 | Base center (72, 202). Pole top at (72, 76) carries the head | Parked by the wall, rolled 44 units to its mark in 5 steps | Any lighting task 0 to 40% | **Wired** (batch 3) |
 | elec.keylight-head | Softbox head | 56 x 34 | 336 x 204 | Yoke ring on the pole top (72, 76) | Turns -12° to 34°. `off`, `on`, `dead` | Aim 40 to 80%, on 80 to 100%. Chaos sets `dead` | **Wired**, batch 1 |
-| elec.beam | Soft light wedge from the key to the burger | 150 x 60 | 900 x 360 | Light face end | Fades 0 to 50%. Deliver white to warm paper, the engine sets opacity | Light state | Ready |
+| elec.beam | Soft light wedge from the key to the burger | 150 x 60 | 900 x 360 | Light face end | Fades 0 to 50%. Deliver white to warm paper, the engine sets opacity | Light state | **Wired** (batch 5) |
 | elec.fill | Small fill light on a stand | 30 x 110 | 180 x 660 | Base (240, 206) | Hidden, standing on | Light the burger 50% | **Wired** (batch 3, flipped to face left) |
-| elec.fill-beam | Fill light wedge | 50 x 30 | 300 x 180 | Light face | Fades | Fill on | Ready |
-| elec.backlight | Light hanging from the grid, with a soft cone | 20 x 60 | 120 x 360 | Hang point (214, -54) | Lowers 26 units, then on | Add backlight | Ready |
-| elec.dead-fx | Sparks and a red warning badge | 60 x 40 | 360 x 240 | Around the key head | Shown while the key light is dead | Chaos event | Ready |
+| elec.fill-beam | Fill light wedge | 50 x 30 | 300 x 180 | Light face | Fades | Fill on | **Wired** (batch 5) |
+| elec.backlight | Light hanging from the grid, with a soft cone | 20 x 60 | 120 x 360 | Hang point (214, -54) | Lowers 26 units, then on | Add backlight | **Wired** (batch 5) |
+| elec.dead-fx | Sparks and a red warning badge | 60 x 40 | 360 x 240 | Around the key head | Shown while the key light is dead | Chaos event | **Wired** (batch 5) |
 
 ### Camera
 
@@ -110,14 +110,14 @@ Layers run back to front: 0 is the wall, 9 is effects over everything.
 
 | ID | Piece | Size | Export | Pivot and position | States and motion | Driven by | Wired |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| art.table | Styling cart on wheels with paint cans | 72 x 40 | 432 x 240 | Bottom left (10, 212) | Static | | Ready |
+| art.table | Styling cart on wheels with paint cans | 72 x 40 | 432 x 240 | Bottom left (10, 212) | Static | | **Wired** (batch 5) |
 | art.burger-build | Burger in 5 layers on the cart: bottom bun, patty, cheese, lettuce, top bun | whole stack about 26 x 18 | each layer on its own 156 x 108 canvas | Each layer's bottom center, stacked on the cart at (25, 165) | Layers appear one by one | Style burger, 20% per layer | **Wired** |
 | art.cheese-pot | Pot with a separate cheese fill and steam | 18 x 16 | 108 x 96 | Pot base (52, 171) | Fill rises, three-frame steam while fresh, dull tint when spoiled | Melt cheese | **Wired** (batch 3, fill clipped to the opening) |
-| art.sauce-bowl | Bowl, sauce separate | 16 x 10 | 96 x 60 | Base (70, 173) | Sauce fades in | Prep sauce | Ready |
+| art.sauce-bowl | Bowl, sauce separate | 16 x 10 | 96 x 60 | Base (70, 173) | Sauce fades in | Prep sauce | **Wired** (batch 5) |
 | prop.burger | Hero burger | 50 x 36 | 300 x 216 | Bottom center, sits on the platform's `contact` point | Hops from the art cart (42% size) to the platform in 5 steps | Place burger | **Wired** (batch 3) |
 | prop.cheese | Burger with the top bun separate, plus three stretchy cheese strands | bun 46 x 18, base 50 x 22, strand 4 x 24 | @6x | Bun lifts from the patty line | Bun lifts 0 to 22 units, strands stretch with it | Cheese pull ACTION | **Wired** (batch 3, strands stretch with the lift) |
 | prop.sauce | Sauce drip on the top bun, and a pour stream | drip 26 x 10, stream 6 x 14 | @6x | From the bottle nozzle | Stream animates, drip appears | Sauce pour ACTION | **Wired** (batch 3, drip and pour stream) |
-| fx.sparkle | Burst lines around the hero burger | 80 x 40 | 480 x 240 | Centered over the burger | Two frames while rolling on the hero shot | Hero ACTION | Ready |
+| fx.sparkle | Burst lines around the hero burger | 80 x 40 | 480 x 240 | Centered over the burger | Two frames while rolling on the hero shot | Hero ACTION | **Wired** (batch 5) |
 
 ### Hero platform spec (revision 2)
 
@@ -138,10 +138,10 @@ Keep the batch 1 look: red paper sides, torn cream lid edges, corrugated edge.
 
 | ID | Piece | Size | Export | Pivot and position | States | Wired |
 | --- | --- | --- | --- | --- | --- | --- |
-| village.monitor | Monitor on a stand, with a dark screen inset the engine draws into | 60 x 98 | 360 x 588 | Stand base (-76, 286). Point: `screen`, the inset's top left | Static. The screen shows color bars, the live shot and a REC dot | Ready |
-| village.chair | Director's chair with a blank back, one file used twice | 36 x 44 | 216 x 264 | Chair base (-14, 292) and (34, 292) | Static. The engine prints CLIENT and AGENCY on the backs | Ready |
-| crafty.table | Craft services table: coffee urn, donut box, cups. The engine writes CRAFTY | 150 x 60 | 900 x 360 | Top left (314, 214) | Static | Ready |
-| crafty.coffee | Paper coffee cup idle crew can hold | 5 x 7 | 30 x 42 | Base | Static | Ready |
+| village.monitor | Monitor on a stand, with a dark screen inset the engine draws into | 60 x 98 | 360 x 588 | Stand base (-76, 286). Point: `screen`, the inset's top left | Static. The screen shows color bars, the live shot and a REC dot | **Wired** (batch 5) |
+| village.chair | Director's chair with a blank back, one file used twice | 36 x 44 | 216 x 264 | Chair base (-14, 292) and (34, 292) | Static. The engine prints CLIENT and AGENCY on the backs | **Wired** (batch 5) |
+| crafty.table | Craft services table: coffee urn, donut box, cups. The engine writes CRAFTY | 150 x 60 | 900 x 360 | Top left (314, 214) | Static | **Wired** (batch 5) |
+| crafty.coffee | Paper coffee cup idle crew can hold | 5 x 7 | 30 x 42 | Base | Static | **Wired** (batch 5) |
 
 ## Characters
 
@@ -261,8 +261,8 @@ The office is a cutaway building 360 x 470 units, portrait. Each room is a 152 x
 | ID | Piece | Size | Export | States | Wired |
 | --- | --- | --- | --- | --- | --- |
 | hq.shell | Brick building with floors and room frames, roof edge | 336 x 340 | 2016 x 2040 | Static | Ready |
-| hq.sign | Marquee sign board with bulbs, blank | 220 x 34 | 1320 x 204 | Bulbs on, off. The company name is drawn by the engine | Ready |
-| hq.room.edit | Edit Bay interior | 152 x 112 | 912 x 672 | `for-rent` (dark), `building`, `built` (desk, two monitors, editor) | Ready |
+| hq.sign | Marquee sign board with bulbs, blank | 220 x 34 | 1320 x 204 | Bulbs on, off. The company name is drawn by the engine | **Wired** (batch 5) |
+| hq.room.edit | Edit Bay interior | 152 x 112 | 912 x 672 | `for-rent` (dark), `building`, `built` (desk, two monitors, editor) | **Wired** for `for-rent` only (batch 5). `building` and `built` needed |
 | hq.room.craft | Craft Services interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (counter, urn, donuts, plant) | Ready |
 | hq.room.gear | Gear Cage interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (mesh wall, lights on shelves, cases, sandbags) | Ready |
 | hq.room.kitchen | Prep Kitchen interior | 152 x 112 | 912 x 672 | `for-rent`, `building`, `built` (stove with steam, fridge, burger plate) | Ready |

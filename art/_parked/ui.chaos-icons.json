@@ -1,0 +1,30 @@
+{
+  "pivot": [
+    90.9,
+    93.2
+  ],
+  "scale": 4,
+  "states": {
+    "hammer": {
+      "pivot": [
+        90.9,
+        93.2
+      ],
+      "scale": 4
+    },
+    "van": {
+      "pivot": [
+        93.2,
+        49.4
+      ],
+      "scale": 4
+    },
+    "lightning": {
+      "pivot": [
+        67.4,
+        93.2
+      ],
+      "scale": 4
+    }
+  }
+}

@@ -724,16 +724,24 @@
       const hs = A.heroSpot();
       const pts = [turn(la), turn(lb), [hs.x - 30, hs.y + 4], [hs.x + 30, hs.y + 2]];
       setAttr($('beam'), 'points', pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' '));
+      // The delivered wedge (batch 5) is turned from the middle of the lens toward the burger and stretched to the distance
+      const bArt = $('beamArt');
+      if (bArt) {
+        const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        setAttr(bArt, 'transform', A.wedgeTransform(mid(pts[0], pts[1]), [hs.x, hs.y - 10], A.BEAM_LEN));
+      }
     }
     let beam = 0;
     if (!dead) beam = disp === 'hero' ? 0.4 * steps(seg(dl, 0.8, 1), 3) : (rollIn >= 1 ? 0.22 + 0.18 * dl : 0);
     setAttr($('beam'), 'opacity', beam.toFixed(2));
+    setAttr($('beamArt'), 'opacity', beam.toFixed(2));
     setAttr($('lightFace'), 'fill', dead ? '#3A3631' : beam > 0 ? '#FFE7A3' : '#7A7468');
     Ld.state('elec.keylight-head', dead ? 'dead' : beam > 0 ? 'on' : 'off');
     setAttr($('dead'), 'opacity', dead ? 1 : 0);
     const fillUp = isDone('hero.light') || st.shots.hero.captured || hl > 0.5;
     setAttr($('fillLight'), 'opacity', fillUp ? 1 : 0);
     setAttr($('fillBeam'), 'opacity', fillUp && !dead ? 0.35 : 0);
+    setAttr($('fillBeamArt'), 'opacity', fillUp && !dead ? 0.35 : 0);
     const bl = disp === 'sauce' ? (captured || rolling ? 1 : pct('sauce.light')) : 0;
     setAttr($('backLight'), 'opacity', bl > 0 ? 1 : 0);
     setAttr($('backLight'), 'transform', `translate(0 ${(-26 * (1 - steps(seg(bl, 0, 0.6), 4))).toFixed(1)})`);

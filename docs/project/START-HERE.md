@@ -1,6 +1,6 @@
 # That's a Wrap! Start Here
 
-Status and context for anyone (or any Claude session) picking up the project. Updated Nov 4, 2026.
+Status and context for anyone (or any Claude session) picking up the project. Updated Nov 5, 2026.
 
 ## The game
 
@@ -28,17 +28,21 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B (in progress, Nov 3)
 
-- **Playable link (Milestone B build, updated Nov 4 with the batch 4 set dressing):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Playable link (Milestone B build, updated Nov 5 with the batch 5 set pieces):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
 - **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
-- **Tests:** 74 simulation tests pass, including a scripted player that finishes the shoot with every crew member at autonomy 0. A Chrome test bot (`tools/qa_lab_e2e.py`) finishes the Lab in portrait, landscape and rotated landscape with real taps.
+- **Tests:** 96 tests pass, including a scripted player that finishes the shoot with every crew member at autonomy 0. A Chrome test bot (`tools/qa_lab_e2e.py`) finishes the Lab in portrait, landscape and rotated landscape with real taps.
 - **Finding:** landscape needs no scrolling and keeps the crew and ACTION in view. Portrait pushes the crew tiles below the fold. The current Burger Job gives only about one order every 7 seconds even with everyone on orders, so the task split (C2) is what will create the pace.
 - **Plan:** Milestone-B-Plan.md has the decisions, the findings and the step-by-step sequence.
 
 ## Asset loader (done, Nov 3)
 
 Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far (batch 3 added the taller platform, sweep and tube, key stand, fill light, camera, lenses, track, frame marks, hero, cheese and sauce props, cheese pot): hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+
+## Art batch 5 (Nov 5): rigs, lights, props, village, craft table, HQ sign
+
+Zip name "Approved Assets 03", which is the fifth fitted batch in the repo (the name counts the approvals, not the repo batches). 63 files matched to 40 manifest pieces. Wired: flag, gear pile, the C-stand rig (pole, arm, fork, bottle), key and fill light beams, backlight, dead-light sparks, styling cart, sauce bowl with fill, sparkle, monitor with live screen, two director chairs, craft table, coffee cup, HQ marquee sign (bulbs on and off) and the for-rent Edit Bay. The rest is fitted and parked in `art/_parked/` (HQ shell, HUD extras, steam, held items). Details and the exports still needed are in Art-Batch-5-Validation.md.
 
 ## Art batch 4 (Nov 4): wall, floor, flats and set dressing
 
@@ -60,7 +64,7 @@ Character components for the three default-crew characters are in the game on th
 | Milestone-B-Plan.md | Milestone B decisions, what the Layout Lab found, and the build sequence |
 | Shoot-Day-Active-Play-Proposal.md | How the sim becomes Overcooked-style active play (Milestones B and C) |
 | Asset-Manifest.md | Every art piece, with its layers, pivots, states and what drives it. The spec for final art |
-| Art-Batch-1-Validation.md, Art-Batch-2-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
+| Art-Batch-1 to Art-Batch-5-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
 | Prototype-0.2-Build-Plan.md | The 0.2 plan: money model, crew attributes, Net 30, referrals |
 | Call-Sheet-Design-Doc-and-Plan.md | The original design doc (the "Call Sheet" era), kept for history |
 | DIRECTION.md | Tomás's gameplay direction note (HQ is management, Shoot Day is active control) |
@@ -103,7 +107,7 @@ See Milestone-B-Plan.md for the full sequence. In short:
 5. **Content:** split the Burger Job into 25 to 35 short tasks, tuned to 3 to 5 minutes.
 6. **Failure:** compromised delivery and hard stops with warnings.
 7. **Tiers in the real game:** autonomy comes from who you hire, plus the Assist Mode setting.
-- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next in the manifest order: Client and Agency, then the set and background assets (separate session).
+- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next: the exports listed in Art-Batch-5-Validation.md (HQ shell and rooms, progress ring), then Client and Agency and the rest of the roster.
 
 ## How development works
 

@@ -19,6 +19,14 @@ on a shoot that does not finish, or on a layout that overflows the screen.
 import json, os, sys, time
 from playwright.sync_api import sync_playwright
 
+
+def _launch(p):
+    """Chrome if it is installed, else Playwright's own Chromium (the same engine)"""
+    try:
+        return p.chromium.launch(channel='chrome', args=['--no-sandbox'])
+    except Exception:
+        return p.chromium.launch(args=['--no-sandbox'])
+
 page_path, out_dir, scenario = sys.argv[1], sys.argv[2], sys.argv[3]
 os.makedirs(out_dir, exist_ok=True)
 VIEW = {'port': (390, 844), 'land': (844, 390), 'land-rot': (390, 844), 'land-tab': (1280, 800)}[scenario]
@@ -57,7 +65,7 @@ def snap(page, name):
     page.screenshot(path=os.path.join(out_dir, f'{scenario}-{name}.png'))
 
 with sync_playwright() as p:
-    b = p.chromium.launch(channel='chrome', args=['--no-sandbox'])
+    b = _launch(p)
     ctx = b.new_context(viewport={'width': VIEW[0], 'height': VIEW[1]}, device_scale_factor=2, has_touch=True, is_mobile=True)
     page = ctx.new_page()
     page.on('pageerror', lambda e: errors.append(f'pageerror: {e}'))
