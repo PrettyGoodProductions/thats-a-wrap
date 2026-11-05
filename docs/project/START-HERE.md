@@ -36,6 +36,10 @@ A single-player mobile game about running a small video production company, made
 - **Finding:** landscape needs no scrolling and keeps the crew and ACTION in view. Portrait pushes the crew tiles below the fold. The current Burger Job gives only about one order every 7 seconds even with everyone on orders, so the task split (C2) is what will create the pace.
 - **Plan:** Milestone-B-Plan.md has the decisions, the findings and the step-by-step sequence.
 
+## Landscape HQ (Nov 5)
+
+The office is a landscape cutaway diorama: two floors of four bays (Production Office and Lounge, Lobby, Art Dept, Edit, Gear, Garage, one boarded expansion slot), rooms that grow in levels 1 to 3, the van at the curb, city and trees behind, a right-hand panel and a seven-tab bottom nav (Locations, Research and Reputation show as "Soon"). All non-character HQ art is delivered and wired. Spec in HQ-Redesign.md, checks in Art-Batch-7-Validation.md and Art-HQ-Complete-Validation.md. The batch 6 portrait HQ art below is retired, apart from the sky, clouds, sign, van, FOR RENT card, job board and flyer.
+
 ## Asset loader (done, Nov 3)
 
 Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far (batch 3 added the taller platform, sweep and tube, key stand, fill light, camera, lenses, track, frame marks, hero, cheese and sauce props, cheese pot): hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
@@ -67,9 +71,11 @@ Character components for the three default-crew characters are in the game on th
 | START-HERE.md | This page: status, decisions, next steps |
 | Milestone-B-Plan.md | Milestone B decisions, what the Layout Lab found, and the build sequence |
 | Shoot-Day-Active-Play-Proposal.md | How the sim becomes Overcooked-style active play (Milestones B and C) |
-| Content-Roadmap.md | The level backlog, HQ growth ideas, the reusable art library approach and the character plan (6 to 8 authored, the rest generated) |
+| Content-Roadmap.md | The level backlog, HQ growth ideas, the reusable art library, the set and studio parts list, and the crew component kit |
+| HQ-Redesign.md | The landscape diorama HQ: rooms, levels, geometry, art pieces and screen layout |
+| Art-Handoff-Nov5.md | Art status and asks as of Nov 5. Its character list is on hold, see Content-Roadmap.md |
 | Asset-Manifest.md | Every art piece, with its layers, pivots, states and what drives it. The spec for final art |
-| Art-Batch-1 to Art-Batch-6-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
+| Art-Batch-1 to Art-Batch-7-Validation.md, Art-HQ-Complete-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
 | Prototype-0.2-Build-Plan.md | The 0.2 plan: money model, crew attributes, Net 30, referrals |
 | Call-Sheet-Design-Doc-and-Plan.md | The original design doc (the "Call Sheet" era), kept for history |
 | DIRECTION.md | Tomás's gameplay direction note (HQ is management, Shoot Day is active control) |
@@ -93,20 +99,21 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 - **Autonomy:** 0 Newbie waits for orders, 1 Solid keeps going at its station, 2 Veteran moves to eligible department work within the current shot. Nobody changes shot order, spends money, starts risky perishables or calls ACTION. Assist Mode raises the floor to 1 and never lowers a veteran. The player always stays busy; better crew means less micromanagement, not less play.
 - **Small problems:** each costs something different (quality, or time, or a time/money/quality choice), never all three by default. Real time with in-world warnings and quick choices. Full-screen cards only for major chaos.
 - **Losing:** yes. Successful, compromised, or hard-stop failure, with advance warnings and recoverable money and reputation costs. Keep the hard-stop framework and rebalance it.
-- **Orientation (locked):** the shoot is landscape: a full-screen wide set with a floating paper HUD (status bar, crew portraits, shot list pop-up, quest line, ACTION). HQ stays portrait. See Milestone-B-Plan.md
+- **Orientation (locked):** the shoot is landscape: a full-screen wide set with a floating paper HUD (status bar, crew portraits, shot list pop-up, quest line, ACTION). See Milestone-B-Plan.md
+- **HQ orientation (changed Nov 5):** HQ is landscape too, so the phone never turns between screens. It is the cutaway diorama in HQ-Redesign.md. This replaces the Nov 3 call that HQ stays portrait.
 
 ## Content and library decisions (made Nov 5)
 
 - **Art library:** parts drawn once, variants derived by scripts, scenes and crew assembled from data. Details in Content-Roadmap.md.
-- **Level identity:** each tabletop level gets its own palette, layout, hero and signature stations, dressing pack and light mood.
+- **Level identity:** each tabletop level gets its own palette, layout, room, hero and signature stations, dressing pack and light mood.
+- **Recolor:** tested on the delivered flats and it works for single-color pieces (`docs/qa/tint-test/recolor-test.png`). Multi-color pieces stay fixed or come as one file per color.
 - **Art pipeline:** ChatGPT makes the art. Claude writes paste-ready requests, Tomás pastes them. Calling an image model from Claude is parked.
-- **Characters:** 6 to 8 authored characters, everyone else generated from their parts. This replaces the 14-character list in Art-Handoff-Nov5.md once the picks are confirmed.
+- **Characters:** crew are built from a component kit (hair, skin tone, tops, bottoms, hats, accessories) colored by the game. Ro, Mika, Dani and Lu stay hand-designed. A 16-piece test batch comes first. The 14-character list in Art-Handoff-Nov5.md is on hold.
 - **Backlog:** the level and HQ ideas in Content-Roadmap.md are the content backlog. Suggested first four after the burger: beverage, e-comm flat lay, fashion lookbook, rooftop.
 
 ## Waiting on Tomás
 
-- [ ] **Art batch 2 calls** (see Art-Batch-2-Validation.md): is Lu meant to be hirable on the Burger Job, which arm is front on the sheets, and are the longer arms intended.
-- [ ] **Content-Roadmap.md calls:** the first four levels, the character picks (proposed: the four, plus Theo, Bo, Inés and Vera, with Client, Agency and Receptionist drawn separately), and the tint test when it is ready.
+- [ ] **Content-Roadmap.md calls:** go on the crew component test batch, whether Client, Agency and Receptionist come from the kit or are hand-drawn, the first four levels, and a look at the recolor sheet.
 - [ ] **Play the landscape shoot** on your phone and send notes.
 - [ ] **Small calls in Milestone-B-Plan.md:** narrowing veterans to the current shot, hard-stop warning timing, what counts as a compromised delivery.
 
@@ -121,8 +128,8 @@ See Milestone-B-Plan.md for the full sequence. In short:
 5. **Content:** split the Burger Job into 25 to 35 short tasks, tuned to 3 to 5 minutes.
 6. **Failure:** compromised delivery and hard stops with warnings.
 7. **Tiers in the real game:** autonomy comes from who you hire, plus the Assist Mode setting.
-- **Library groundwork** (needs no new art, see Content-Roadmap.md): tint test on the flats, code audit, manifest as a catalog the game reads, burger set as the first scene recipe.
-- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next: the exports listed in Art-Batch-5-Validation.md and Art-Batch-6-Validation.md (HQ shell, progress ring, lobby wall space), then Client and Agency and the rest of the roster.
+- **Library groundwork** (needs no new art, see Content-Roadmap.md): code audit, manifest as a catalog the game reads, burger set as the first scene recipe.
+- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next asks, once Tomás says go: the crew component test batch, then the studio shell kit (both in Content-Roadmap.md).
 
 ## How development works
 

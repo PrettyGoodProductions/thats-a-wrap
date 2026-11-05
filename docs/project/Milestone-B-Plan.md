@@ -12,7 +12,7 @@ Hands-on crew direction, in steps small enough to playtest. This doc records the
 | Small problems | Different problems cost different things: some only quality, some block progress and cost time, some offer a choice between time, money and quality. Never all three at once by default. They happen in real time without pausing, with an in-world warning and a quick contextual choice. Full-screen interruptions stay for major chaos |
 | Shoot failure | Real failure is possible: successful, compromised, or hard stop. Hard stops get advance warnings. The cost is real but recoverable (money and reputation). Keep the hard-stop framework and rebalance it for manual assignment |
 | Departments | Each crew member works only their own department's tasks: art does art, camera does camera. Choosing who goes where is part of the challenge |
-| Orientation | **Landscape shoot, portrait HQ** (locked Nov 3, evening). The shoot screen is the full-screen wide set with the pop-up HUD described below, in every shoot, not only the Layout Lab. On a phone held upright the game turns the shoot sideways itself. The Lab keeps its portrait run for comparison only |
+| Orientation | **Landscape shoot** (locked Nov 3, evening). HQ went landscape too on Nov 5, see HQ-Redesign.md. The shoot screen is the full-screen wide set with the pop-up HUD described below, in every shoot, not only the Layout Lab. On a phone held upright the game turns the shoot sideways itself. The Lab keeps its portrait run for comparison only |
 
 ## What is built so far (branch `milestone-b-lab`)
 
@@ -97,7 +97,7 @@ Each step ends at something you can play. We only move on after a review.
 | Step | Scope | Gate |
 | --- | --- | --- |
 | **0. Done** | Autonomy engine slice, Layout Lab, tests | Done |
-| **1. Orientation, done** | Landscape is the shoot screen: wide set, pop-up HUD, safe area, chaos and wrap cards laid out for landscape. HQ stays portrait. The portrait shoot remains only in the Layout Lab | Play it on your phone held sideways |
+| **1. Orientation, done** | Landscape is the shoot screen: wide set, pop-up HUD, safe area, chaos and wrap cards laid out for landscape. HQ was portrait at this step and went landscape on Nov 5. The portrait shoot remains only in the Layout Lab | Play it on your phone held sideways |
 | **2. Queues and problems (B1b)** | Task queue of up to 3 per person (do it now, or add to the queue), long-press to clear. Small problems in real time with the three consequence types, shown as in-world markers with countdown rings. Level 2 narrowed to "within the current shot" as decided | Test player still finishes. Playtest 1 |
 | **3. Walking (B2)** | Port only the walk-time logic from `wip/crew-depth`, not its economy. Puppets read their position from the engine each frame. Walk cycle and work poses. Distance becomes a real decision | Crew visibly walk. Tests for walk time |
 | **4. Controls polish (C1)** | Idle bell (jumps to the next idle person), queue pips, bigger targets, and the highlights now prototyped in the Lab | Two taps per order holds on a phone |
