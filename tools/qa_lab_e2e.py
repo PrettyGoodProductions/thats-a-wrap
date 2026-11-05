@@ -81,6 +81,7 @@ with sync_playwright() as p:
 
     page.click('[data-go="office"]')
     snap(page, '1-office')
+    page.click('[data-officemenu]')   # Nov 5: the Layout Lab button lives in the office settings menu
     page.click('[data-lab]')
     snap(page, '2-lab-home')
     page.click(f'[data-labstart="{LAYOUT}"]')

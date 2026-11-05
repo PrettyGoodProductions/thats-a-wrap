@@ -159,16 +159,44 @@
   //   post       quality points added to every shot ("we'll fix it in post")
   const company = {
     name: 'Pretty Good Productions',
+    // The office (HQ-Redesign, Nov 5): a two-story cutaway with four bays per floor. Rooms grow in levels. Each level
+    // is an upgrade you buy with profit; its effect adds to the levels before it. Levels marked "soon" are shown but
+    // cannot be bought yet, because the system they need is not in the game.
     rooms: [
-      { id: 'craft',   name: 'Craft Services', cost: 800,  effect: { speed: 1.08 },
-        blurb: 'Coffee, donuts, a sad fruit plate. Everyone works 8% faster.' },
-      { id: 'kitchen', name: 'Prep Kitchen',   cost: 1200, effect: { fresh: 1.4, artSpeed: 1.15 },
-        blurb: 'A real stove. Food stays fresh 40% longer and art works 15% faster.' },
-      { id: 'gear',    name: 'Gear Cage',      cost: 1500, effect: { backupLight: true },
-        blurb: 'Your own backup lights. A dead light becomes a free 2-second swap.' },
-      { id: 'edit',    name: 'Edit Bay',       cost: 2000, effect: { post: 10 },
-        blurb: '"We\'ll fix it in post." Every shot gets +10 quality.' },
+      { id: 'office', name: 'Production Office', bay: { floor: 2, at: 1, span: 2 }, start: 1 },
+      { id: 'edit',   name: 'Edit',              bay: { floor: 2, at: 3 } },
+      { id: 'lobby',  name: 'Lobby',             bay: { floor: 1, at: 1 }, fixed: true },
+      { id: 'art',    name: 'Art Dept',          bay: { floor: 1, at: 2 } },
+      { id: 'gear',   name: 'Gear',              bay: { floor: 1, at: 3 } },
+      { id: 'garage', name: 'Garage',            bay: { floor: 1, at: 4 }, fixed: true },
+      { id: 'slot',   name: 'Coming soon',       bay: { floor: 2, at: 4 }, fixed: true, boarded: true },
     ],
+    upgrades: [
+      { id: 'office.2', room: 'office', level: 2, name: 'Coffee bar', cost: 800, effect: { speed: 1.08 },
+        blurb: 'Coffee, donuts, a sad fruit plate. Everyone works 8% faster.' },
+      { id: 'office.3', room: 'office', level: 3, name: 'Conference table', cost: 2500, soon: true,
+        blurb: 'Bigger clients take meetings here. Better jobs on the board.' },
+      { id: 'art.1', room: 'art', level: 1, name: 'Work table', cost: 600, effect: { artSpeed: 1.05 },
+        blurb: 'A real table and shelves of supplies. Art works 5% faster.' },
+      { id: 'art.2', room: 'art', level: 2, name: 'Prep kitchen', cost: 1200, effect: { fresh: 1.4, artSpeed: 1.1 },
+        blurb: 'A stove and a fridge. Food stays fresh 40% longer and art works another 10% faster.' },
+      { id: 'art.3', room: 'art', level: 3, name: 'Set shop', cost: 3000, soon: true,
+        blurb: 'Miniatures and set builds. Unlocks bigger art jobs.' },
+      { id: 'edit.1', room: 'edit', level: 1, name: 'Edit bay', cost: 2000, effect: { post: 10 },
+        blurb: '"We\'ll fix it in post." Every shot gets +10 quality.' },
+      { id: 'edit.2', room: 'edit', level: 2, name: 'Color suite', cost: 2500, effect: { post: 5 },
+        blurb: 'A proper grade. Another +5 quality on every shot.' },
+      { id: 'edit.3', room: 'edit', level: 3, name: 'Sound mix', cost: 3000, effect: { post: 5 },
+        blurb: 'It sounds expensive now. Another +5 quality on every shot.' },
+      { id: 'gear.1', room: 'gear', level: 1, name: 'Gear cage', cost: 1500, effect: { backupLight: true },
+        blurb: 'Your own backup lights. A dead light becomes a free 2-second swap.' },
+      { id: 'gear.2', room: 'gear', level: 2, name: 'More stands and lights', cost: 2000, soon: true,
+        blurb: 'Fewer rentals, so rentals cost less.' },
+      { id: 'gear.3', room: 'gear', level: 3, name: 'Grip truck', cost: 4000, soon: true,
+        blurb: 'The truck replaces the van. Room for bigger jobs.' },
+    ],
+    // Saves from before the redesign named whole rooms: what each one became
+    legacyRooms: { craft: ['office.2'], kitchen: ['art.1', 'art.2'], gear: ['gear.1'], edit: ['edit.1'] },
     jobs: [
       { id: 'burger-job', title: 'The Burger Job', client: 'Big Bun Burgers', kind: 'Tabletop', playable: true },
       { id: 'taco-truck', title: 'Taco Truck Takeover', client: 'El Gordo Tacos', kind: 'Location', playable: false, note: 'Location shoots coming soon' },

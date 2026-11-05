@@ -613,172 +613,230 @@
 </svg>`;
   }
 
-  /* ---------- Production office: viewBox 0 0 360 470 ---------- */
-
-  const ROOMS = {
-    edit:    { x: 24,  y: 56,  w: 152, h: 112 },
-    craft:   { x: 184, y: 56,  w: 152, h: 112 },
-    gear:    { x: 24,  y: 176, w: 152, h: 112 },
-    kitchen: { x: 184, y: 176, w: 152, h: 112 },
+  /* ---------- Production HQ: a landscape cutaway diorama (HQ-Redesign.md, Nov 5) ----------
+    HQ units. The building front (hq.shell) is 452 x 228 at (40, 56): two floors of four bays, each room an open box
+    you look into. Delivered room art fills a cavity exactly; rooms without art are drawn here as a greybox cavity in
+    the same geometry (back wall, side walls and ceiling receding to the center), so art can arrive room by room.
+    Backdrop layers run far past the building so a screen of any shape shows more city, never empty bands.
+  */
+  const HQ = { x: 40, y: 56, w: 452, h: 228, floorY: { 2: 72, 1: 184 }, bayX: [54, 162, 270, 378], roomH: 96 };
+  const HQ_VIEW = { x: 30, y: 14, w: 472, h: 302 };
+  const esc = (t) => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+  const hqBox = (room) => {
+    const b = room.bay;
+    return { x: HQ.bayX[b.at - 1], y: HQ.floorY[b.floor], w: b.span === 2 ? 208 : 100, h: HQ.roomH };
+  };
+  const ROOM_PAINT = {
+    office: { wall: '#E9D3A6', side: '#D9BC86', lit: '#F2E3C2' },
+    edit:   { wall: '#46546B', side: '#3A465A', lit: '#56647B' },
+    lobby:  { wall: '#E6DDC8', side: '#D2C5A8', lit: '#F1EADB' },
+    art:    { wall: '#9DB7A6', side: '#88A291', lit: '#E8DDC5' },
+    gear:   { wall: '#BDB6A6', side: '#A69E8C', lit: '#CFC9BB' },
+    garage: { wall: '#8F969C', side: '#7B8288', lit: '#A3A9AE' },
+    slot:   { wall: '#6E655A', side: '#5E564C', lit: '#7A7166' },
   };
 
-  function roomFurniture(id) {
-    const s = S(1.3);
-    if (id === 'edit') return `
-      <rect x="20" y="62" width="112" height="8" fill="#8B6A43" ${s}/><path d="M28 70 V96 M124 70 V96" ${s} stroke-width="2"/>
-      <rect x="30" y="30" width="44" height="30" rx="2" fill="#22262B" ${s}/><rect x="78" y="30" width="44" height="30" rx="2" fill="#22262B" ${s}/>
-      <g><rect x="34" y="34" width="36" height="16" fill="#344F70"/><rect x="82" y="44" width="10" height="3" fill="#E7B84F"/><rect x="94" y="44" width="16" height="3" fill="#D86B56"/><rect x="84" y="49" width="20" height="3" fill="#7D9E91"/><rect x="104" y="49" width="12" height="3" fill="#8EA3C2"/><path d="M98 36 V58" stroke="#fff" stroke-width="1"/></g>
-      <g transform="translate(76 96) scale(1.15)">${puppet({ color: '#5E5A52', look: { skin: '#E0B08A', hair: '#2A1D14', top: 'none', glasses: true } })}</g>
-      <rect x="62" y="72" width="28" height="22" rx="3" fill="#2F3440" ${s}/>`;
-    if (id === 'craft') return `
-      <rect x="14" y="58" width="124" height="38" fill="#E59380" ${s}/><rect x="10" y="54" width="132" height="6" fill="#F2E9D8" ${s}/>
-      <rect x="20" y="28" width="20" height="26" rx="3" fill="#9AA0A8" ${s}/><rect x="40" y="40" width="6" height="3" fill="#22262B"/>
-      <path d="M56 54 h36 l-3 -10 h-30z" fill="#F4B6C2" ${s}/><g fill="#E3A85A" ${s} stroke-width="1"><circle cx="64" cy="48" r="4"/><circle cx="74" cy="48" r="4"/><circle cx="84" cy="48" r="4"/></g>
-      <g fill="#D86B56" ${s} stroke-width="1"><rect x="100" y="44" width="8" height="10" rx="1.5"/><rect x="112" y="44" width="8" height="10" rx="1.5"/></g>
-      <path d="M128 54 q0 -18 6 -26 q4 10 0 26z" fill="#7FB069" ${s}/>
-      <text x="76" y="80" text-anchor="middle" ${HAND} font-size="10" fill="#fff">CRAFTY</text>`;
-    if (id === 'gear') return `
-      <rect x="8" y="8" width="136" height="88" fill="url(#mesh)"/>
-      <path d="M12 44 H140 M12 74 H140" ${s} stroke-width="2.4"/>
-      <g fill="#F4EEDF" ${s}><polygon points="20,26 40,26 44,42 16,42"/><polygon points="52,26 72,26 76,42 48,42"/></g>
-      <g fill="#22262B"><rect x="88" y="28" width="22" height="16" rx="2"/><rect x="114" y="32" width="20" height="12" rx="2"/></g>
-      <g fill="#E7B84F" ${s} stroke-width="1"><ellipse cx="26" cy="68" rx="10" ry="5"/><ellipse cx="46" cy="68" rx="10" ry="5"/></g>
-      <path d="M100 96 V52 M90 96 l10 -10 l10 10 M100 54 H128" ${s} stroke-width="2"/>`;
-    if (id === 'kitchen') return `
-      <rect x="10" y="58" width="96" height="38" fill="#F2E9D8" ${s}/><rect x="10" y="54" width="96" height="6" fill="#8B6A43" ${s}/>
-      <rect x="18" y="44" width="32" height="10" fill="#22262B"/><path d="M24 44 h20 l-2 -12 h-16z" fill="#7A7F88" ${s}/>
-      <g class="steam" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M30 28 q-2 -4 0 -8"/><path d="M38 28 q2 -4 0 -8"/></g>
-      <g transform="translate(58 30) scale(.4)">${burger(0)}</g>
-      <rect x="112" y="16" width="30" height="80" rx="3" fill="#E6E9EE" ${s}/><path d="M112 44 H142 M136 26 V36 M136 52 V64" ${s} stroke-width="1.6"/>`;
-    return '';
-  }
-
-  // The room that was just built shows its "building" picture for a moment (the office sets it, then clears it)
-  let BUILDING = null;
-  const setBuilding = (id) => { BUILDING = id || null; };
-
-  function room(id, def, owned, affordable, cost) {
-    const r = ROOMS[id];
-    const roomState = owned ? (BUILDING === id && hasArt(`hq.room.${id}`, 'building') ? 'building' : 'built') : 'for-rent';
-    const roomArt = hasArt(`hq.room.${id}`, roomState) ? loader().use(`hq.room.${id}`, roomState) : '';
-    const wall = owned ? { edit: '#3E4C63', craft: '#F2D7A6', gear: '#D8D2C4', kitchen: '#CFE0D6' }[id] : '#4A4743';
-    const floor = owned ? '#B98552' : '#3A3734';
-    const s = S(1.6);
-    const cardArt = !owned && hasArt('hq.for-rent');
-    const priceText = `$${cost.toLocaleString('en-US')}`;
-    const body = owned ? (roomArt ? '' : roomFurniture(id)) :
-      `${roomArt ? '' : '<path d="M30 30 h92 v40 h-92z" fill="#5E5A52" opacity=".5"/>'}
-       ${cardArt ? `<g transform="rotate(-3 76 16)">${loader().use('hq.for-rent', 'default', { x: 76, y: 16 })}
-         <text x="76" y="50" text-anchor="middle" ${UI} font-weight="700" font-size="10.5" fill="${INK}">${priceText}</text></g>` :
-       `<g transform="rotate(-4 76 50)"><rect x="34" y="30" width="84" height="40" fill="#F2E9D8" ${s}/>
-       <text x="76" y="48" text-anchor="middle" ${HAND} font-size="13" fill="#D86B56">FOR RENT</text>
-       <text x="76" y="63" text-anchor="middle" ${UI} font-weight="700" font-size="9.5" fill="${INK}">${priceText}</text></g>`}
-       ${affordable ? `<circle cx="132" cy="22" r="9" fill="#E7B84F" ${s}/><text x="132" y="26" text-anchor="middle" ${HAND} font-size="11" fill="${INK}">!</text>` : ''}`;
-    return `<g class="room ${owned ? 'owned' : 'locked'}${affordable ? ' affordable' : ''}" data-room="${id}" transform="translate(${r.x} ${r.y})">
-      ${roomArt ? `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>${roomArt}` : `<rect width="${r.w}" height="${r.h}" fill="${wall}" ${s}/>
-      ${owned ? `<ellipse cx="${r.w / 2}" cy="6" rx="34" ry="10" fill="#FFE7A3" opacity=".45" filter="url(#glow)"/>` : ''}
-      <rect y="${r.h - 14}" width="${r.w}" height="14" fill="${floor}" ${s}/>`}
-      <g filter="url(#cut)">${body}</g>
-      <g transform="translate(6 -6) rotate(-2)"><rect width="${def.name.length * 5.6 + 14}" height="15" fill="${owned ? '#F2E9D8' : '#CDBFA5'}" ${s} stroke-width="1.2"/>
-      <text x="7" y="11" ${UI} font-weight="700" font-size="9" fill="${INK}">${def.name.toUpperCase()}</text></g>
-      <rect width="${r.w}" height="${r.h}" fill="transparent"/>
+  // An empty cavity: ceiling with beams, two side walls, back wall, wood floor and a hanging lamp, in local units
+  function cavity(id, w, dark) {
+    const p = ROOM_PAINT[id] || ROOM_PAINT.office;
+    const s = S(1);
+    const lamps = w > 150 ? [w * 0.3, w * 0.7] : [w / 2];
+    const beams = Array.from({ length: Math.round(w / 18) }, (_, i) => 14 + (i + 0.5) * (w - 28) / Math.round(w / 18));
+    return `<g class="cav${dark ? ' dark' : ''}">
+      <rect width="${w}" height="96" fill="${p.wall}"/>
+      <polygon points="0,0 ${w},0 ${w - 14},12 14,12" fill="#8A5A33"/>
+      ${beams.map(x => `<path d="M${x} 12 L${(x - w / 2) * 1.16 + w / 2} 0" stroke="#6E4527" stroke-width="2.4"/>`).join('')}
+      <polygon points="0,0 14,12 14,80 0,96" fill="${p.lit}"/>
+      <polygon points="${w},0 ${w - 14},12 ${w - 14},80 ${w},96" fill="${p.side}"/>
+      <polygon points="0,96 14,80 ${w - 14},80 ${w},96" fill="#C9955E"/>
+      <path d="M14 12 V80 H${w - 14} V12" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="1"/>
+      ${lamps.map(x => `<path d="M${x} 12 V19" stroke="${INK}" stroke-width=".8"/><path d="M${x - 5} 23 q5 -6 10 0z" fill="#2E3238" ${s}/>
+        ${dark ? '' : `<ellipse cx="${x}" cy="40" rx="${Math.min(30, w / 4)}" ry="24" fill="#FFE7A3" opacity=".22"/><circle cx="${x}" cy="23.5" r="1.6" fill="#FFE7A3"/>`}`).join('')}
+      ${dark ? `<rect width="${w}" height="96" fill="#1E1B18" opacity=".55"/>` : ''}
     </g>`;
   }
 
-  // A built room on its own, for the room card
-  function roomPreview(def) {
-    const r = ROOMS[def.id];
-    return `<svg viewBox="${r.x - 4} ${r.y - 12} ${r.w + 8} ${r.h + 16}" aria-hidden="true">${room(def.id, def, true, false, def.cost)}</svg>`;
+  // Furniture for the rooms that have no art yet, one layer per level so upgrades add to what is there
+  function greyFurniture(id, level, w) {
+    const s = S(1);
+    const out = [];
+    if (id === 'office') {
+      out.push(`<rect x="22" y="60" width="44" height="6" fill="#B98552" ${s}/><path d="M26 66 V80 M62 66 V80" ${s}/>
+        <rect x="30" y="50" width="16" height="10" rx="1" fill="#2E3238"/><rect x="74" y="60" width="40" height="6" fill="#B98552" ${s}/><path d="M78 66 V80 M110 66 V80" ${s}/>
+        <rect x="140" y="62" width="44" height="14" rx="4" fill="#D86B56" ${s}/><rect x="138" y="56" width="48" height="8" rx="4" fill="#C4644D" ${s}/>
+        <path d="M188 80 q4 -24 0 -36 q-6 10 -2 36z" fill="#7FB069" ${s}/><rect x="184" y="72" width="10" height="8" fill="#D86B56" ${s}/>`);
+      if (level >= 2) out.push(`<rect x="118" y="58" width="16" height="22" fill="#7D9E91" ${s}/><rect x="120" y="48" width="8" height="10" rx="2" fill="#9AA0A8" ${s}/><circle cx="131" cy="55" r="2.2" fill="#E7B84F" ${s}/>`);
+      if (level >= 3) out.push(`<ellipse cx="96" cy="76" rx="20" ry="4" fill="#8B6A43" ${s}/>`);
+    }
+    if (id === 'edit') {
+      out.push(`<rect x="22" y="60" width="56" height="6" fill="#8B6A43" ${s}/><path d="M26 66 V80 M74 66 V80" ${s}/>
+        <rect x="26" y="44" width="22" height="15" rx="1" fill="#22262B" ${s}/><rect x="50" y="44" width="22" height="15" rx="1" fill="#22262B" ${s}/>
+        <rect x="28" y="46" width="18" height="11" fill="#D86B56" opacity=".7"/><rect x="52" y="46" width="18" height="11" fill="#7FB0C9" opacity=".7"/>`);
+      if (level >= 2) out.push(`<rect x="72" y="50" width="12" height="10" fill="#2E3238" ${s}/><g fill="#E7B84F"><circle cx="75" cy="55" r="1.4"/><circle cx="80" cy="55" r="1.4"/></g>`);
+      if (level >= 3) out.push(`<rect x="16" y="62" width="6" height="18" fill="#22262B" ${s}/><rect x="78" y="62" width="6" height="18" fill="#22262B" ${s}/>`);
+    }
+    if (id === 'gear') {
+      out.push(`<rect x="14" y="12" width="${w - 28}" height="68" fill="url(#mesh)" opacity=".7"/>
+        <path d="M18 40 H82 M18 62 H82" stroke="#5E5A52" stroke-width="2"/>
+        <g fill="#F4EEDF" ${s}><polygon points="22,30 34,30 36,40 20,40"/><polygon points="42,30 54,30 56,40 40,40"/></g>
+        <g fill="#22262B"><rect x="60" y="30" width="16" height="10" rx="1.5"/><rect x="24" y="52" width="20" height="10" rx="1.5"/></g>
+        <g fill="#E7B84F" ${s}><ellipse cx="58" cy="78" rx="7" ry="3"/><ellipse cx="70" cy="78" rx="7" ry="3"/></g>`);
+      if (level >= 2) out.push(`<path d="M84 80 V44 M78 80 l6 -6 l6 6" stroke="${INK}" stroke-width="1.4" fill="none"/>`);
+    }
+    if (id === 'art') {
+      out.push(`<rect x="34" y="60" width="40" height="6" fill="#B98552" ${s}/><path d="M38 66 V80 M70 66 V80" ${s}/>
+        <rect x="18" y="30" width="20" height="40" fill="#C79A64" ${s}/><path d="M18 43 H38 M18 56 H38" ${s}/>`);
+      if (level >= 2) out.push(`<rect x="76" y="34" width="12" height="40" rx="2" fill="#F2E9D8" ${s}/><rect x="60" y="52" width="14" height="4" fill="#2E3238"/>`);
+      if (level >= 3) out.push(`<path d="M42 60 l6 -10 l6 10z" fill="#E6E9EE" ${s}/>`);
+    }
+    if (id === 'lobby') {
+      out.push(`<rect x="18" y="26" width="24" height="54" fill="#344F70" ${s}/><circle cx="38" cy="54" r="1.6" fill="#E7B84F"/>
+        <rect x="21" y="30" width="18" height="14" fill="#A9C6C0" opacity=".6"/>
+        <path d="M88 80 q2 -22 -4 -30 q-6 12 0 30z" fill="#7FB069" ${s}/><rect x="82" y="72" width="10" height="8" fill="#D86B56" ${s}/>`);
+    }
+    if (id === 'garage') {
+      out.push(`<rect x="14" y="12" width="72" height="34" fill="#C9CDD1" ${s}/><path d="${Array.from({ length: 6 }, (_, i) => `M14 ${17 + i * 5.5} H86`).join(' ')}" stroke="#9AA0A8" stroke-width="1"/>
+        <rect x="18" y="52" width="30" height="20" fill="#B98552" ${s}/><path d="M22 56 h22 M22 62 h22 M22 68 h22" stroke="${INK}" stroke-width=".8"/>
+        <rect x="60" y="64" width="18" height="16" fill="#E7B84F" ${s}/>`);
+    }
+    return out.join('');
+  }
+  // Furniture that stands in front of the crew (desk fronts), from the art or drawn
+  function greyFront(id, level) {
+    const s = S(1);
+    if (id === 'lobby') return `<rect x="50" y="70" width="34" height="18" fill="#7D9E91" ${s}/><rect x="47" y="66" width="40" height="5" fill="#F2E9D8" ${s}/>`;
+    if (id === 'art' && level >= 1) return `<rect x="34" y="60" width="40" height="6" fill="#B98552" ${s}/>`;
+    return '';
   }
 
-  // The lobby, job board, front desk and street from the batch 6 pictures
-  function lobbyAndStreetArt() {
+  // One room's picture inside its cavity: delivered art (hq.room.<id>) or the greybox, with crew standing inside
+  function hqRoomPicture(room, level, building, crew) {
     const L = loader();
-    const LX = 24, LY = 300;                 // the lobby picture is 312 x 60
-    const BX = 88, BY = 311, BK = .55;       // the job board, drawn at 55% of its 116 x 57 so it fits the wall between the door and the desk
-    const flyer = (x, y, rot, k, inner) => `<g transform="rotate(${rot} ${x} ${y})">${L.use('hq.flyer', 'default', { x, y, k })}${inner}</g>`;
-    return `
-  <!-- Lobby -->
-  ${L.use('hq.lobby', 'default', { x: LX, y: LY })}
-  <g class="jobboard" data-jobs="1" filter="url(#cut)">
-    ${L.use('hq.jobboard', 'default', { x: BX, y: BY, k: BK })}
-    ${flyer(BX + 15, BY + 3, -5, .6, `<g transform="translate(${BX + 6.5} ${BY + 9}) scale(.17)">${burger(0)}</g>`)}
-    ${flyer(BX + 44, BY + 3, 4, .6, `<path d="M${BX + 38} ${BY + 11} h12 M${BX + 38} ${BY + 14} h9" stroke="${INK}" stroke-width=".8" stroke-linecap="round" opacity=".6"/>`)}
-    <rect x="${BX - 4}" y="${BY - 4}" width="${116 * BK + 8}" height="${57 * BK + 8}" fill="transparent"/>
-  </g>
-  <defs><clipPath id="deskClip"><rect x="150" y="290" width="70" height="46"/></clipPath></defs>
-  <g clip-path="url(#deskClip)"><g transform="translate(178 352) scale(.78)" filter="url(#shadow)">${puppet({ color: '#E7B84F', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } })}</g></g>
-  <!-- Street and van -->
-  ${L.use('hq.street', 'default', { x: 0, y: 372 })}
-  <rect x="0" y="435" width="360" height="11" fill="#39383C"/>
-  <g filter="url(#cut)">${L.use('hq.van', 'default', { x: 250, y: 438 })}</g>
-`;
+    const box = hqBox(room);
+    const id = room.id;
+    const fixed = !!room.fixed;
+    const rented = !fixed && level < 1;
+    const state = building ? 'building' : rented ? 'for-rent' : 'l' + Math.max(1, level);
+    const art = hasArt(`hq.room.${id}`, state) ? L.use(`hq.room.${id}`, state, { x: 0, y: 0 }) : '';
+    let pic;
+    if (room.boarded) pic = cavity('slot', box.w, true);
+    else if (art) pic = art;
+    else if (building) pic = cavity(id, box.w) + `<g filter="url(#cut)"><path d="M20 80 L34 40 L48 80 M24 70 H44 M27 60 H41" stroke="#D86B56" stroke-width="2" fill="none"/>
+      <path d="M52 56 h30 l6 24 h-42z" fill="#E6E9EE" stroke="${INK}" stroke-width="1"/></g>`;
+    else pic = cavity(id, box.w, rented) + (rented ? `<path d="M30 80 q4 -18 20 -18 q16 0 18 18z" fill="#D8D2C4" opacity=".55"/>` : `<g filter="url(#cut)">${greyFurniture(id, level, box.w)}</g>`);
+    const people = (crew || []).map(p => `<g transform="translate(${p.x} ${p.y || 90}) scale(${p.flip ? -0.62 : 0.62} 0.62)">${puppet(p.c)}</g>`).join('');
+    const showFront = !building && !rented && !room.boarded;
+    const front = showFront ? (hasArt(`hq.room.${id}`, 'front') ? L.use(`hq.room.${id}`, 'front', { x: 0, y: 0 }) : `<g filter="url(#cut)">${greyFront(id, level)}</g>`) : '';
+    return `<g transform="translate(${box.x} ${box.y})"><svg width="${box.w}" height="${box.h}" overflow="hidden">${pic}${people}${front}</svg></g>`;
   }
 
-  function officeMarkup(company, owned, bank) {
-    const s = S();
+  // What sits in front of the building: the room name tags, FOR RENT cards, planks on the empty slot, tap targets
+  function hqRoomOverlay(room, level, upgrade, bank) {
     const L = loader();
-    // The batch 6 lobby and street are shorter than the first layout allowed (60 and 64 units against 84 and 86), so with
-    // them the building ends at y 372 and the whole frame is 446 tall. Without them the first layout is drawn as before
-    const NEWHQ = hasArt('hq.lobby') && hasArt('hq.street');
-    const skyArt = NEWHQ && hasArt('hq.sky');
-    const H = NEWHQ ? 446 : 470;
-    const rooms = company.rooms.map(r => room(r.id, r, owned.includes(r.id), !owned.includes(r.id) && bank >= r.cost, r.cost)).join('');
-    const name = company.name.toUpperCase();
-    return `
-<svg class="office" viewBox="0 0 360 ${H}" role="img" aria-label="${company.name} office">
-  ${skyArt ? `<rect width="360" height="${H}" fill="#80AABF"/>${L.use('hq.sky', 'default', { x: 11, y: 0, k: 1.12 })}` : `<rect width="360" height="${H}" fill="#A9C6C0"/>
-  <circle cx="318" cy="34" r="20" fill="#E7B84F" filter="url(#cut)"/>`}
-  ${hasArt('hq.cloud-wide') && hasArt('hq.cloud-small') ? `<g filter="url(#cut)">${L.use('hq.cloud-wide', 'default', { x: 4, y: 12 })}${L.use('hq.cloud-small', 'default', { x: 300, y: 20 })}</g>` :
-  `<g fill="#F2E9D8" filter="url(#cut)"><path d="M20 30 q8 -14 22 -6 q10 -10 22 0 q12 0 10 10 h-56z"/><path d="M250 70 q6 -10 16 -4 q8 -8 16 0 q8 0 8 8 h-42z" opacity=".8"/></g>`}
+    const box = hqBox(room);
+    const s = S(1.2);
+    const rented = !room.fixed && level < 1;
+    const tagW = room.name.length * 4.6 + 12;
+    let out = room.boarded ? '' : `<g transform="translate(${box.x + box.w / 2 - tagW / 2} ${box.y + 14}) rotate(-1.5)"><rect width="${tagW}" height="11" fill="${rented ? '#CDBFA5' : '#F2E9D8'}" ${S(.8)}/>
+      <text x="${tagW / 2}" y="8" text-anchor="middle" ${UI} font-weight="700" font-size="7" fill="${INK}">${room.name.toUpperCase()}</text></g>`;
+    if (room.boarded) {
+      out += `<g filter="url(#cut)" transform="translate(${box.x} ${box.y})">
+        <path d="M6 30 L94 70" stroke="#B98552" stroke-width="11"/><path d="M6 70 L94 30" stroke="#C79A64" stroke-width="11"/>
+        <g transform="translate(50 52) rotate(-4)"><rect x="-26" y="-7" width="52" height="14" fill="#F2E9D8" ${S(.8)}/><text y="3.5" text-anchor="middle" ${HAND} font-size="9" fill="#D86B56">COMING SOON</text></g></g>`;
+    }
+    if (rented && upgrade) {
+      const price = `$${upgrade.cost.toLocaleString('en-US')}`;
+      const cx = box.x + box.w / 2, cy = box.y + 32;
+      out += hasArt('hq.for-rent') ? `<g transform="rotate(-3 ${cx} ${cy})">${L.use('hq.for-rent', 'default', { x: cx, y: cy, k: .62 })}
+          <text x="${cx}" y="${cy + 21}" text-anchor="middle" ${UI} font-weight="700" font-size="8" fill="${INK}">${price}</text></g>` :
+        `<g transform="rotate(-4 ${cx} ${cy + 12})"><rect x="${cx - 30}" y="${cy}" width="60" height="28" fill="#F2E9D8" ${s}/>
+          <text x="${cx}" y="${cy + 12}" text-anchor="middle" ${HAND} font-size="10" fill="#D86B56">FOR RENT</text>
+          <text x="${cx}" y="${cy + 23}" text-anchor="middle" ${UI} font-weight="700" font-size="7.5" fill="${INK}">${price}</text></g>`;
+    }
+    if (upgrade && !upgrade.soon && bank >= upgrade.cost) {
+      out += `<g class="ready-mark"><circle cx="${box.x + box.w - 12}" cy="${box.y + 30}" r="7" fill="#E7B84F" ${s}/><text x="${box.x + box.w - 12}" y="${box.y + 33.5}" text-anchor="middle" ${HAND} font-size="9" fill="${INK}">${rented ? '!' : '+'}</text></g>`;
+    }
+    return out + `<rect class="room-hit" data-room="${room.id}" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="transparent"/>`;
+  }
 
-  <!-- Building -->
-  <rect x="12" y="44" width="336" height="${NEWHQ ? 328 : 340}" fill="url(#brick)" ${s} filter="url(#cut)"/>
-  <rect x="8" y="40" width="344" height="10" fill="#C4644D" ${s}/>
-  ${hasArt('hq.sign', 'on') ? `<g filter="url(#cut)"><path d="M100 36 V44 M260 36 V44" ${s}/>${hasArt('hq.sign', 'off') ? `<g>${loader().use('hq.sign', 'off')}<g class="bulbs">${loader().use('hq.sign', 'on')}</g></g>` : loader().use('hq.sign', 'on')}</g>
-  <text x="180" y="${name.length > 18 ? 28 : 29.5}" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12 : 14.5}" fill="${INK}">${name}</text>` : `<g filter="url(#cut)">
-    <rect x="70" y="6" width="220" height="34" fill="#22262B" ${s}/>
-    <text x="180" y="29" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 12.5 : 15}" fill="#E7B84F">${name}</text>
-    <g fill="#FFE7A3">${Array.from({ length: 12 }, (_, i) => `<circle cx="${78 + i * 18.6}" cy="10" r="1.7"/><circle cx="${78 + i * 18.6}" cy="36" r="1.7"/>`).join('')}</g>
-    <path d="M100 40 V44 M260 40 V44" ${s}/>
-  </g>`}
-  ${rooms}
+  // The building front, from hq.shell or drawn: roof cap, slab, piers and end walls with the openings left open
+  function hqShell() {
+    const L = loader();
+    if (hasArt('hq.shell')) return L.use('hq.shell', 'default', { x: HQ.x, y: HQ.y });
+    const s = S(1.2);
+    const piers = [154, 262, 370].map(x => `<rect x="${x}" y="72" width="8" height="96" fill="url(#brick)"/>`).join('') +
+      [154, 262, 370].map(x => `<rect x="${x}" y="184" width="8" height="96" fill="url(#brick)"/>`).join('');
+    return `<g filter="url(#cut)"><rect x="40" y="56" width="452" height="16" fill="#C79A64" ${s}/><rect x="40" y="168" width="452" height="16" fill="#D8C29A" ${s}/>
+      <rect x="40" y="72" width="14" height="208" fill="url(#brick)" ${s}/><rect x="478" y="72" width="14" height="208" fill="url(#brick)" ${s}/>${piers.replace(/<rect x="(154|262)" y="72"[^>]*>/g, (m, x) => x === '154' ? '' : m)}
+      <rect x="40" y="280" width="452" height="4" fill="#B98552"/></g>`;
+  }
 
-${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
-  <rect x="24" y="296" width="312" height="84" fill="#F2E9D8" ${S(1.6)}/>
-  <rect x="24" y="366" width="312" height="14" fill="url(#tile)" ${S(1.2)}/>
-  <g class="jobboard" data-jobs="1" filter="url(#cut)">
-    <rect x="34" y="304" width="116" height="58" fill="#B98552" ${S(1.6)}/>
-    <rect x="38" y="308" width="108" height="50" fill="#C79A64"/>
-    <g transform="rotate(-4 64 332)"><rect x="44" y="312" width="44" height="40" fill="#fff" ${S(1)}/><text x="66" y="324" text-anchor="middle" ${UI} font-weight="700" font-size="6.5" fill="${INK}">BURGER JOB</text><g transform="translate(51 326) scale(.5)">${burger(0)}</g><circle cx="66" cy="313" r="2.2" fill="#D86B56"/></g>
-    <g transform="rotate(5 118 332)"><rect x="96" y="312" width="44" height="40" fill="#F2E9D8" ${S(1)}/><text x="118" y="324" text-anchor="middle" ${UI} font-weight="700" font-size="6.5" fill="${INK}">TACO TRUCK</text><text x="118" y="340" text-anchor="middle" ${HAND} font-size="8" fill="#D86B56">SOON</text><circle cx="118" cy="313" r="2.2" fill="#7D9E91"/></g>
-    <rect x="34" y="304" width="116" height="58" fill="transparent"/>
-  </g>
-  <text x="92" y="376" text-anchor="middle" ${UI} font-weight="700" font-size="8" fill="${INK}">JOB BOARD</text>
-  <g filter="url(#cut)">
-    <rect x="160" y="310" width="40" height="56" fill="#344F70" ${S(1.6)}/><circle cx="192" cy="340" r="2" fill="#E7B84F"/>
-    <rect x="164" y="314" width="32" height="20" fill="#A9C6C0" opacity=".6"/>
-  </g>
-  <g filter="url(#cut)">
-    <rect x="232" y="334" width="80" height="32" fill="#7D9E91" ${S(1.6)}/><rect x="228" y="330" width="88" height="6" fill="#F2E9D8" ${S(1.2)}/>
-    <path d="M322 366 q0 -30 6 -42 q6 12 0 42z" fill="#7FB069" ${S(1.2)}/><rect x="316" y="356" width="14" height="10" fill="#D86B56" ${S(1.2)}/>
-  </g>
-  <g transform="translate(272 334) scale(1.1)" filter="url(#shadow)">${puppet({ color: '#E7B84F', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } })}</g>
+  // Sky, city, trees, roof dressing and the marquee sign. The sign shows lit and does not blink: its off and on
+  // drawings are not one master (Art-Batch-7-Validation), so a blink would make the board jump
+  function hqBackdrop(name) {
+    const L = loader();
+    const s = S(1.2);
+    const sky = `<rect x="-600" y="-300" width="1800" height="600" fill="#9CC3D3"/>` +
+      (hasArt('hq.sky') ? L.use('hq.sky', 'default', { x: 60, y: -6, k: 1.6 }) : `<circle cx="452" cy="34" r="18" fill="#E7B84F" filter="url(#cut)"/>`) +
+      (hasArt('hq.cloud-wide') && hasArt('hq.cloud-small') ? `<g filter="url(#cut)">${L.use('hq.cloud-wide', 'default', { x: -40, y: 24, k: 1.3 })}${L.use('hq.cloud-small', 'default', { x: 520, y: 30, k: 1.2 })}</g>` : '');
+    const far = [[-420, 120], [-330, 80], [-250, 140], [-170, 96], [-100, 60], [500, 70], [560, 120], [640, 90], [720, 140], [800, 100], [880, 70]]
+      .map(([x, h], i) => `<rect x="${x}" y="${170 - h}" width="${46 + (i % 3) * 14}" height="${h + 140}" fill="${i % 2 ? '#B7C9C7' : '#C7D3CC'}"/>`).join('');
+    const near = [[-340, 70, '#D7A98A'], [-240, 96, '#C9B79B'], [-120, 54, '#B9C7A8'], [-30, 40, '#D9B28C'], [500, 60, '#C9B79B'], [600, 86, '#D7A98A'], [700, 50, '#B9C7A8'], [790, 74, '#D9B28C']]
+      .map(([x, h, c]) => `<g filter="url(#cut)"><rect x="${x}" y="${232 - h}" width="84" height="${h + 60}" fill="${c}" ${S(.8)}/>
+        ${Array.from({ length: 3 }, (_, r) => Array.from({ length: 3 }, (_, k) => `<rect x="${x + 12 + k * 24}" y="${244 - h + r * 20}" width="10" height="12" fill="#F2E9D8" opacity=".7"/>`).join('')).join('')}</g>`).join('');
+    const trees = [-80, -10, 520, 590, 660].map((x, i) => `<g filter="url(#cut)"><rect x="${x + 16}" y="206" width="5" height="76" fill="#7A5634"/>
+      <circle cx="${x + 18}" cy="${196 - (i % 2) * 10}" r="${26 - (i % 2) * 4}" fill="${i % 2 ? '#8DB06A' : '#A3BE72'}" ${S(.8)}/><circle cx="${x + 2}" cy="${214 - (i % 2) * 8}" r="16" fill="#97B66C" ${S(.8)}/></g>`).join('');
+    const roof = `<g filter="url(#cut)">
+      <rect x="62" y="22" width="30" height="30" rx="3" fill="#B98552" ${s}/><path d="M60 22 q17 -12 34 0z" fill="#8B6A43" ${s}/><path d="M66 52 V56 M88 52 V56" ${s}/>
+      <path d="M446 54 l8 -14 M462 54 l-8 -14" ${s}/><ellipse cx="452" cy="36" rx="16" ry="8" transform="rotate(-25 452 36)" fill="#E6E9EE" ${s}/>
+      <rect x="410" y="44" width="14" height="12" fill="#9AA0A8" ${s}/></g>`;
+    const sign = hasArt('hq.sign', 'on') ? `<g class="hq-sign" data-rename="1" filter="url(#cut)"><path d="M196 52 V57 M336 52 V57" ${s}/>${L.use('hq.sign', 'on', { x: 266, y: 37, k: .82 })}</g>
+      <text x="266" y="${name.length > 18 ? 40 : 41.5}" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 10 : 12}" fill="${INK}">${name}</text>` :
+      `<g class="hq-sign" data-rename="1" filter="url(#cut)"><rect x="176" y="22" width="180" height="30" fill="#22262B" ${s}/><text x="266" y="42" text-anchor="middle" ${HAND} font-size="${name.length > 18 ? 11 : 13}" fill="#E7B84F">${name}</text></g>`;
+    return { back: sky + far + near + trees, roof: roof + sign };
+  }
 
-  <!-- Street and van -->
-  <rect x="0" y="384" width="360" height="26" fill="#CFC4B0"/>
-  <path d="M0 384 H360" ${S(1.2)}/>
-  <rect x="0" y="410" width="360" height="60" fill="#5E5A52"/>
-  <g stroke="#F2E9D8" stroke-width="3" stroke-dasharray="16 12"><path d="M0 446 H360"/></g>
-  <g filter="url(#cut)">
-    <path d="M190 432 V398 q0 -6 6 -6 h96 q8 0 14 8 l14 16 q4 4 4 10 v6z" fill="#F2E9D8" ${S(1.6)}/>
-    <path d="M296 398 h8 l14 18 h-22z" fill="#A9C6C0" ${S(1.2)}/>
-    <rect x="190" y="414" width="134" height="8" fill="#D86B56"/>
-    <text x="242" y="410" text-anchor="middle" ${HAND} font-size="9" fill="${INK}">GRIP + ELECTRIC</text>
-    <circle cx="216" cy="434" r="9" fill="${INK}"/><circle cx="216" cy="434" r="3.5" fill="#9AA0A8"/>
-    <circle cx="300" cy="434" r="9" fill="${INK}"/><circle cx="300" cy="434" r="3.5" fill="#9AA0A8"/>
-  </g>`}
-</svg>`;
+  function hqStreet() {
+    return `<rect x="-600" y="280" width="1800" height="20" fill="#D8CDB8"/><path d="M-600 280 H1200" stroke="${INK}" stroke-opacity=".35" stroke-width="1"/>
+      <rect x="-600" y="298" width="1800" height="4" fill="#B5AA94"/><rect x="-600" y="302" width="1800" height="200" fill="#5E5A52"/>
+      <path d="M-600 344 H1200" stroke="#F2E9D8" stroke-width="3" stroke-dasharray="18 14"/>`;
+  }
+
+  /*
+    The whole office. o = { company, levels: { roomId: level }, bank, name, building (room id showing its building
+    state), crew: [{ c, room, x, flip }] } with x in the room's own units.
+  */
+  function hqMarkup(o) {
+    const L = loader();
+    const { company, levels, bank } = o;
+    const name = (o.name || company.name).toUpperCase();
+    const bd = hqBackdrop(name);
+    const nextUp = (room) => company.upgrades.find(u => u.room === room.id && u.level === (levels[room.id] || 0) + 1);
+    const pics = company.rooms.map(r => hqRoomPicture(r, levels[r.id] || 0, o.building === r.id, (o.crew || []).filter(p => p.room === r.id))).join('');
+    const overlays = company.rooms.map(r => hqRoomOverlay(r, levels[r.id] || 0, nextUp(r), bank)).join('');
+    const officeBox = hqBox(company.rooms.find(r => r.id === 'office'));
+    const BK = .5, BX = officeBox.x + 20, BY = officeBox.y + 22;
+    const board = hasArt('hq.jobboard') ? `<g class="jobboard" data-jobs="1" filter="url(#cut)">${L.use('hq.jobboard', 'default', { x: BX, y: BY, k: BK })}
+        ${hasArt('hq.flyer') ? `<g transform="rotate(-5 ${BX + 16} ${BY + 4})">${L.use('hq.flyer', 'default', { x: BX + 16, y: BY + 3, k: .55 })}<g transform="translate(${BX + 9} ${BY + 8}) scale(.15)">${burger(0)}</g></g>
+        <g transform="rotate(4 ${BX + 42} ${BY + 4})">${L.use('hq.flyer', 'default', { x: BX + 42, y: BY + 3, k: .55 })}</g>` : ''}
+        <rect x="${BX - 3}" y="${BY - 3}" width="${116 * BK + 6}" height="${57 * BK + 6}" fill="transparent"/></g>` :
+      `<g class="jobboard" data-jobs="1" filter="url(#cut)"><rect x="${BX}" y="${BY}" width="58" height="30" fill="#B98552" ${S(1)}/><rect x="${BX + 6}" y="${BY + 4}" width="20" height="20" fill="#fff" ${S(.6)}/><rect x="${BX + 31}" y="${BY + 5}" width="20" height="20" fill="#F2E9D8" ${S(.6)}/></g>`;
+    const van = hasArt('hq.van') ? `<g class="van" filter="url(#cut)">${L.use('hq.van', 'default', { x: 432, y: 318 })}</g>` : '';
+    return `<svg class="hq-svg" viewBox="${HQ_VIEW.x} ${HQ_VIEW.y} ${HQ_VIEW.w} ${HQ_VIEW.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(o.name || company.name)} office">
+      ${bd.back}${hqStreet()}
+      <rect x="40" y="56" width="452" height="228" fill="#3A3330"/>
+      ${pics}
+      <g filter="url(#shadow)">${hqShell()}</g>
+      ${bd.roof}${overlays}${board}${van}
+    </svg>`;
+  }
+
+  // A room on its own at a given level, for the room card
+  function hqRoomPreview(company, roomId, level) {
+    const r = company.rooms.find(x => x.id === roomId);
+    const box = hqBox(r);
+    return `<svg viewBox="${box.x - 2} ${box.y - 2} ${box.w + 4} ${box.h + 4}" aria-hidden="true">${hqRoomPicture(r, level, false, [])}
+      <rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="none" stroke="${INK}" stroke-width="2"/></svg>`;
   }
 
   /* ---------- Icons ---------- */
@@ -847,7 +905,7 @@ ${NEWHQ ? lobbyAndStreetArt() : `  <!-- Lobby: job board, door, front desk -->
 
   root.WrapArt = {
     DEPT_COLOR, heroSpot, keyLens, wedgeTransform, BEAM_LEN, WIDE_VIEW, IDLE_WIDE, STATIONS, IDLE, CLIENT, AGENCY,
-    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, officeMarkup, setBuilding, roomPreview, cartBurger, carryStart, heldItem, puffMarkup,
+    globalDefs, puppet, faceSVG, propInner, propSVG, setMarkup, hqMarkup, hqRoomPreview, HQ, cartBurger, carryStart, heldItem, puffMarkup,
     deptIcon, ICON, chaosIcon, starSVG, pauseSVG, shotMark, clapperSVG,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

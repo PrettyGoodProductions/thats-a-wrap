@@ -129,9 +129,17 @@
   /* ================= Save (this device only) ================= */
 
   const SAVE_KEY = 'thats-a-wrap-save-v1';
+  // Saves from before the HQ redesign own whole rooms (craft, kitchen, gear, edit): turn them into the levels they became
+  function migrateSave(v) {
+    const map = CO.legacyRooms || {};
+    if (Array.isArray(v.owned) && v.owned.some(id => map[id])) {
+      v.owned = [...new Set(v.owned.flatMap(id => map[id] || [id]))];
+    }
+    return v;
+  }
   function freshSave() { return { bank: 0, owned: [], best: {}, runs: 0, companyName: '', lab: {} }; }
   function loadSave() {
-    try { const v = JSON.parse(localStorage.getItem(SAVE_KEY)); if (v && typeof v.bank === 'number') return Object.assign(freshSave(), v); } catch (e) { /* storage blocked */ }
+    try { const v = JSON.parse(localStorage.getItem(SAVE_KEY)); if (v && typeof v.bank === 'number') return migrateSave(Object.assign(freshSave(), v)); } catch (e) { /* storage blocked */ }
     return freshSave();
   }
   function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* storage blocked */ } }
@@ -180,10 +188,14 @@
   }
   // A landscape lab shoot on a phone held upright (or locked to portrait): turn the whole shoot sideways ourselves
   function syncRot() {
-    const rot = isLand() && screen === 'shoot' && window.innerHeight > window.innerWidth;
+    // The shoot and the HQ are landscape. A phone held upright turns them sideways
+    const rot = ((isLand() && screen === 'shoot') || screen === 'office') && window.innerHeight > window.innerWidth;
     document.body.classList.toggle('rot', rot);
-    document.body.classList.toggle('lab-land', isLand() && screen === 'shoot');
+    document.body.classList.toggle('lab-land', (isLand() && screen === 'shoot') || screen === 'office');
     document.body.classList.toggle('flip', rot && labFlip);
+    // HQ on a phone (short side under 520 px): compact bars and panel
+    const off = $('screen-office');
+    if (off) off.classList.toggle('compact', Math.min(window.innerWidth, window.innerHeight) < 520);
   }
   function openModal(kind, html) { modal = kind; $('modal').dataset.kind = kind; $('modal').innerHTML = html; $('overlay').hidden = false; }
   function closeModal() { modal = null; $('overlay').hidden = true; }
@@ -231,29 +243,117 @@
 
   const companyName = () => (save.companyName || CO.name);
 
-  function renderOffice() {
-    $('screen-office').innerHTML = `
-      <div class="topbar">
-        <button class="pill paper grow" type="button" data-rename><span>YOUR COMPANY · TAP TO RENAME</span><b class="hand">${esc(companyName())}</b></button>
-        <div class="pill paper"><span>BANK</span><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b></div>
-        <button class="sq" type="button" data-officemenu aria-label="Office menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      </div>
-      <div class="scene">${A.officeMarkup(Object.assign({}, CO, { name: companyName() }), save.owned, save.bank)}</div>
-      <button class="btn go" type="button" data-jobs>Check the job board</button>
-      <button class="btn" type="button" data-lab>Layout lab: portrait vs landscape shoot</button>
-      <p class="hint">Tap a room to build it. Every room changes how your shoots go. Profit from each job lands in the bank.</p>`;
+  // Room levels from the upgrades bought. The office starts at level 1 (it is where the company lives)
+  const roomLevel = (id) => {
+    const r = CO.rooms.find(x => x.id === id);
+    let n = (r && r.start) || 0;
+    for (const u of CO.upgrades) if (u.room === id && save.owned.includes(u.id)) n = Math.max(n, u.level);
+    return n;
+  };
+  const levelsMap = () => Object.fromEntries(CO.rooms.map(r => [r.id, roomLevel(r.id)]));
+  const nextUpgrade = (id) => CO.upgrades.find(u => u.room === id && u.level === roomLevel(id) + 1);
+  // The cheapest upgrade you could buy next (not coming soon)
+  const cheapestNext = () => CO.rooms.map(r => nextUpgrade(r.id)).filter(u => u && !u.soon).sort((a, b) => a.cost - b.cost)[0];
+  let buildingRoom = null; // the room showing its "building" picture for a moment after an upgrade
+
+  // The regulars hang out in their department's room once it is built, otherwise in the lounge
+  const HQ_CREW = [
+    { id: 'lu', dept: 'art', room: 'art', x: 62 },
+    { id: 'mika', dept: 'camera', room: 'edit', x: 70, flip: true },
+    { id: 'ro', dept: 'lighting', room: 'gear', x: 30 },
+    { id: 'dani', dept: 'grip', room: 'gear', x: 80, flip: true },
+  ];
+  const LOUNGE_X = [150, 170, 120, 190];
+  function hqCrew() {
+    const out = [];
+    let lounge = 0;
+    for (const h of HQ_CREW) {
+      const cand = LEVEL.hiring.flatMap(r => r.candidates.map(c => Object.assign({ dept: r.dept }, c))).find(c => c.id === h.id);
+      if (!cand) continue;
+      const c = Object.assign({}, cand, { color: A.DEPT_COLOR[h.dept] });
+      if (roomLevel(h.room) >= 1 && buildingRoom !== h.room) out.push({ c, room: h.room, x: h.x, flip: h.flip });
+      else out.push({ c, room: 'office', x: LOUNGE_X[lounge++], flip: lounge % 2 === 0 });
+    }
+    out.push({ c: { name: 'Receptionist', color: '#8E97A3', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', glasses: true } }, room: 'lobby', x: 67, y: 82 });
+    return out;
   }
 
+  const NAV = [
+    ['hq', 'HQ', '<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>'],
+    ['jobs', 'Jobs', '<rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M3 11h18M7 7l2-4M13 7l2-4"/>'],
+    ['crew', 'Crew', '<circle cx="9" cy="8" r="3.2"/><circle cx="16.5" cy="9" r="2.6"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6M14 14.5c3 0 7 1.5 7 5.5"/>'],
+    ['gear', 'Gear', '<path d="M2 16V7h12v9M14 10h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/>'],
+    ['locations', 'Locations', '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>'],
+    ['research', 'Research', '<path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v14c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v14"/>'],
+    ['reputation', 'Reputation', '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4c0 3 2 5 4 5M16 6h4c0 3-2 5-4 5M12 13v4M8 20h8"/>'],
+  ];
+  const navIcon = (d) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+
+  function renderOffice() {
+    const job = CO.jobs.find(j => j.playable);
+    const best = save.best[job.id] || 0;
+    const days = [['Mon', 'Prep / planning', 'prep'], ['Tue', `${job.title} (shoot)`, 'shoot'], ['Wed', 'Open', 'open'], ['Thu', 'Open', 'open'], ['Fri', 'Open', 'open']];
+    const goal = Math.min(2, save.runs % 2 === 0 && save.runs > 0 ? 2 : save.runs % 2);
+    const nav = NAV.map(([id, label, d]) => {
+      const live = id === 'hq' || id === 'jobs' || id === 'gear';
+      const attr = id === 'jobs' ? 'data-jobs' : id === 'gear' ? 'data-room="gear"' : id === 'hq' ? 'aria-current="page"' : 'disabled';
+      return `<button class="nav-t${id === 'hq' ? ' sel' : ''}${live ? '' : ' locked'}" type="button" ${attr}>${navIcon(d)}<b>${label}</b>${live ? '' : '<small>Soon</small>'}</button>`;
+    }).join('');
+    const logo = logoSrc();
+    $('screen-office').innerHTML = `
+      <div class="hq-scene">${A.hqMarkup({ company: CO, levels: levelsMap(), bank: save.bank, name: companyName(), building: buildingRoom, crew: hqCrew() })}</div>
+      <div class="hq-top">
+        <div class="hq-brand">${logo ? `<img class="hq-logo" src="${logo}" alt="That's a Wrap!">` : ''}<button class="hq-name" type="button" data-rename aria-label="Rename your company"><b class="hand">${esc(companyName())}</b></button></div>
+        <div class="hq-res">
+          <span class="res" title="Bank"><i class="res-i cash">$</i><b class="${save.bank < 0 ? 'neg' : ''}">${money(save.bank)}</b></span>
+          <span class="res soon" title="Reputation (coming soon)"><i class="res-i">${A.starSVG(true)}</i><b>—</b></span>
+          <span class="res soon" title="Favors (coming soon)"><i class="res-i fav">&#9734;</i><b>—</b></span>
+          <button class="sq hq-set" type="button" data-officemenu aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        </div>
+      </div>
+      <aside class="hq-panel">
+        <section class="wk"><h4>Production week</h4>
+          <div class="days">${days.map(([d, t, k]) => `<div class="day ${k}"><b>${d}</b><span>${esc(t)}</span></div>`).join('')}</div>
+        </section>
+        <section class="next"><h4>Next up</h4>
+          <div class="ncard">${thumb('hero', 'nthumb')}<div><b>${esc(job.title)}</b><span>${esc(job.kind)} commercial</span>
+            <small>1 shoot day · Budget ${money(LEVEL.budget)}</small><small>Client: ${esc(job.client)}</small>${best ? `<span class="jstars">${starsRow(best)}</span>` : ''}</div></div>
+          <button class="btn go cont" type="button" data-book="${job.id}">Continue job &rarr;</button>
+        </section>
+        <section class="goal"><h4>Weekly goal</h4><div class="gl"><span>Wrap 2 jobs</span><b>${goal}/2</b></div><em><i style="width:${goal * 50}%"></i></em></section>
+      </aside>
+      <nav class="hq-nav">${nav}</nav>`;
+  }
+
+  // A room's card: its picture at the level you would get, and the three levels with what each does
   function showRoom(id) {
     const r = CO.rooms.find(x => x.id === id);
-    const owned = save.owned.includes(id);
-    const short = r.cost - save.bank;
+    if (!r) return;
+    const lv = roomLevel(id);
+    const ups = CO.upgrades.filter(u => u.room === id);
+    const fixedNote = { lobby: 'The front door, the desk and whoever answers the phone. Always open.', garage: 'Where the van lives. A second bay comes later.', slot: 'Empty for now. A future room goes here: casting, wardrobe, an insert stage, a sound booth.' };
+    if (!ups.length) {
+      openModal('room', `<div class="chaos-h" style="background:var(--slate)"><b>${esc(r.name)}</b></div>
+        <div class="room-card"><div class="room-prev">${A.hqRoomPreview(CO, id, lv)}</div><p>${esc(fixedNote[id] || '')}</p></div>
+        <button class="btn" type="button" data-close>Back to the office</button>`);
+      return;
+    }
+    const next = nextUpgrade(id);
+    const rows = ups.map(u => {
+      const have = lv >= u.level;
+      const isNext = next && next.id === u.id;
+      const short = u.cost - save.bank;
+      const act = have ? '<span class="lv-have">Built</span>' : u.soon ? '<span class="lv-soon">Coming soon</span>' :
+        isNext ? `<button class="btn go small" type="button" data-build="${u.id}" ${short > 0 ? 'disabled' : ''}>${short > 0 ? `Need ${money(short)} more` : `Build for ${money(u.cost)}`}</button>` :
+        `<span class="lv-soon">After level ${u.level - 1}</span>`;
+      return `<li class="${have ? 'have' : ''}${isNext ? ' next' : ''}"><i>${u.level}</i><div><b>${esc(u.name)}</b><span>${esc(u.blurb)}</span></div>${act}</li>`;
+    }).join('');
+    const startRow = r.start ? `<li class="have"><i>1</i><div><b>${esc(r.name)}</b><span>Desks, the job board and a couch. Where the company lives.</span></div><span class="lv-have">Yours</span></li>` : '';
+    const showLevel = next && !next.soon ? next.level : Math.max(1, lv);
     openModal('room', `
-      <div class="chaos-h" style="background:var(--slate)"><b>${esc(r.name)}</b></div>
-      <div class="room-prev">${A.roomPreview(r)}</div>
-      <p>${esc(r.blurb)}</p>
-      ${owned ? '<p class="note"><b>Built.</b> It helps on every shoot.</p>' :
-        `<button class="btn go" type="button" data-build="${id}" ${short > 0 ? 'disabled' : ''}>${short > 0 ? `Need ${money(short)} more` : `Build for ${money(r.cost)}`}</button>`}
+      <div class="chaos-h" style="background:var(--slate)"><b>${esc(r.name)}</b><span class="lv-tag">${lv ? `Level ${lv}` : 'For rent'}</span></div>
+      <div class="room-card"><div class="room-prev">${A.hqRoomPreview(CO, id, showLevel)}</div>
+      <ol class="levels">${startRow}${rows}</ol></div>
       <button class="btn" type="button" data-close>Back to the office</button>`);
   }
 
@@ -303,7 +403,8 @@
   function showOfficeMenu() {
     openModal('menu', `
       <span class="label">Office</span>
-      <p>${save.runs} job${save.runs === 1 ? '' : 's'} wrapped. ${save.owned.length} of ${CO.rooms.length} rooms built.</p>
+      <p>${save.runs} job${save.runs === 1 ? '' : 's'} wrapped. ${save.owned.length} of ${CO.upgrades.filter(u => !u.soon).length} upgrades built.</p>
+      <button class="btn" type="button" data-lab>Layout lab: portrait vs landscape shoot</button>
       <button class="btn" type="button" data-go="title">Title screen</button>
       <button class="btn" type="button" data-resetask>Start the company over</button>
       <button class="btn go" type="button" data-close>Back to the office</button>`);
@@ -398,7 +499,7 @@
     lab = null;
     const map = chosenMap();
     const crew = LEVEL.hiring.map(r => map[r.dept]);
-    st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: S.companyMods(CO.rooms, save.owned) });
+    st = S.createGame(LEVEL, { crew, seed: (Date.now() % 1000003) + 1, mods: S.companyMods(CO.upgrades, save.owned) });
     selected = null; lastCapture = null; toast = null; banked = false;
     clientLine = { text: '', until: 0, next: performance.now() + 9000, i: Math.floor(Math.random() * CLIENT_LINES.length) };
     tipUntil = performance.now() + 7000;
@@ -411,7 +512,7 @@
     resetView();
     const land = isLand();
     $('screen-shoot').className = 'app' + (lab ? ' lab' : '') + (land ? ' land' : lab ? ' port' : '');
-    const perks = lab ? [] : save.owned.map(id => CO.rooms.find(r => r.id === id).name);
+    const perks = lab ? [] : save.owned.map(id => CO.upgrades.find(u => u.id === id)).filter(u => u && u.effect).map(u => u.name);
     // The same pieces in both arrangements. Portrait stacks them; landscape puts the shot list left, the set in the
     // middle at full height and crew plus ACTION under the right thumb. Ids are the same, so rendering is shared.
     const top = `<div class="topbar">
@@ -1248,7 +1349,7 @@
       return `<span><b>${esc(c.name)}</b> turned out ${speedWord(c.speed)} and ${relWord(c.reliability)}${flubs ? `, botched ${flubs} task${flubs > 1 ? 's' : ''}` : ''}.</span>`;
     });
     const flubsAll = st.log.filter(e => e.type === 'flub').length;
-    const nextRoom = CO.rooms.filter(r => !save.owned.includes(r.id)).sort((a, b) => a.cost - b.cost)[0];
+    const nextRoom = cheapestNext();
     const roomNote = nextRoom ? (save.bank >= nextRoom.cost ? `You can afford the ${nextRoom.name} now.` : `${money(nextRoom.cost - save.bank)} more for the ${nextRoom.name}.`) : 'Every room is built.';
     openModal('wrap', `
       <div class="chaos-h" style="background:var(--slate)"><b>${pulled ? 'Plug pulled' : 'Wrap report'}</b></div>
@@ -1297,14 +1398,15 @@
     if (roomEl && screen === 'office' && !modal) { showRoom(roomEl.dataset.room); return; }
     const build = t.closest('[data-build]');
     if (build && !build.disabled) {
-      const r = CO.rooms.find(x => x.id === build.dataset.build);
-      if (save.bank >= r.cost && !save.owned.includes(r.id)) {
-        save.bank -= r.cost;
-        save.owned.push(r.id);
+      const u = CO.upgrades.find(x => x.id === build.dataset.build);
+      const next = u && nextUpgrade(u.room);
+      if (u && !u.soon && next && next.id === u.id && save.bank >= u.cost) {
+        save.bank -= u.cost;
+        save.owned.push(u.id);
         persist();
-        // The new room shows its "building" picture for a moment, then the finished room
-        A.setBuilding(r.id);
-        setTimeout(() => { A.setBuilding(null); if (screen === 'office' && !modal) renderOffice(); }, 1600);
+        // The room shows its "building" picture for a moment, then the new level
+        buildingRoom = u.room;
+        setTimeout(() => { buildingRoom = null; if (screen === 'office' && !modal) renderOffice(); }, 1600);
       }
       closeModal(); renderOffice();
       return;

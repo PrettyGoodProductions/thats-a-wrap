@@ -365,23 +365,23 @@ test('stars: all shots, on time, then quality plus budget', () => {
 /* ---------- Office upgrades ---------- */
 
 test('office rooms combine into shoot-day modifiers', () => {
-  const m = S.companyMods(company.rooms, ['craft', 'kitchen', 'gear', 'edit']);
+  const m = S.companyMods(company.upgrades, ['office.2', 'art.1', 'art.2', 'gear.1', 'edit.1']);
   assert.equal(m.speed, 1.08);
-  assert.equal(m.artSpeed, 1.15);
+  assert.ok(Math.abs(m.artSpeed - 1.155) < 1e-9, 'art levels multiply: 1.05 x 1.1');
   assert.equal(m.fresh, 1.4);
   assert.equal(m.backupLight, true);
   assert.equal(m.post, 10);
-  assert.deepEqual(S.companyMods(company.rooms, []), { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 });
+  assert.deepEqual(S.companyMods(company.upgrades, []), { speed: 1, artSpeed: 1, fresh: 1, backupLight: false, post: 0 });
 });
 
 test('craft services makes the whole day faster', () => {
   const base = autoPlay(fresh());
-  const craft = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['craft']) }));
+  const craft = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.upgrades, ['office.2']) }));
   assert.ok(S.seconds(craft) < S.seconds(base));
 });
 
 test('gear cage turns renting a light into a free 2-second swap', () => {
-  const st = S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['gear']) });
+  const st = S.createGame(burgerJob, { mods: S.companyMods(company.upgrades, ['gear.1']) });
   playUntil(st, s => !!s.pending);
   const rent = S.eventOptions(st, 'keylight').find(o => o.id === 'rent');
   assert.equal(rent.cost, 0);
@@ -393,13 +393,19 @@ test('gear cage turns renting a light into a free 2-second swap', () => {
   assert.equal(st.blocks['cheese.frame'], undefined);
 });
 
+test('edit levels stack their quality bonus, and coming-soon levels add nothing', () => {
+  assert.equal(S.companyMods(company.upgrades, ['edit.1', 'edit.2', 'edit.3']).post, 20);
+  const soon = company.upgrades.filter(u => u.soon).map(u => u.id);
+  assert.deepEqual(S.companyMods(company.upgrades, soon), S.companyMods(company.upgrades, []));
+});
+
 test('edit bay adds quality, capped at 100', () => {
-  const st = S.createGame(openLevel, { mods: S.companyMods(company.rooms, ['edit']) });
+  const st = S.createGame(openLevel, { mods: S.companyMods(company.upgrades, ['edit.1']) });
   S.stepTicks(st, secs(14) + 1);
   S.command(st, { type: 'assign', crew: 'gaffer', task: 'hero.style' });
   runUntil(st, s => S.readiness(s, 'hero').ready);
   assert.equal(S.readiness(st, 'hero').quality, 80, '100 - 30 skipped light + 10 post');
-  const full = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.rooms, ['edit']) }));
+  const full = autoPlay(S.createGame(burgerJob, { mods: S.companyMods(company.upgrades, ['edit.1']) }));
   assert.ok(Object.values(full.shots).every(s => s.quality <= 100));
 });
 

@@ -6,14 +6,16 @@ Current build: **visual prototype**. Hiring with budget trade-offs, a paper-cut 
 
 Flow: title, your production office, job board, hire crew, shoot, wrap report, back to the office.
 
-The office is a cutaway building. Profit from each job goes into the bank, and you spend it on rooms that change shoot day:
+The office (HQ) is a landscape cutaway diorama (`docs/project/HQ-Redesign.md`, Nov 5): two floors of four bays, each room an open box you look into, crew hanging out in their rooms, the van at the curb. Profit from each job goes into the bank, and you spend it on room levels that change shoot day. Each level adds to the ones before it:
 
-| Room | Cost | Effect |
-| --- | --- | --- |
-| Craft Services | $800 | Everyone works 8% faster |
-| Prep Kitchen | $1,200 | Food stays fresh 40% longer, art works 15% faster |
-| Gear Cage | $1,500 | A dead light becomes a free 2-second swap |
-| Edit Bay | $2,000 | +10 quality on every shot |
+| Room | Level 1 | Level 2 | Level 3 |
+| --- | --- | --- | --- |
+| Production Office | Yours from the start | Coffee bar, $800: everyone works 8% faster | Conference table (coming soon) |
+| Art Dept | Work table, $600: art 5% faster | Prep kitchen, $1,200: food fresh 40% longer, art another 10% faster | Set shop (coming soon) |
+| Edit | Edit bay, $2,000: +10 quality on every shot | Color suite, $2,500: +5 more | Sound mix, $3,000: +5 more |
+| Gear | Gear cage, $1,500: a dead light is a free 2-second swap | More stands and lights (coming soon) | Grip truck (coming soon) |
+
+The lobby, garage and a boarded expansion slot complete the building. Saves from before the redesign are converted (Craft Services became the coffee bar, Prep Kitchen the Art Dept levels 1 and 2). The Layout Lab is in the office settings menu.
 
 Progress saves in the browser on that device only.
 

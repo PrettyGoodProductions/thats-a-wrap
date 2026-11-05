@@ -133,18 +133,14 @@
     'village.chair': { anchor: { x: 286, y: 340 }, pivot: 'bottom-center', size: [36, 44], shadow: false, initial: 'default' },
     'crafty.table': { anchor: { x: 14, y: 258 }, pivot: 'top-left', size: [150, 60], shadow: false, initial: 'default' },
     'crafty.coffee': { anchor: { x: 0, y: 0 }, pivot: 'bottom-center', size: [5, 7], shadow: false, initial: 'default' },
-    // HQ (drawn in the office's 360 x 470 frame). The Edit Bay's anchor is the room's own corner. hq.shell is parked: its openings do not match the rooms
+    // HQ (landscape diorama, HQ units, HQ-Redesign.md). Room art fills a 100 x 96 cavity (208 x 96 for the office)
+    'hq.shell': { anchor: { x: 40, y: 56 }, pivot: 'top-left', size: [452, 228], shadow: false, initial: 'default' },
+    'hq.room.art': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [100, 96], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'l1', 'l2', 'l3', 'front'] },
     'hq.sign': { anchor: { x: 180, y: 23 }, pivot: 'center', size: [220, 34], shadow: false, initial: 'on', states: ['off', 'on'] },
-    'hq.room.edit': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
     // Batch 6: the other three rooms, the lobby and the street. These are drawn by the office code at the places it chooses (use() with x and y), so the anchors are only defaults
-    'hq.room.craft': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
-    'hq.room.gear': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
-    'hq.room.kitchen': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [152, 112], shadow: false, initial: 'for-rent', states: ['for-rent', 'building', 'built'] },
     'hq.for-rent': { anchor: { x: 76, y: 18 }, pivot: 'top-center', size: [84, 39], shadow: false, initial: 'default' },
-    'hq.lobby': { anchor: { x: 24, y: 300 }, pivot: 'top-left', size: [312, 60], shadow: false, initial: 'default' },
     'hq.jobboard': { anchor: { x: 92, y: 310 }, pivot: 'top-left', size: [116, 57], shadow: false, initial: 'default' },
     'hq.flyer': { anchor: { x: 0, y: 0 }, pivot: 'top-center', size: [30, 22], shadow: false, initial: 'default' },
-    'hq.street': { anchor: { x: 0, y: 372 }, pivot: 'top-left', size: [360, 64], shadow: false, initial: 'default' },
     'hq.van': { anchor: { x: 250, y: 438 }, pivot: 'bottom-center', size: [84, 61], shadow: false, initial: 'default' },
     'hq.sky': { anchor: { x: 0, y: 0 }, pivot: 'top-left', size: [360, 70], shadow: false, initial: 'default' },
     'hq.cloud-small': { anchor: { x: 300, y: 20 }, pivot: 'top-left', size: [36, 19], shadow: false, initial: 'default' },

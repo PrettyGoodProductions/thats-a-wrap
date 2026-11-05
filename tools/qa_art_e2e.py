@@ -126,7 +126,7 @@ with sync_playwright() as p:
     page.wait_for_selector('[data-jobs]')
     page.screenshot(path=os.path.join(out_dir, '02-office.png'))
     page.click('[data-jobs]')
-    page.click('[data-book]')
+    page.click('#modal [data-book]')   # the HQ also has a Continue job button with data-book
     page.click('[data-hire-screen]')
     page.wait_for_selector('#startBtn')
 
