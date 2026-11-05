@@ -359,7 +359,7 @@
     return { x: r(box.x), y: r(box.y), w: r(box.w), h: r(box.h), view: `translate(${r(tx)} ${r(ty)}) scale(${k.toFixed(3)})`, rec: [r(box.x + box.w - 4.5), r(box.y + 4.5)] };
   }
   // Where the engine's own words sit on the delivered craft table's label plate and on the chair backs
-  const CRAFTY_LABEL = { x: 89, y: 311 };
+  const CRAFTY_LABEL = { x: 89, y: 316 }; // Nov 5: table refit to the 150 x 60 footprint
   const CHAIR_TEXT_Y = 308;
   // Floor dressing drawn from delivered art: three tape marks, and scuffs scattered over the floor
   function floorDressing(wide) {

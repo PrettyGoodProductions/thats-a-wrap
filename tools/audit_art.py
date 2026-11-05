@@ -48,6 +48,9 @@ TILES = {'set.wall', 'set.floor', 'set.grid', 'ui.panel', 'ui.chip-dark', 'ui.ta
          'hq.lobby', 'hq.street', 'hq.sky'}   # batch 6: full-bleed pictures. The rooms are in the next line
 TILES |= {f'hq.room.{r}' for r in ('edit', 'craft', 'gear', 'kitchen')}   # the batch 5 nine-slices too   # nine-slices are cropped to the paper
 
+# Nov 5: these darker cut-paper edges are intended (Tomas), so their ring warning is accepted
+CUT_EDGE_OK = {('set.flat-3', 'default'), ('ui.button-paper', 'default'), ('crew.held', 'gel-frame'), ('ui.action', 'stick')}
+
 problems, warnings = [], []
 info = {}
 for pid, st, path, scale in files:
@@ -74,7 +77,7 @@ for pid, st, path, scale in files:
     if specks: flags.append(f'{specks} stray speck(s)')
     if far and not soft: flags.append(f'{far} faint px far from the art')
     if haze > 0.01 * al.size: flags.append(f'{haze} haze px')
-    if abs(ring) > 25 and not soft: flags.append(f'edge ring {ring:+.0f} luminance')
+    if abs(ring) > 25 and not soft and (pid, st) not in CUT_EDGE_OK: flags.append(f'edge ring {ring:+.0f} luminance')
     if min(margins) < 1 and pid not in TILES: flags.append('art touches the canvas edge (clipped?)')
     label = f'{pid}.{st}' if st != 'default' else pid
     print(f'{label:28s} {im.width:5d}x{im.height:<5d} {scale:6.2f}px/u  {im.width/scale:6.1f}x{im.height/scale:<5.1f}u  {kb:6.0f} KB  margin(px) {tuple(int(m) for m in margins)}  specks {specks} far {far} haze {haze} ring {ring:+.0f}' + ('  <-- ' + '; '.join(flags) if flags else ''))

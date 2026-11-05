@@ -1,7 +1,6 @@
 {
-  "pivot": [
-    5.7,
-    5.7
-  ],
-  "scale": 6
+  "pivot": [5.7, 5.7],
+  "scale": 7.783,
+  "offset": [16.5, 16],
+  "note": "Nov 5: delivered art is 1.95 to 1, so it is fitted inside the 150 x 60 footprint (about 117 x 60), centered, feet where they were"
 }

@@ -82,15 +82,15 @@
       },
       {
         dept: 'art', role: 'Art',
-        dryNote: 'Vera and Lu are both on other jobs this week. Your art network is dry.',
+        dryNote: 'Vera is on another job this week.',
         candidates: [
           { id: 'vera',  name: 'Vera', tier: 'Veteran', rate: 2000, speed: 1.3, reliability: 0.98, perks: ['foodWhisperer'], network: 'yours', booked: true,
             blurb: 'Food stylist for every burger chain you know.', look: { skin: '#D7A27C', hair: '#2A1C14', top: 'bun', earring: true } },
-          { id: 'lu',    name: 'Lu',   tier: 'Solid',   rate: 1300, speed: 1.0, reliability: 0.9, network: 'yours', booked: true,
+          { id: 'lu',    name: 'Lu',   tier: 'Solid',   rate: 1300, speed: 1.0, reliability: 0.9, network: 'yours',
             blurb: 'Reliable. Brings her own tweezers.', look: { skin: '#EAC3A0', hair: '#1E1612', top: 'bun', earring: true } },
           { id: 'paz',   name: 'Paz',  tier: 'Vouched', rate: 1600, speed: 1.1, reliability: 0.94, perks: ['foodWhisperer'], network: 'fof', via: 'Mika',
             blurb: '"She saved my yogurt shoot." (Mika)', look: { skin: '#C99070', hair: '#7A2E1E', top: 'bun', earring: true } },
-          { id: 'theo',  name: 'Theo', tier: 'Vouched', rate: 1100, speed: 0.9, reliability: 0.85, network: 'fof', via: 'Ro',
+          { id: 'theo',  name: 'Theo', tier: 'Vouched', rate: 1100, speed: 0.9, reliability: 0.85, network: 'fof', via: 'Ro', booked: true,
             blurb: '"My roommate. He\'s fine. Probably." (Ro)', look: { skin: '#F1CDA9', hair: '#B98A4A', top: 'beanie', glasses: true } },
           { id: 'kit',   name: 'Kit',  tier: 'Unknown', rate: 650,  speed: 0.7, reliability: 0.7, network: 'board',
             blurb: '"Food stylist / DJ / available now."', look: { skin: '#E8B993', hair: '#2E7D6B', top: 'none', earring: true } },

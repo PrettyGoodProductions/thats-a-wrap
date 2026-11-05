@@ -143,8 +143,11 @@
   const isDone = id => !!(st.tasks[id] && st.tasks[id].done);
   const starsRow = n => [0, 1, 2].map(i => A.starSVG(i < n)).join('');
   // Shot thumbnails cut from the approved concept art (src/assets.js), with the drawn prop as a fallback
-  const thumb = (shotId, cls) => window.WrapAssets && window.WrapAssets.thumbs[shotId]
-    ? `<img class="${cls || 'thumb'}" src="${window.WrapAssets.thumbs[shotId]}" alt="">`
+  // Nov 5: the clean delivered thumbnails and logo replace the cut-outs from the concept, which stay as the fallback
+  const thumbSrc = id => (Ld && Ld.src && Ld.has('ui.shot-thumbs', id) && Ld.src('ui.shot-thumbs', id)) || (window.WrapAssets && window.WrapAssets.thumbs[id]) || null;
+  const logoSrc = () => (Ld && Ld.src && Ld.src('ui.logo')) || (window.WrapAssets && window.WrapAssets.logo) || null;
+  const thumb = (shotId, cls) => thumbSrc(shotId)
+    ? `<img class="${cls || 'thumb'}" src="${thumbSrc(shotId)}" alt="">`
     : A.propSVG(shotId);
 
   /* ================= Title ================= */
@@ -155,7 +158,7 @@
       return `<g transform="translate(${34 + i * 44} 74) scale(1.15)">${A.puppet({ dept: r.dept, look: c.look, name: c.name })}</g>`;
     }).join('');
     $('screen-title').innerHTML = `
-      ${window.WrapAssets ? `<img class="logo" src="${window.WrapAssets.logo}" alt="That's a Wrap!">` : `<h1>That's<span>a wrap!</span></h1>`}
+      ${logoSrc() ? `<img class="logo" src="${logoSrc()}" alt="That's a Wrap!">` : `<h1>That's<span>a wrap!</span></h1>`}
       <p class="tagline">Build the crew. Run the shoot. Get the shot.</p>
       <svg class="title-art" viewBox="0 0 200 84" aria-hidden="true">${lineup}</svg>
       <button class="btn go" type="button" data-go="office">${save.runs ? 'Back to the office' : 'Open your production company'}</button>
@@ -370,7 +373,7 @@
     // the middle, the shot list and set conditions on the right
     const segs = Array.from({ length: DAY_HOURS }, () => '<i></i>').join('');
     const hudTop = `<div class="hud-top">
-        ${window.WrapAssets ? `<img class="hud-logo" src="${window.WrapAssets.logo}" alt="That's a Wrap!">` : ''}
+        ${logoSrc() ? `<img class="hud-logo" src="${logoSrc()}" alt="That's a Wrap!">` : ''}
         <div class="hud-job"><b>${esc(LEVEL.title)}</b><small>Shoot day · ${esc(LEVEL.client || 'Big Bun Burgers')}</small></div>
         <div class="hud-dark hud-money">
           <div class="meter"><span>Budget</span><b id="hudBudget"></b><em><i id="budgetFill"></i></em></div>

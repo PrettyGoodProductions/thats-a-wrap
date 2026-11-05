@@ -216,6 +216,14 @@
     return { src: r.src, slice: r.nine.slice, width: r.nine.width || r.nine.slice.map(v => v / (r.scale || 1)), fill: r.nine.fill !== false };
   }
 
+  // The image itself (a data URI) for HTML that shows a piece as a plain <img>: the logo, shot thumbnails, HUD icons.
+  // null when no art was delivered, so callers keep their fallback
+  function src(id, state) {
+    const st = state && has(id, state) ? state : has(id, 'default') ? 'default' : statesOf(id)[0];
+    const r = st && resolve(id, st);
+    return r ? r.src : null;
+  }
+
   function tint(target, color) {
     const el = typeof target === 'string' ? findSlot(target) : target;
     if (!el || el._wlTint === (color || null)) return;
@@ -372,7 +380,7 @@
   const slotDef = (id) => slotOf(id);
   const statesOfCharacter = (ch) => CHARACTER_REQUIRED.concat(['arm-back']).some(r => has(`crew.${ch}.${r}`));
 
-  const api = { configure, has, statesOf, resolve, defs, slot, slotDef, use, state, tint, nine, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
+  const api = { configure, has, src, statesOf, resolve, defs, slot, slotDef, use, state, tint, nine, pose, puppet, point, puppetReady, puppetMissing, characterFor, characterReady, characterMissing, portraitOf, report, tintRef, normColor, PIVOT_NAMES, DEFAULT_RASTER_SCALE };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.WrapLoader = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
