@@ -71,6 +71,32 @@ def recolor(im, hexcolor):
     a[..., :3] = np.clip(a[..., :3] * (tgt / med), 0, 255)
     return Image.fromarray(a.astype(np.uint8), 'RGBA')
 
+def trim_openings(im, dark=0.62, zone=0.3):
+    """A shorts-shaped pelvis drawn with dark leg openings at the bottom of each tube: cut each column off where the
+    opening starts, so the hem ends on fabric. The legs hang under the pelvis, and the dark openings would sit on top
+    of them as crescents. Used when a file lists "trim_openings": true."""
+    a = np.array(im)
+    al = a[..., 3] >= 128
+    L = a[..., :3].astype(np.float32).mean(-1)
+    h, w = al.shape
+    body = np.median(L[al])
+    y0 = int(h * (1 - zone))
+    cut = np.full(w, h)
+    for x in range(w):
+        ys = np.where(al[y0:, x] & (L[y0:, x] < dark * body))[0]
+        if len(ys): cut[x] = y0 + ys.min()
+    # Columns at the rim of an opening have no dark pixel of their own: take the cut of their neighbors
+    win = max(3, w // 24)
+    has = cut < h
+    spread = np.array([cut[max(0, x - win): x + win + 1].min() for x in range(w)])
+    near = ndi.binary_dilation(has, iterations=win)
+    cut = np.where(near, spread, h)
+    for x in range(w):
+        if cut[x] < h:
+            a[cut[x]:, x, 3] = 0
+            if cut[x] > 0: a[cut[x] - 1, x, 3] = a[cut[x] - 1, x, 3] // 2   # one soft pixel on the new edge
+    return Image.fromarray(a, 'RGBA')
+
 def clean_alpha(im):
     a = np.array(im)
     al = a[..., 3]
@@ -99,6 +125,7 @@ for pid, p in spec['pieces'].items():
         im = Image.open(os.path.join(src_dir, fname)).convert('RGBA')
         if ent.get('mask') == 'core': im = core_mask(im)
         if ent.get('crop'): im = im.crop(tuple(ent['crop']))   # trim empty canvas, the pivot in the map is already relative to the crop
+        if ent.get('trim_openings'): im = trim_openings(im)
         if ent.get('recolor'): im = recolor(im, ent['recolor'])
         if p.get('seamless'): im = make_seamless(im)
         if ent.get('decontaminate'): im = decontaminate(im, ent.get('alpha_floor', 40))
@@ -123,6 +150,15 @@ for pid, p in spec['pieces'].items():
         else:
             out.save(os.path.join(out_dir, name), optimize=True)
         sizes[state] = (w, h, os.path.getsize(os.path.join(out_dir, name)))
+    cfg_path = os.path.join(out_dir, pid + '.json')
+    if p.get('merge') and os.path.exists(cfg_path):
+        # "merge": true adds states to a piece that is already fitted (a new held prop), keeping its settings file
+        cfg = json.load(open(cfg_path))
+        cfg['states'] = {**cfg.get('states', {}), **state_cfg}
+        json.dump(cfg, open(cfg_path, 'w'), indent=2)
+        open(cfg_path, 'a').write('\n')
+        report.append((pid, sizes))
+        continue
     cfg = dict(p.get('settings', {}))
     cfg['pivot'] = [round(p['pivot'][0] * k, 1), round(p['pivot'][1] * k, 1)]
     if p.get('points'):
@@ -137,7 +173,7 @@ for pid, p in spec['pieces'].items():
         pts = [[x, int(np.where(a[:, x])[0].max()) + 1] for x in cols]
         keep = sorted({0, len(pts) - 1, *range(0, len(pts), max(1, len(pts) // 8))})
         cfg['sole'] = [pts[i] for i in keep]
-    cfg['scale'] = p['target']
+    cfg['scale'] = p.get('scale', p['target'])   # "scale" draws the exported pixels at another size (a character fitted to the shared height)
     if p.get('slice'):
         # Nine-slice: insets in master px (top, right, bottom, left) become export px for border-image-slice and CSS px for its width
         cfg['nine'] = {'slice': [round(v * k) for v in p['slice']], 'width': [round(v / p['native'], 2) for v in p['slice']], 'fill': p.get('fill', True)}

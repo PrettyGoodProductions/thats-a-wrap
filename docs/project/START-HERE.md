@@ -28,11 +28,11 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B (in progress, Nov 3)
 
-- **Playable link (Milestone B build, updated Nov 5 with the batch 5 set pieces):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Playable link (Milestone B build, version 14, Nov 5: landscape HQ and the batch 8 characters):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
 - **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
-- **Tests:** 96 tests pass, including a scripted player that finishes the shoot with every crew member at autonomy 0. A Chrome test bot (`tools/qa_lab_e2e.py`) finishes the Lab in portrait, landscape and rotated landscape with real taps.
+- **Tests:** 99 tests pass, including a scripted player that finishes the shoot with every crew member at autonomy 0. A Chrome test bot (`tools/qa_lab_e2e.py`) finishes the Lab in portrait, landscape and rotated landscape with real taps.
 - **Finding:** landscape needs no scrolling and keeps the crew and ACTION in view. Portrait pushes the crew tiles below the fold. The current Burger Job gives only about one order every 7 seconds even with everyone on orders, so the task split (C2) is what will create the pace.
 - **Plan:** Milestone-B-Plan.md has the decisions, the findings and the step-by-step sequence.
 
@@ -43,6 +43,14 @@ The office is a landscape cutaway diorama: two floors of four bays (Production O
 ## Asset loader (done, Nov 3)
 
 Real art is used wherever a file is supplied and code placeholders stay everywhere else. Drop files in `art/`, run `node build.mjs`, done. File names follow the manifest and an optional `<dept>.<object>.json` holds pivot and scale. Wired so far (batch 3 added the taller platform, sweep and tube, key stand, fill light, camera, lenses, track, frame marks, hero, cheese and sauce props, cheese pot): hero platform, key light head (off, on, dead), burger build stack (5 layers), the modular crew puppet (parts named in the manifest) and four fixed characters, Ro (batch 1) and Mika, Dani and Lu (batch 2). Tested end to end with stand-in images in a real browser, with and without art. See `art/README.md` in the repo.
+
+## Art batch 8 (Nov 5): Client, Agency, Receptionist, Theo
+
+All four are in the game on the shared rig. The Client and Agency stand in video village (the Agency with her own latte), the Receptionist is at the lobby desk, and Theo is the booked art crew on the Burger Job. Eight hand-designed characters are now delivered. Each pelvis was refitted to the width of its legs and its dark leg openings trimmed, and for three of them both arms draw over the torso. A character's settings file can now set its upper body draw order and a prop it always carries. The art bench no longer counts the floor shadow as part of the puppet. Details in Art-Batch-8-Validation.md.
+
+## Crew kit (Nov 5)
+
+New crew will be built from kit pieces and recolored by the game. Recoloring one color area at a time already works on the delivered characters: `docs/kit/mix-proof.png` is twelve new people made from delivered parts. The template for new kit art is in `docs/kit/` and the first ask to ChatGPT, 15 drawings, is Crew-Kit-01-Request.md. Nothing from the kit is in the game yet.
 
 ## Art batch 6 (Nov 5): the HQ set
 
@@ -73,9 +81,10 @@ Character components for the three default-crew characters are in the game on th
 | Shoot-Day-Active-Play-Proposal.md | How the sim becomes Overcooked-style active play (Milestones B and C) |
 | Content-Roadmap.md | The level backlog, HQ growth ideas, the reusable art library, the set and studio parts list, and the crew component kit |
 | HQ-Redesign.md | The landscape diorama HQ: rooms, levels, geometry, art pieces and screen layout |
-| Art-Handoff-Nov5.md | Art status and asks as of Nov 5. Its character list is on hold, see Content-Roadmap.md |
+| Art-Handoff-Nov5.md | Art status and the asks for ChatGPT (revision 2): Crew Kit 01 and the studio shell kit |
+| Crew-Kit-01-Request.md | The crew kit test batch, written for ChatGPT. Goes with the template in the repo's `docs/kit/` |
 | Asset-Manifest.md | Every art piece, with its layers, pivots, states and what drives it. The spec for final art |
-| Art-Batch-1 to Art-Batch-7-Validation.md, Art-HQ-Complete-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
+| Art-Batch-1 to Art-Batch-8-Validation.md, Art-HQ-Complete-Validation.md | What each art delivery was fitted to, how it was checked, and what needs a different export |
 | Prototype-0.2-Build-Plan.md | The 0.2 plan: money model, crew attributes, Net 30, referrals |
 | Call-Sheet-Design-Doc-and-Plan.md | The original design doc (the "Call Sheet" era), kept for history |
 | DIRECTION.md | Tomás's gameplay direction note (HQ is management, Shoot Day is active control) |
@@ -106,14 +115,16 @@ Live versions of the four docs are in claude.ai: [Active Play](https://claude.ai
 
 - **Art library:** parts drawn once, variants derived by scripts, scenes and crew assembled from data. Details in Content-Roadmap.md.
 - **Level identity:** each tabletop level gets its own palette, layout, room, hero and signature stations, dressing pack and light mood.
-- **Recolor:** tested on the delivered flats and it works for single-color pieces (`docs/qa/tint-test/recolor-test.png`). Multi-color pieces stay fixed or come as one file per color.
+- **Recolor:** works on whole single-color pieces (the flats, approved by Tomás) and on one color area inside a piece (skin, hair, a garment). Art needs flat, clearly different colors per area, not grey versions or masks.
 - **Art pipeline:** ChatGPT makes the art. Claude writes paste-ready requests, Tomás pastes them. Calling an image model from Claude is parked.
-- **Characters:** crew are built from a component kit (hair, skin tone, tops, bottoms, hats, accessories) colored by the game. Ro, Mika, Dani and Lu stay hand-designed. A 16-piece test batch comes first. The 14-character list in Art-Handoff-Nov5.md is on hold.
+- **Characters:** eight hand-designed characters are delivered (Ro, Mika, Dani, Lu, Client, Agency, Receptionist, Theo). Everyone else comes from the crew kit: bald base heads, hair and hats as layers, tops and bottoms on one mannequin, recolored by the game. A 15-piece test batch comes first. No more one-off characters are planned.
 - **Backlog:** the level and HQ ideas in Content-Roadmap.md are the content backlog. Suggested first four after the burger: beverage, e-comm flat lay, fashion lookbook, rooftop.
 
 ## Waiting on Tomás
 
-- [ ] **Content-Roadmap.md calls:** go on the crew component test batch, whether Client, Agency and Receptionist come from the kit or are hand-drawn, the first four levels, and a look at the recolor sheet.
+- [ ] **Send the asks to ChatGPT:** Art-Handoff-Nov5.md, Crew-Kit-01-Request.md and the Crew Kit Template zip.
+- [ ] **Content-Roadmap.md calls:** the first four levels, and a look at the mix proof (do recolored people read as the same paper world).
+- [ ] **Look at the batch 8 characters** in the published build: video village and the lobby.
 - [ ] **Play the landscape shoot** on your phone and send notes.
 - [ ] **Small calls in Milestone-B-Plan.md:** narrowing veterans to the current shot, hard-stop warning timing, what counts as a compromised delivery.
 
@@ -129,7 +140,7 @@ See Milestone-B-Plan.md for the full sequence. In short:
 6. **Failure:** compromised delivery and hard stops with warnings.
 7. **Tiers in the real game:** autonomy comes from who you hire, plus the Assist Mode setting.
 - **Library groundwork** (needs no new art, see Content-Roadmap.md): code audit, manifest as a catalog the game reads, burger set as the first scene recipe.
-- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next asks, once Tomás says go: the crew component test batch, then the studio shell kit (both in Content-Roadmap.md).
+- **More art** can land any time: drop it into `art/`, fit it with `tools/prep_art.py` and a batch map, and rebuild. Next deliveries expected: Crew Kit 01, then the studio shell kit (both asked for in Art-Handoff-Nov5.md).
 
 ## How development works
 

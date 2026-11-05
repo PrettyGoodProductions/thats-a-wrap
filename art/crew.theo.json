@@ -1,0 +1,48 @@
+{
+  "scale": 8,
+  "fixed": true,
+  "joints": {
+    "hips": [
+      0.0,
+      -22.5
+    ],
+    "neck": [
+      0.0,
+      -34.38
+    ],
+    "shoulderFront": [
+      4.94,
+      -32.83
+    ],
+    "shoulderBack": [
+      -4.16,
+      -32.83
+    ],
+    "pelvis": [
+      0.0,
+      -19.44
+    ],
+    "hipFront": [
+      2.77,
+      -19.44
+    ],
+    "hipBack": [
+      -2.77,
+      -19.44
+    ]
+  },
+  "portrait": [
+    -12.75,
+    -55.95,
+    24.38,
+    25.5
+  ],
+  "order": {
+    "upper": [
+      "torso",
+      "arm-back",
+      "head",
+      "arm-front"
+    ]
+  }
+}

@@ -24,10 +24,10 @@ def _launch(p):
         return p.chromium.launch(args=['--no-sandbox'])
 
 dist, out = sys.argv[1], sys.argv[2]
-# --char ro|mika|dani|lu picks which delivered character the puppet checks run on (default ro). Run once per character
+# --char ro|mika|dani|lu|theo|client|agency|receptionist picks which delivered character the puppet checks run on (default ro). Run once per character
 CH = sys.argv[sys.argv.index('--char') + 1] if '--char' in sys.argv else 'ro'
-NAME = {'ro': 'Ro', 'mika': 'Mika', 'dani': 'Dani', 'lu': 'Lu'}[CH]
-DEPT = {'ro': 'lighting', 'mika': 'camera', 'dani': 'grip', 'lu': 'art'}[CH]
+NAME = {'ro': 'Ro', 'mika': 'Mika', 'dani': 'Dani', 'lu': 'Lu', 'theo': 'Theo', 'client': 'Client', 'agency': 'Agency', 'receptionist': 'Receptionist'}[CH]
+DEPT = {'ro': 'lighting', 'mika': 'camera', 'dani': 'grip', 'lu': 'art', 'theo': 'art', 'client': 'art', 'agency': 'art', 'receptionist': 'art'}[CH]
 PUP = f"'{CH}',{{name:'{NAME}',dept:'{DEPT}'}}"
 os.makedirs(out, exist_ok=True)
 LAB = 'file://' + os.path.abspath(os.path.join(dist, 'lab.html'))
@@ -240,7 +240,11 @@ with sync_playwright() as p:
     X, Y = 184, 330
     e.js(f"lab.addPuppet({PUP},{X},{Y},false)")
     e.js(f"lab.addPuppet('paz',{{name:'Paz',dept:'art',look:{{skin:'#C99070',hair:'#7A2E1E',top:'bun'}}}},300,{Y},false)")
-    n_rig = e.js("document.querySelectorAll('.wl-rig[data-character]').length")
+    # Count the bench's own puppets only: the Client and Agency in video village are fixed characters too (batch 8)
+    n_rig = e.js("document.querySelectorAll('#labCrew .wl-rig[data-character]').length")
+    # The delivered floor shadow (crew.shadow, wired in batch 7) is solid enough to read as part of the puppet, which
+    # put every character's feet 1.6 units under the mark. The checks below measure the puppet, so hide the shadow
+    e.js("document.querySelectorAll('#labCrew use[href*=\"crew-shadow\"]').forEach(u => u.style.display = 'none')")
     check('only Ro uses the fixed rig, other crew keep their own look', n_rig == 1, f'{n_rig} fixed-character puppet(s) on set')
     e.js("document.querySelector('#labCrew .pup:nth-child(2)').style.display='none'")
     ox, oy = e.px(X, Y)
@@ -255,7 +259,7 @@ with sync_playwright() as p:
     idle_im = frame(); idle_m, idle = stats(idle_im)
     h_units = (idle['bottom'] - idle['top']) / 1.25
     check('idle: puppet stands on the ground mark (feet at y = 0, +-0.8 units)', abs(idle['bottom']) <= 0.8, f"feet {idle['bottom']:+.2f} units from the mark")
-    check('idle: puppet height is in line with the other crew (44 to 52 puppet units)', 44 <= h_units <= 52, f'{h_units:.1f} puppet units tall')
+    check('idle: puppet height is in line with the other crew (44 to 53 puppet units, hats included)', 44 <= h_units <= 53, f'{h_units:.1f} puppet units tall')
     check('idle: one solid piece (no gaps at neck, shoulders, hips)', idle['comps'] == 1, f"{idle['comps']} piece(s)")
     idle_im.save(os.path.join(out, f'{CH}-idle.png'))
 
@@ -298,6 +302,7 @@ with sync_playwright() as p:
         e.mount(bg)
         if measure: e.js("lab.iso('puppet')")
         e.js(f"lab.addPuppet({PUP},{start[0]},{start[1]},false)")
+        e.js("document.querySelectorAll('#labCrew use[href*=\"crew-shadow\"]').forEach(u => u.style.display = 'none')")
         frames = [(e.shot(), {'x': start[0], 'y': start[1], 'moving': False, 'step': None, 'planted': None})]
         e.js(f"lab.walkTo('{CH}',{end[0]},{end[1]})")
         for _ in range(4000):

@@ -454,6 +454,35 @@ test('bad character settings fail the build with the file name', () => {
   assert.ok(r.errors.some(e => /crew\.ro\.json: portrait must be/.test(e)));
 });
 
+test('batch 8: a character can reorder its upper body and always carry a held prop', () => {
+  // The Agency's torso has a painted armhole, so both arms sit over it, and her latte rides under the near hand
+  const char = { fixed: true, joints: { neck: [0, -34], hips: [0, -22], shoulderBack: [-3.3, -33] },
+    order: { upper: ['torso', 'arm-back', 'head', 'arm-front'] }, holds: { role: 'arm-back', item: 'agency-latte', at: [-3.2, -22] } };
+  const d = roDir({ char });
+  fs.copyFileSync(path.join(FIXTURES, 'crew', 'crew.arm-front@3x.png'), path.join(d, 'crew.held.agency-latte@3x.png'));
+  const r = load(d);
+  assert.deepEqual(r.errors, []);
+  assert.ok(!r.warnings.some(w => /unknown setting "(order|holds)"/.test(w)));
+  const m = A.puppet(RO);
+  const at = (part) => m.indexOf(`data-part="crew.ro.${part}"`);
+  assert.ok(at('torso') < at('arm-back') && at('arm-back') < at('head') && at('head') < at('arm-front'), 'upper body follows the character order');
+  // the cup is inside the near arm's group, before the arm art, so it turns with the arm and the fingers cover it
+  assert.match(m, /data-part="crew\.ro\.arm-back"[^>]*><use data-st="agency-latte" href="#wl-crew-held--agency-latte" transform="translate\(-3\.2 -22\)"\/><use data-st="default" href="#wl-crew-ro-arm-back--default"/);
+  // without the prop's art the character is drawn without it, never broken
+  const bare = roDir({ char });
+  load(bare);
+  assert.doesNotMatch(A.puppet(RO), /agency-latte/);
+});
+
+test('batch 8: the default upper body order is unchanged, and a bad order or holds fails the build', () => {
+  load(roDir());
+  const m = A.puppet(RO);
+  assert.ok(m.indexOf('data-part="crew.ro.arm-back"') < m.indexOf('data-part="crew.ro.torso"'), 'Ro keeps arm-back behind the torso');
+  const r = buildPack(roDir({ char: { order: { upper: ['torso', 'head'] }, holds: { role: 'arm-back' } } }));
+  assert.ok(r.errors.some(e => /crew\.ro\.json: order\.upper must list/.test(e)));
+  assert.ok(r.errors.some(e => /crew\.ro\.json: holds must be/.test(e)));
+});
+
 test('flip mirrors a piece about its pivot, and per-state offsets still apply', () => {
   const d = copyFixtures();
   fs.writeFileSync(path.join(d, 'elec.keylight-head.json'), JSON.stringify({ pivot: 'center', flip: true, states: { dead: { offset: [-0.3, 0] } } }));

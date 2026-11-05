@@ -108,7 +108,7 @@
     'fx.puff': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
     'fx.spotlight': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
     'crew.shadow': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'default' },
-    'crew.held': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'hammer', states: ['hammer', 'gel-frame', 'lens-case', 'tweezers', 'sandbag', 'light-head', 'burger-plate'] },
+    'crew.held': { anchor: { x: 0, y: 0 }, pivot: 'center', shadow: false, initial: 'hammer', states: ['hammer', 'gel-frame', 'lens-case', 'tweezers', 'sandbag', 'light-head', 'burger-plate', 'agency-latte'] },
 
     // Batch 5 (Nov 5): the pieces the manifest marked Ready. Positions are the manifest's. Pivots come from the settings files.
     // Grip: flag on its C-stand (the tripod is wider than the manifest's 26: fitted by height), gear pile, and the rig.
@@ -128,7 +128,7 @@
     'art.table': { anchor: { x: 10, y: 212 }, pivot: 'bottom-left', size: [72, 40], shadow: false, initial: 'default' },
     'art.sauce-bowl': { anchor: { x: 70, y: 173 }, pivot: 'bottom-center', size: [16, 10], shadow: false, initial: 'empty', states: ['empty', 'fill'] },
     'fx.sparkle': { anchor: { x: 180, y: 110 }, pivot: 'center', size: [80, 40], shadow: false, initial: '01', states: ['01', '02'] },
-    // Video village and the craft table. The coffee cup is the Agency's latte for now
+    // Video village and the craft table. The coffee cup was the Agency's latte until she arrived with her own (batch 8, crew.held.agency-latte)
     'village.monitor': { anchor: { x: 224, y: 334 }, pivot: 'bottom-center', size: [60, 98], shadow: false, initial: 'default' },
     'village.chair': { anchor: { x: 286, y: 340 }, pivot: 'bottom-center', size: [36, 44], shadow: false, initial: 'default' },
     'crafty.table': { anchor: { x: 14, y: 258 }, pivot: 'top-left', size: [150, 60], shadow: false, initial: 'default' },
@@ -214,13 +214,22 @@
     whole character. They share one animation rig (walk, work and later reactions move the same named
     joints), so a new character needs art and one line here, not new animation code.
     The character's proportions live in art/crew.<character>.json: scale, joints (where each part attaches, in
-    puppet units, feet at 0,0) and portrait (the head crop for the hire cards).
+    puppet units, feet at 0,0) and portrait (the head crop for the hire cards). Two optional keys:
+      order   { "upper": [...] } the upper body's parts back to front, when a character's art needs another order
+              than RIG_ORDER (a torso with a painted armhole wants both arms on top of it)
+      holds   { "role": "arm-back", "item": "agency-latte", "at": [x, y] } a held prop this character always carries:
+              a crew.held state, hung by its grip point at `at` (puppet units), under that arm so the fingers cover it
   */
   const CHARACTERS = {
     ro: { name: 'Ro' },
     mika: { name: 'Mika' },
     dani: { name: 'Dani' },
     lu: { name: 'Lu' },
+    // Batch 8: the two people in video village, the lobby receptionist and Theo (art)
+    client: { name: 'Client' },
+    agency: { name: 'Agency' },
+    receptionist: { name: 'Receptionist' },
+    theo: { name: 'Theo' },
   };
   // One entry per part of the shared rig: the joint it hangs from and its default pivot inside the image
   const ROLES = {

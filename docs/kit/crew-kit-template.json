@@ -1,0 +1,254 @@
+{
+  "name": "crew kit template A",
+  "units": "set units. Masters at 27 px per unit, game exports at 8 px per unit",
+  "facing": "right. Front three-quarter view, light from the upper left",
+  "stands": "about 52 units to the top of a hat, feet at 0,0, y up is negative",
+  "joints": {
+    "hips": [
+      0.0,
+      -22.5
+    ],
+    "neck": [
+      0.0,
+      -34.38
+    ],
+    "shoulderFront": [
+      4.94,
+      -32.83
+    ],
+    "shoulderBack": [
+      -4.16,
+      -32.83
+    ],
+    "pelvis": [
+      0.0,
+      -19.44
+    ],
+    "hipFront": [
+      2.77,
+      -19.44
+    ],
+    "hipBack": [
+      -2.77,
+      -19.44
+    ]
+  },
+  "draw_order_back_to_front": [
+    "hair back piece",
+    "leg-back",
+    "leg-front",
+    "pelvis",
+    "torso",
+    "arm-back",
+    "head",
+    "beard",
+    "hair",
+    "glasses",
+    "hat",
+    "arm-front"
+  ],
+  "slots": {
+    "head": {
+      "canvas": [
+        28,
+        32
+      ],
+      "pivot": [
+        14,
+        26
+      ],
+      "joint": "neck",
+      "pivot_is": "bottom center of the neck stub",
+      "canvas_px_27x": [
+        756,
+        864
+      ],
+      "pivot_px_27x": [
+        378,
+        702
+      ],
+      "canvas_px_8x": [
+        224,
+        256
+      ],
+      "guide": {
+        "base_head": [
+          12.5,
+          15.5
+        ],
+        "note": "bald base head with ear, nose and neck stub. Hair, hats and beards may use the rest of the canvas"
+      }
+    },
+    "torso": {
+      "canvas": [
+        18,
+        18
+      ],
+      "pivot": [
+        9,
+        16.5
+      ],
+      "joint": "hips",
+      "pivot_is": "bottom center of the hem",
+      "canvas_px_27x": [
+        486,
+        486
+      ],
+      "pivot_px_27x": [
+        243,
+        446
+      ],
+      "canvas_px_8x": [
+        144,
+        144
+      ],
+      "guide": {
+        "height": 14.1,
+        "width": "10.5 to 14.5"
+      }
+    },
+    "pelvis": {
+      "canvas": [
+        18,
+        14
+      ],
+      "pivot": [
+        9,
+        6.5
+      ],
+      "joint": "pelvis",
+      "pivot_is": "center of the hip line, 5.2 units below the waistband top",
+      "canvas_px_27x": [
+        486,
+        378
+      ],
+      "pivot_px_27x": [
+        243,
+        176
+      ],
+      "canvas_px_8x": [
+        144,
+        112
+      ],
+      "guide": {
+        "width": "12.5 to 14.5 (two thighs side by side)",
+        "height": "10 to 12"
+      }
+    },
+    "arm-front": {
+      "canvas": [
+        10,
+        20
+      ],
+      "pivot": [
+        5,
+        3.5
+      ],
+      "joint": "shoulderFront",
+      "pivot_is": "center of the round sleeve cap",
+      "canvas_px_27x": [
+        270,
+        540
+      ],
+      "pivot_px_27x": [
+        135,
+        94
+      ],
+      "canvas_px_8x": [
+        80,
+        160
+      ],
+      "guide": {
+        "height": 15.5
+      }
+    },
+    "arm-back": {
+      "canvas": [
+        10,
+        20
+      ],
+      "pivot": [
+        5,
+        3.5
+      ],
+      "joint": "shoulderBack",
+      "pivot_is": "center of the round sleeve cap",
+      "canvas_px_27x": [
+        270,
+        540
+      ],
+      "pivot_px_27x": [
+        135,
+        94
+      ],
+      "canvas_px_8x": [
+        80,
+        160
+      ],
+      "guide": {
+        "height": 15.5
+      }
+    },
+    "leg-front": {
+      "canvas": [
+        14,
+        26
+      ],
+      "pivot": [
+        6,
+        5
+      ],
+      "joint": "hipFront",
+      "pivot_is": "center of the rounded leg top",
+      "canvas_px_27x": [
+        378,
+        702
+      ],
+      "pivot_px_27x": [
+        162,
+        135
+      ],
+      "canvas_px_8x": [
+        112,
+        208
+      ],
+      "guide": {
+        "height": 22.8
+      }
+    },
+    "leg-back": {
+      "canvas": [
+        14,
+        26
+      ],
+      "pivot": [
+        6,
+        5
+      ],
+      "joint": "hipBack",
+      "pivot_is": "center of the rounded leg top",
+      "canvas_px_27x": [
+        378,
+        702
+      ],
+      "pivot_px_27x": [
+        162,
+        135
+      ],
+      "canvas_px_8x": [
+        112,
+        208
+      ],
+      "guide": {
+        "height": 22.8
+      }
+    }
+  },
+  "head_layers": "head, hair, hair back piece, hat, beard and glasses for one base head all share the head canvas and are exported without moving them, so they stack exactly",
+  "key_colors": {
+    "skin": "#F0A56C",
+    "hair": "#7A4A2E",
+    "top": "#8E9B6B",
+    "bottoms": "#5F6470"
+  }
+}

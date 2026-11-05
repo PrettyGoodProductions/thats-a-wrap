@@ -12,7 +12,7 @@ fails if a state never appears or the page logs any error.
 
 --expect ro     the delivered batch (art/): platform, key light states, and Ro on the fixed-character rig.
                 Hires Ro as gaffer and checks he walks, works, and is the only fixed character on set
---expect crew   the four delivered characters (batches 1 and 2): hires Ro, Mika, Dani and Lu, checks all four are on the
+--expect crew   the four delivered crew characters (batches 1 and 2): hires Ro, Mika, Dani and Lu, checks all four are on the
                 fixed rig, each walks and works, and each hire card shows its own art
 --expect art    stand-in art is built in: real images must draw, swap state with the simulation, and resolve
 --expect none   no art delivered: no art slots may exist and the placeholders must play exactly as before
@@ -66,7 +66,7 @@ PROBE = """() => {
     bowlSauce: drivenUp('bowlSauce', useUp),
     // always on the set once drawn
     cart: artUp('art.table'), gear: artUp('grip.gear-pile'), monitor: artUp('village.monitor'), craft: artUp('crafty.table'),
-    chairs: hrefCount('village-chair--default'), coffee: hrefCount('crafty-coffee--default'), bowl: hrefCount('art-sauce-bowl--empty'),
+    chairs: hrefCount('village-chair--default'), coffee: hrefCount('crafty-coffee--default') + hrefCount('crew-held--agency-latte'), bowl: hrefCount('art-sauce-bowl--empty'),
     // the live view is clipped to the delivered screen and the clip really is the art's inset
     monitorClip: (() => { const r = document.querySelector('#monClip rect'); return r ? [+r.getAttribute('width'), +r.getAttribute('height')] : null; })(),
   };
@@ -163,6 +163,8 @@ with sync_playwright() as p:
     hire_probe = page.evaluate("() => ({ chosen: [...document.querySelectorAll('.hire-h ~ * .cand.on, .cand.sel, .cand.picked')].length, faces: document.querySelectorAll('.cand svg.face .wl-pose').length, uses: document.querySelectorAll('.cand svg.face use').length })")
     page.click('#startBtn')
     page.wait_for_selector('#setSvg')
+    # Batch 8: the Client and the Agency in video village are delivered characters, and the Agency carries her latte
+    village = page.evaluate("() => ({ chars: ['client', 'agency'].filter(ch => document.querySelector('#setSvg .wl-rig[data-character=\"' + ch + '\"]')), latte: !!document.querySelector('#setSvg .wl-rig[data-character=\"agency\"] .wl-r-arm-back use[href=\"#wl-crew-held--agency-latte\"]') })")
 
     # 2x speed
     page.click('#pauseBtn')
@@ -217,6 +219,8 @@ problems = []
 if errors: problems.append('page logged errors')
 if not final.get('wrap'): problems.append('shoot never reached the wrap report')
 if expect in ('ro', 'crew'):
+    if village['chars'] != ['client', 'agency']: problems.append(f"video village: the Client and Agency should both be on the fixed rig, found {village['chars']}")
+    if not village['latte']: problems.append('video village: the Agency is not holding her latte')
     # Batch 5: every piece must have been seen up (its art shown, resolved, and driven visible by the simulation) at some point
     for k in ('flag', 'rigPole', 'rigArm', 'rigFork', 'rigBottle', 'beam', 'fillBeam', 'backlight', 'deadFx', 'sparkle', 'bowlSauce'):
         if not b5seen.get(k): problems.append(f'batch 5 piece never seen up on the set: {k}')

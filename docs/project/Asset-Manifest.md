@@ -1,6 +1,6 @@
 # That's a Wrap! Asset Manifest
 
-Nov 5, 2026 (revision 13: HQ Complete delivered and wired, every non-character piece now in the game. Revision 12: batch 7 (Prototype Art 05 and HQ Test 06) delivered: wrench, grip icon, checks, progress ring, camera, held props, sign margins, HQ greybox approved, new hq.shell and Art Dept in all states. Revision 11: HQ redesigned as a landscape cutaway diorama, see HQ-Redesign.md. The batch 6 shell, lobby, street and flat rooms are retired. Revision 10: asset review after batch 6, decisions on the open questions, status column for the HUD, new asks for the wrench, grip icon and set check. Revision 9: batch 6, the HQ set, wired. Revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
+Nov 5, 2026 (revision 14: batch 8, Client, Agency, Receptionist and Theo delivered and wired, see Art-Batch-8-Validation.md. The rest of the roster is no longer hand-drawn: it comes from the crew kit, see Content-Roadmap.md and Crew-Kit-01-Request.md. Revision 13: HQ Complete delivered and wired, every non-character piece now in the game. Revision 12: batch 7 (Prototype Art 05 and HQ Test 06) delivered: wrench, grip icon, checks, progress ring, camera, held props, sign margins, HQ greybox approved, new hq.shell and Art Dept in all states. Revision 11: HQ redesigned as a landscape cutaway diorama, see HQ-Redesign.md. The batch 6 shell, lobby, street and flat rooms are retired. Revision 10: asset review after batch 6, decisions on the open questions, status column for the HUD, new asks for the wrench, grip icon and set check. Revision 9: batch 6, the HQ set, wired. Revision 8: batch 5 set pieces wired, pole is a tripod C-stand 162 tall, hq.sign and Edit Bay for-rent wired. Revision 7: batch 4 HUD frames sliced and wired. Revision 6: batch 4 set and HUD pieces. Revision 5: batch 3 props and set pieces wired. Revision 4: Mika, Dani and Lu delivered. Revision 3: wide landscape set, pop-up HUD, pelvis on the crew rig) · @Tomás Valladares
 
 Every piece of art the game needs, cut the way the engine moves it, with the exact size to export. Drop finished files in `art/`, rebuild, and the game uses them. Anything not delivered keeps its temporary code-drawn look, so pieces can arrive in any order.
 
@@ -186,34 +186,27 @@ Each character has **two arms and two legs**. The front arm and front leg are th
 
 Required: head, torso, front arm, both legs. Pelvis and back arm are optional but make the walk read much better.
 
+Two optional keys in `crew.<name>.json` (batch 8): `order` sets the upper body's parts back to front when the art needs it (a torso with a painted armhole wants both arms on top), and `holds` names a held prop the character always carries (the Agency's latte).
+
 Optional pose images replace one part during a pose: `crew.<name>.arm-front.work@8x.png` (reaching, holding a tool), `crew.<name>.head.blink`, `crew.<name>.head.oops`. None delivered yet.
 
 Optional grip hand: `crew.ro.hand`, the loose hand from batch 1, shows a hand closed on a prop. It is kept for a pose that needs it and is not wired.
 
 ### Roster
 
-Each of these can be a fixed character like Ro. Until a character arrives, that person stays code-drawn. Looks below are what the game shows today, as a starting point. Order of the "Needed" rows is the order to draw them.
+Eight people are hand-designed and delivered. Everyone else is built by the game from the crew kit (Content-Roadmap.md), and stays code-drawn until the kit arrives. The art is the look of record for the delivered eight.
 
-| Name | Job | Tier | Look today | Art |
+| Name | Job | Tier | Look | Art |
 | --- | --- | --- | --- | --- |
-| Ro | Gaffer (electric) | Solid | Cap, full beard, warm tan skin | **Delivered**, with pelvis |
+| Ro | Gaffer (electric) | Solid | Cap, full beard, warm tan skin | **Delivered** (batch 1), with pelvis |
 | Mika | DP | Solid | Beanie, fair skin, shoulder-length brown hair | **Delivered** (batch 2), with pelvis |
 | Dani | Grip | Solid | No cap, curly brown hair, mustache, tan skin, green work shirt | **Delivered** (batch 2), with pelvis |
-| Lu | Art | Solid | Dark curly hair in a bun, gold hoop earrings, brown skin, coral apron | **Delivered** (batch 2), with pelvis. **Hirable on the Burger Job** (decision Nov 5, to wire) |
-| Client | Video village | | Slicked gray hair, glasses, navy suit, red tie | Needed, priority 1 |
-| Agency | Video village | | Beret, latte in hand, black outfit | Needed, priority 1 |
-| Receptionist | HQ lobby | | Glasses, gray cardigan | Needed, priority 2 |
-| Theo | Art | Vouched | Beanie, glasses, blond, fair skin | Needed, priority 3. **Booked on the Burger Job** in Lu's place |
-| Bo | Gaffer | Veteran | Cap, beard, deep brown skin | Needed |
-| Lee | Gaffer | Newbie | No hat, light brown hair, fair skin | Needed |
-| Inés | DP (camera) | Veteran | Beret, glasses, tan skin, dark hair | Needed |
-| Sam | DP | Newbie | No hat, ginger hair, glasses, fair skin | Needed |
-| Max | Grip | Veteran | Cap, beard, tan skin | Needed |
-| Chuy | Grip | Newbie | Beanie, brown skin, black hair | Needed |
-| Vera | Art | Veteran | Hair bun, earring, tan skin | Needed |
-| Paz | Art | Vouched | Red hair in a bun, earring | Needed |
-| Kit | Art | Unknown | Teal hair, earring, no hat | Needed |
-| Jules | Art | Unknown | Cap, glasses, deep brown skin | Needed |
+| Lu | Art | Solid | Dark curly hair in a bun, gold hoop earrings, brown skin, coral apron | **Delivered** (batch 2), with pelvis. Hirable on the Burger Job |
+| Client | Video village | | Short gray hair, glasses, navy suit, red tie | **Delivered and wired** (batch 8) |
+| Agency | Video village | | Black beret, black turtleneck, latte in hand | **Delivered and wired** (batch 8), with `crew.held.agency-latte` |
+| Receptionist | HQ lobby | | Dark curly hair with a gray streak, cream glasses, gray cardigan | **Delivered and wired** (batch 8) |
+| Theo | Art | Vouched | Blue beanie, glasses, blond curls, fair skin, sage jacket | **Delivered and wired** (batch 8). Booked on the Burger Job |
+| Bo, Lee, Inés, Sam, Max, Chuy, Vera, Paz, Kit, Jules | Crew | | Code-drawn today | From the crew kit. Not hand-drawn |
 
 ### Proportions to match Ro (from batch 2)
 
@@ -234,11 +227,12 @@ Ranges of plus or minus 8% are fine, since the per-character scale absorbs them.
 
 | ID | Piece | Size | Pivot | Status |
 | --- | --- | --- | --- | --- |
-| crew.held.grip | Sandbag, hammer | 12 x 10 | Grip point | **Re-exported** (batch 7) as `crew.held.sandbag`, `crew.held.hammer`, grip points in `held-grip-points.json`. To wire |
+| crew.held.grip | Sandbag, hammer | 12 x 10 | Grip point | **Re-exported** (batch 7) as `crew.held.sandbag`, `crew.held.hammer`, grip points in `held-grip-points.json`. **Wired**: the game hangs each from the hand by its grip point |
 | crew.held.electric | Gel frame, light head | 12 x 10 | Grip point | Same (`gel-frame`, `light-head`). Gel frame edge intended |
 | crew.held.camera | Lens case | 10 x 8 | Grip point | Same (`lens-case`) |
 | crew.held.art | Plate with burger, tweezers | 14 x 6 | Grip point | Same (`burger-plate`, `tweezers`) |
-| crew.shadow | Soft paper floor shadow | 24 x 6 | Center | Delivered (batch 5), to wire |
+| crew.held.agency-latte | The Agency's paper cup | 4.7 x 7 | Where the hand holds it | **Delivered and wired** (batch 8). Rides under her near hand |
+| crew.shadow | Soft paper floor shadow | 24 x 6 | Center | **Wired**. Drawn under every puppet |
 
 ## HUD (landscape shoot)
 
@@ -309,11 +303,10 @@ Every delivered piece is wired as of Nov 5 (Art-Batch-7-Validation.md, Art-HQ-Co
 
 ## What to send next, in priority order
 
-All non-character art is delivered. What remains:
+All non-character art and the eight hand-designed characters are delivered. What remains:
 
-1. **Client and Agency** as characters, who sit in frame all game.
-2. **Receptionist and Theo.**
-3. **The rest of the roster:** Bo, Lee, Inés, Sam, Max, Chuy, Vera, Paz, Kit, Jules.
-4. **Optional:** `hq.sign.bulbs` overlay on the off master (so the sign can blink), pose images, plant sway, street cone and hydrant, short and long fork rod.
+1. **Crew Kit 01, the test batch:** 15 pieces (two bald base heads, hair, a cap, a beard, glasses, a tee and shorts). The full ask is Crew-Kit-01-Request.md, with the template in `docs/kit/`.
+2. **Studio shell kit:** wall and floor materials, flats with openings, pattern overlays, ceilings. Sizes are in Art-Handoff-Nov5.md.
+3. **Optional:** the two re-exports in Art-Batch-8-Validation.md, the `hq.sign.bulbs` overlay on the off master (so the sign can blink), pose images, plant sway, street cone and hydrant, short and long fork rod.
 
 Send files named as above, or unnamed with a short list of what each is. Masters at any size are fine.

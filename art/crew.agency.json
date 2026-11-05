@@ -1,0 +1,56 @@
+{
+  "scale": 8,
+  "fixed": true,
+  "joints": {
+    "hips": [
+      0.0,
+      -23.0
+    ],
+    "neck": [
+      0.0,
+      -34.88
+    ],
+    "shoulderFront": [
+      3.94,
+      -33.33
+    ],
+    "shoulderBack": [
+      -3.32,
+      -33.33
+    ],
+    "pelvis": [
+      0.0,
+      -19.94
+    ],
+    "hipFront": [
+      2.39,
+      -19.94
+    ],
+    "hipBack": [
+      -2.39,
+      -19.94
+    ]
+  },
+  "portrait": [
+    -13.38,
+    -56.45,
+    24.12,
+    25.5
+  ],
+  "order": {
+    "upper": [
+      "torso",
+      "arm-back",
+      "head",
+      "arm-front"
+    ]
+  },
+  "holds": {
+    "role": "arm-back",
+    "item": "agency-latte",
+    "at": [
+      -3.83,
+      -21.99
+    ]
+  }
+}

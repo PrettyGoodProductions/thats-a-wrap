@@ -21,7 +21,7 @@ const IMAGE_EXT = new Set(['.png', '.webp', '.svg']);
 const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 const FILE = /^(.+?)(?:@(\d+(?:\.\d+)?)x)?\.(png|webp|svg)$/;
 const SEG = [/^[a-z0-9]+$/, /^[a-z0-9-]+$/, /^[a-z0-9_-]+$/, /^[a-z0-9_-]+$/];
-const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'note'];
+const CHAR_SETTING_KEYS = ['scale', 'tint', 'shadow', 'fixed', 'joints', 'portrait', 'order', 'holds', 'note'];
 const SETTING_KEYS = ['pivot', 'scale', 'size', 'offset', 'shadow', 'tint', 'flip', 'sole', 'points', 'nine', 'states', 'note'];
 
 // <dept>.<object>[.<state>], or for a fixed character crew.<character>.<part>[.<state>]. Returns null for a bad name.
@@ -109,6 +109,15 @@ function checkCharacter(id, cfg, errors, warnings) {
       if (!RIG[k]) warnings.push(`${id}.json: unknown joint "${k}" (known: ${Object.keys(RIG).join(', ')}), ignored`);
       else if (!isPair(v)) errors.push(`${id}.json: joint ${k} must be [x, y] in puppet units`);
     }
+  }
+  if (cfg.order !== undefined) {
+    const up = cfg.order && cfg.order.upper;
+    const need = ['arm-back', 'torso', 'head', 'arm-front'];
+    if (!(Array.isArray(up) && up.length === need.length && need.every(r => up.includes(r)))) errors.push(`${id}.json: order.upper must list arm-back, torso, head and arm-front once each, back to front`);
+  }
+  if (cfg.holds !== undefined) {
+    const h = cfg.holds;
+    if (!(h && typeof h === 'object' && typeof h.role === 'string' && typeof h.item === 'string' && isPair(h.at))) errors.push(`${id}.json: holds must be { "role": "arm-back", "item": "<crew.held state>", "at": [x, y] }`);
   }
   if (cfg.portrait !== undefined && !(Array.isArray(cfg.portrait) && cfg.portrait.length === 4 && cfg.portrait.every(n => typeof n === 'number' && isFinite(n)) && cfg.portrait[2] > 0 && cfg.portrait[3] > 0)) errors.push(`${id}.json: portrait must be [x, y, width, height] in puppet units`);
 }

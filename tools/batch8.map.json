@@ -1,0 +1,537 @@
+{
+  "_note": "Batch 8 (Nov 5): Client, Agency, Receptionist and Theo on the fixed rig, and the Agency latte. Built by tools/make_batch8_map.py. agency: stands 52.8 units, hips -19.94, thigh 5.8, pelvis refitted x1.10 to 11.0 wide. receptionist: stands 51.6 units, hips -18.75, thigh 7.7, pelvis refitted x1.25 to 14.7 wide. theo: stands 52.3 units, hips -19.44, thigh 6.5, pelvis refitted x1.22 to 12.5 wide. client: 48.0 units at 8 px per unit as delivered, drawn at 7.41 px per unit to stand 51.8",
+  "pieces": {
+    "crew.agency.head": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        79.0,
+        147.0
+      ],
+      "files": {
+        "default": "art/crew.agency.head@8x.png"
+      }
+    },
+    "crew.agency.torso": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        45.5,
+        116.0
+      ],
+      "files": {
+        "default": "art/crew.agency.torso@8x.png"
+      }
+    },
+    "crew.agency.pelvis": {
+      "native": 24.63,
+      "target": 8,
+      "pivot": [
+        141.0,
+        132.09
+      ],
+      "files": {
+        "default": {
+          "file": "masters/parts/crew.agency.pelvis@27x.png",
+          "trim_openings": true
+        }
+      }
+    },
+    "crew.agency.arm-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        25.0,
+        17.5
+      ],
+      "files": {
+        "default": "art/crew.agency.arm-front@8x.png"
+      }
+    },
+    "crew.agency.arm-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        27.0,
+        17.5
+      ],
+      "files": {
+        "default": "art/crew.agency.arm-back@8x.png"
+      }
+    },
+    "crew.agency.leg-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        28.0,
+        27.5
+      ],
+      "files": {
+        "default": "art/crew.agency.leg-front@8x.png"
+      }
+    },
+    "crew.agency.leg-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        38.0,
+        26.5
+      ],
+      "files": {
+        "default": "art/crew.agency.leg-back@8x.png"
+      }
+    },
+    "crew.receptionist.head": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        83.0,
+        147.0
+      ],
+      "files": {
+        "default": "art/crew.receptionist.head@8x.png"
+      }
+    },
+    "crew.receptionist.torso": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        61.0,
+        116.0
+      ],
+      "files": {
+        "default": "art/crew.receptionist.torso@8x.png"
+      }
+    },
+    "crew.receptionist.pelvis": {
+      "native": 21.56,
+      "target": 8,
+      "pivot": [
+        163.5,
+        116.27
+      ],
+      "files": {
+        "default": {
+          "file": "masters/parts/crew.receptionist.pelvis@27x.png",
+          "trim_openings": true
+        }
+      }
+    },
+    "crew.receptionist.arm-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        21.5,
+        22.0
+      ],
+      "files": {
+        "default": "art/crew.receptionist.arm-front@8x.png"
+      }
+    },
+    "crew.receptionist.arm-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        33.5,
+        22.0
+      ],
+      "files": {
+        "default": "art/crew.receptionist.arm-back@8x.png"
+      }
+    },
+    "crew.receptionist.leg-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        38.0,
+        36.5
+      ],
+      "files": {
+        "default": "art/crew.receptionist.leg-front@8x.png"
+      }
+    },
+    "crew.receptionist.leg-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        42.0,
+        36.0
+      ],
+      "files": {
+        "default": "art/crew.receptionist.leg-back@8x.png"
+      }
+    },
+    "crew.theo.head": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        74.0,
+        147.0
+      ],
+      "files": {
+        "default": "art/crew.theo.head@8x.png"
+      }
+    },
+    "crew.theo.torso": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        56.0,
+        116.0
+      ],
+      "files": {
+        "default": "art/crew.theo.torso@8x.png"
+      }
+    },
+    "crew.theo.pelvis": {
+      "native": 22.21,
+      "target": 8,
+      "pivot": [
+        143.5,
+        119.59
+      ],
+      "files": {
+        "default": {
+          "file": "masters/parts/crew.theo.pelvis@27x.png",
+          "trim_openings": true
+        }
+      }
+    },
+    "crew.theo.arm-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        20.5,
+        20.5
+      ],
+      "files": {
+        "default": "art/crew.theo.arm-front@8x.png"
+      }
+    },
+    "crew.theo.arm-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        31.0,
+        20.0
+      ],
+      "files": {
+        "default": "art/crew.theo.arm-back@8x.png"
+      }
+    },
+    "crew.theo.leg-front": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        30.5,
+        30.5
+      ],
+      "files": {
+        "default": "art/crew.theo.leg-front@8x.png"
+      }
+    },
+    "crew.theo.leg-back": {
+      "native": 8,
+      "target": 8,
+      "pivot": [
+        48.0,
+        30.5
+      ],
+      "files": {
+        "default": "art/crew.theo.leg-back@8x.png"
+      }
+    },
+    "crew.client.head": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        61,
+        122
+      ],
+      "files": {
+        "default": "art/crew.client.head@8x.png"
+      }
+    },
+    "crew.client.torso": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        51,
+        129
+      ],
+      "files": {
+        "default": "art/crew.client.torso@8x.png"
+      }
+    },
+    "crew.client.pelvis": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        45,
+        18
+      ],
+      "files": {
+        "default": "art/crew.client.pelvis@8x.png"
+      }
+    },
+    "crew.client.arm-front": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        53,
+        12
+      ],
+      "files": {
+        "default": "art/crew.client.arm-front@8x.png"
+      }
+    },
+    "crew.client.arm-back": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        14,
+        11
+      ],
+      "files": {
+        "default": "art/crew.client.arm-back@8x.png"
+      }
+    },
+    "crew.client.leg-front": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        44,
+        14
+      ],
+      "files": {
+        "default": "art/crew.client.leg-front@8x.png"
+      }
+    },
+    "crew.client.leg-back": {
+      "native": 8,
+      "target": 8,
+      "scale": 7.41,
+      "pivot": [
+        25,
+        14
+      ],
+      "files": {
+        "default": "art/crew.client.leg-back@8x.png"
+      }
+    },
+    "crew.held": {
+      "native": 6,
+      "target": 6,
+      "merge": true,
+      "files": {
+        "agency-latte": {
+          "file": "art/crew.held.agency-latte@6x.png",
+          "pivot": [
+            12.6,
+            29.0
+          ]
+        }
+      }
+    }
+  },
+  "characters": {
+    "crew.agency": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0.0,
+          -23.0
+        ],
+        "neck": [
+          0.0,
+          -34.88
+        ],
+        "shoulderFront": [
+          3.94,
+          -33.33
+        ],
+        "shoulderBack": [
+          -3.32,
+          -33.33
+        ],
+        "pelvis": [
+          0.0,
+          -19.94
+        ],
+        "hipFront": [
+          2.39,
+          -19.94
+        ],
+        "hipBack": [
+          -2.39,
+          -19.94
+        ]
+      },
+      "portrait": [
+        -13.38,
+        -56.45,
+        24.12,
+        25.5
+      ],
+      "order": {
+        "upper": [
+          "torso",
+          "arm-back",
+          "head",
+          "arm-front"
+        ]
+      },
+      "holds": {
+        "role": "arm-back",
+        "item": "agency-latte",
+        "at": [
+          -3.83,
+          -21.99
+        ]
+      }
+    },
+    "crew.receptionist": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0.0,
+          -21.81
+        ],
+        "neck": [
+          0.0,
+          -33.69
+        ],
+        "shoulderFront": [
+          5.37,
+          -32.14
+        ],
+        "shoulderBack": [
+          -4.56,
+          -32.14
+        ],
+        "pelvis": [
+          0.0,
+          -18.75
+        ],
+        "hipFront": [
+          3.33,
+          -18.75
+        ],
+        "hipBack": [
+          -3.33,
+          -18.75
+        ]
+      },
+      "portrait": [
+        -13.88,
+        -55.27,
+        25.0,
+        25.38
+      ],
+      "order": {
+        "upper": [
+          "torso",
+          "arm-back",
+          "head",
+          "arm-front"
+        ]
+      }
+    },
+    "crew.theo": {
+      "scale": 8,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0.0,
+          -22.5
+        ],
+        "neck": [
+          0.0,
+          -34.38
+        ],
+        "shoulderFront": [
+          4.94,
+          -32.83
+        ],
+        "shoulderBack": [
+          -4.16,
+          -32.83
+        ],
+        "pelvis": [
+          0.0,
+          -19.44
+        ],
+        "hipFront": [
+          2.77,
+          -19.44
+        ],
+        "hipBack": [
+          -2.77,
+          -19.44
+        ]
+      },
+      "portrait": [
+        -12.75,
+        -55.95,
+        24.38,
+        25.5
+      ],
+      "order": {
+        "upper": [
+          "torso",
+          "arm-back",
+          "head",
+          "arm-front"
+        ]
+      }
+    },
+    "crew.client": {
+      "scale": 7.41,
+      "fixed": true,
+      "joints": {
+        "hips": [
+          0.07,
+          -20.5
+        ],
+        "neck": [
+          0.07,
+          -36.02
+        ],
+        "shoulderFront": [
+          -4.79,
+          -33.59
+        ],
+        "shoulderBack": [
+          5.33,
+          -33.72
+        ],
+        "pelvis": [
+          0.07,
+          -20.23
+        ],
+        "hipFront": [
+          -2.77,
+          -20.64
+        ],
+        "hipBack": [
+          2.77,
+          -20.64
+        ]
+      },
+      "portrait": [
+        -11.48,
+        -55.5,
+        22.57,
+        23.82
+      ]
+    }
+  }
+}

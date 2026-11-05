@@ -91,11 +91,27 @@ One more file, `crew.<character>.json`, fits the character to the shared rig:
 }
 ```
 
+Two optional keys (batch 8): `"order": { "upper": ["torso", "arm-back", "head", "arm-front"] }` draws the upper body in another order than the default (arm-back, torso, head, arm-front), for a torso with a painted armhole. `"holds": { "role": "arm-back", "item": "agency-latte", "at": [x, y] }` hangs a `crew.held` state at that spot (puppet units), inside that arm's group and under the arm, so the fingers cover it and it turns with the arm.
+
 `joints` say where each part's pivot lands, in puppet units with the feet at 0,0 (a puppet is about 48 tall). `portrait` is the head crop for the hire cards and crew bar, `[x, y, width, height]`. `scale` and `tint` here are defaults for every part, a part's own `.json` (usually just its `pivot`) refines them.
 
 The walk, work and reach animations live in `src/page.html` (`.wl-rig` rules) and move parts by role, so every character on the rig animates the same way. A pose image such as `crew.ro.arm-front.work@8x.png` replaces the part while that pose plays.
 
 A new character is its files plus one line in `CHARACTERS` in `src/slots.js`. Batch 2 (Mika, Dani, Lu) shows the path: `tools/batch2.map.json` is generated from each crop's alpha (pivots at the neck stub, hem, sleeve cap and hip tab) and gives each character its own `native` scale, so every one stands 51.8 units tall like Ro.
+
+Batch 8 (Client, Agency, Receptionist, Theo) shows the path for a delivery that comes with pivots and an approved picture: `tools/make_batch8_map.py` reads the delivery, fits the joints the way Ro's are fitted, refits each pelvis to the width of its legs from the 27 px master, and trims the dark leg openings (`"trim_openings": true` on a file in the map). Two more map options: `"scale"` on a piece draws the exported pixels at another size (the Client keeps her pixels and stands as tall as the others), and `"merge": true` adds states to a piece that is already fitted (a new held prop) without rewriting its settings file.
+
+`python3 tools/char_sheet.py art out.png ro theo agency` draws a lineup of delivered characters the way the rig assembles them, a quick check of joints and height without opening the game.
+
+## Crew kit tools
+
+| Command | What it does |
+| --- | --- |
+| `python3 tools/recolor_area.py art/crew.theo.head@8x.png` | Lists a piece's main color areas. `recolor_areas()` moves chosen areas (skin, hair, a garment) to new colors and leaves the rest |
+| `python3 tools/kit_mix.py art docs/kit/mix-proof.png` | New people from delivered parts: a head on another character's outfit, recolored. A proof, not in the game yet |
+| `python3 tools/make_kit_template.py art docs/kit` | The crew kit template sheet, its data file and the per-slot guides |
+
+`recolor_area.py` and `kit_mix.py` need scikit-image.
 
 ## Checking a batch
 
@@ -106,7 +122,7 @@ A new character is its files plus one line in `CHARACTERS` in `src/slots.js`. Ba
 | `node build.mjs --lab --out /tmp/lab && python3 tools/qa_pipeline.py /tmp/lab /tmp/qa` | In Chrome: sharpness at phone and tablet scale, transparency, platform placement, key light jump and pivot, puppet walk and work frames (writes GIFs and contact sheets) |
 | `python3 tools/qa_art_e2e.py dist/index.html /tmp/e2e --expect ro` | Plays a real shoot with Ro hired and checks everything shows up |
 | `python3 tools/qa_art_e2e.py dist/index.html /tmp/e2e --expect crew` | Same, with every delivered character hired (Ro, Mika, Dani; Lu when she is not booked): each must walk and work on the fixed rig |
-| `python3 tools/qa_pipeline.py /tmp/lab /tmp/qa --char mika` | The bench checks on one character (`ro`, `mika`, `dani`, `lu`). Run one at a time: four in parallel crash Chrome |
+| `python3 tools/qa_pipeline.py /tmp/lab /tmp/qa --char mika` | The bench checks on one character (`ro`, `mika`, `dani`, `lu`, `theo`, `client`, `agency`, `receptionist`). Run one at a time: four in parallel crash Chrome. Each run takes about two minutes |
 
 ## Adding a new piece
 

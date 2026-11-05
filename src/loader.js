@@ -319,22 +319,30 @@
     carries the head and both arms with it.
   */
   function characterPuppet(ch) {
+    const cc = charCfg(ch);
+    // A prop the character always carries (the Agency's latte): drawn inside the arm's group, under the arm art,
+    // so it turns with the arm and the fingers sit over it
+    const holds = cc.holds && ROLES[cc.holds.role] && has('crew.held', cc.holds.item) && Array.isArray(cc.holds.at) ? cc.holds : null;
     const part = (role) => {
       const id = `crew.${ch}.${role}`;
       const states = statesOf(id);
       if (!states.length) return '';
       const def = slotOf(id);
       const show = states.includes('idle') ? 'idle' : states.includes('default') ? 'default' : states[0];
-      const inner = states.map(st => useEl(id, st, def.anchor, st === show)).join('');
+      const prop = holds && holds.role === role ? useEl('crew.held', holds.item, { x: holds.at[0], y: holds.at[1] }, true) : '';
+      const inner = prop + states.map(st => useEl(id, st, def.anchor, st === show)).join('');
       const so = role.startsWith('leg-') && (resolve(id, show) || {}).sole;
       const soleAttr = so ? ` data-sole="${so.map(([x, y]) => f(x) + ',' + f(y)).join(' ')}"` : '';
       return `<g class="wl-pose wl-r-${role}" data-part="${id}"${soleAttr} style="transform-origin:${f(def.anchor.x)}px ${f(def.anchor.y)}px">${inner}</g>`;
     };
     const hips = jointOf(ch, 'hips');
+    // Back to front. A character may reorder its upper body (crew.<character>.json "order"), as long as it names the same parts
+    const want = cc.order && Array.isArray(cc.order.upper) ? cc.order.upper : null;
+    const upper = want && want.length === RIG_ORDER.upper.length && RIG_ORDER.upper.every(r => want.includes(r)) ? want : RIG_ORDER.upper;
     return floorShadow() +
       `<g class="bodyg wl-rig" data-character="${ch}" data-leg="${f(-jointOf(ch, 'hipFront').y)}">` +
       RIG_ORDER.legs.map(part).join('') +
-      `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + RIG_ORDER.upper.map(part).join('') + `</g>` +
+      `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + upper.map(part).join('') + `</g>` +
       `</g>`;
   }
 

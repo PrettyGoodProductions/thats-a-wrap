@@ -1,6 +1,6 @@
 # That's a Wrap! Content roadmap: levels, HQ growth and the art library
 
-Nov 5, 2026 · revision 2 (crew are built from a component kit, the set and studio parts list is added, HQ is the landscape diorama, recolor test done) · goes with HQ-Redesign.md, Asset-Manifest.md and the two ChatGPT briefs (Mobile 2D World and Prop System, Character Assembly and Roster System)
+Nov 5, 2026 · revision 3 (Client, Agency, Receptionist and Theo are in the game, recoloring by area works on the delivered characters, and the crew kit test batch is specified in Crew-Kit-01-Request.md. Revision 2: component kit, set and studio parts list, landscape HQ, recolor test) · goes with HQ-Redesign.md, Asset-Manifest.md and the two ChatGPT briefs (Mobile 2D World and Prop System, Character Assembly and Roster System)
 
 How the game gets to many different levels, many different crew and a growing HQ without drawing every scene and person from scratch. Nothing here changes the Milestone B sequence. The level list is a menu to pick from, not a commitment to build all of it.
 
@@ -10,9 +10,9 @@ How the game gets to many different levels, many different crew and a growing HQ
 | --- | --- |
 | Art library | Draw a parts library once, derive variants with scripts, assemble scenes and crew from data. No image generation while the game runs |
 | Level identity | Every tabletop level must feel like its own set. Recolor and rearrange alone is not enough (see "What makes a level its own") |
-| Recolor | Tested and works on single-color paper pieces. No neutral re-exports of the delivered flats are needed |
+| Recolor | Works. Whole single-color pieces (flats) take any color, and one color area inside a multi-color piece (skin, hair, a jacket) can be moved on its own. Tomás approved the recolored flats. No neutral or grey art is needed |
 | Who makes art | ChatGPT. Claude writes each request as a paste-ready block, Tomás pastes it, Claude fits, audits and wires the zip. Calling an image model directly from Claude is parked |
-| Characters | Crew are built from a **component kit**: hair, skin tone, tops, bottoms, hats and accessories, colored by the game. Ro, Mika, Dani and Lu stay as hand-designed named characters. This replaces "6 to 8 authored characters" |
+| Characters | Eight hand-designed characters are delivered and in the game: Ro, Mika, Dani, Lu, Client, Agency, Receptionist, Theo. Everyone else is built from a **crew kit**: heads, hair, hats, tops and bottoms that the game mixes and recolors. No more hand-drawn characters are planned |
 | Screens | Every screen is landscape. HQ is the cutaway diorama from HQ-Redesign.md, delivered and wired |
 | Level and HQ ideas | The lists below are adopted into the plan as the content backlog |
 
@@ -26,18 +26,16 @@ How the game gets to many different levels, many different crew and a growing HQ
 
 The tabletop kit is about 60 pieces and is delivered. Rough cost of new content on top of it: 10 to 15 drawings for a new tabletop job, 15 to 25 for a new location. These are estimates until the second job is built.
 
-## Recolor test (done)
+## Recolor tests (done)
 
-Sheet: `docs/qa/tint-test/recolor-test.png`, made by `tools/tint_test.py`.
+| Test | Finding | What it means |
+| --- | --- | --- |
+| Whole piece (`docs/qa/tint-test/recolor-test.png`, `tools/tint_test.py`) | Single-color flats recolor cleanly. Grain, torn edges and corrugation survive. A piece with two or more colors flattens to one: the platform loses its cream lid | The eleven delivered flats take any palette as they are |
+| One area at a time (`docs/kit/mix-proof.png`, `tools/recolor_area.py`) | On the delivered characters, skin, hair, a top or trousers can each be moved to a new color while eyes, glasses, buttons, boots and hats stay. A nose follows the skin it sits on | Multi-color pieces can be recolored too. Characters can change skin tone, hair color and clothing colors with no new art |
 
-| Finding | What it means |
-| --- | --- |
-| Single-color flats recolor cleanly. Paper grain, torn edges and corrugation survive, and tinting a flat back to its own color matches the original | The eleven delivered flats can take any palette as they are |
-| A piece with two or more colors flattens to one. The platform loses its cream lid and orange edge | Multi-color pieces either stay in their painted colors, or are delivered as one file per color area |
+**Rule for new art:** each area that should be recolorable is one flat paper color, and no two areas inside the same piece are similar colors. A cream tee under a sage jacket is too close, and the tee shifts with the jacket.
 
-**Rule for new art:** one material per file when a piece should be recolorable. Anything with a fixed color (a boot, a button, a lid) goes in its own file on the same canvas.
-
-Not tested yet: the wall and floor tiles (same kind of piece, expected to behave the same), and how it reads on a phone in the game.
+Not tested yet: the wall and floor tiles (same kind of piece as the flats), area recoloring on set pieces such as the platform, and how any of it reads on a phone in the game. Recoloring runs in Python today. In the game it will run once when a person or a set is created, not every frame.
 
 ## What makes a level its own
 
@@ -72,11 +70,11 @@ This is what makes two tabletop levels look like different rooms.
 
 | Piece | Count | Notes |
 | --- | --- | --- |
-| Wall materials, seamless tiles | 4 | Brick, white cyc, wood slat, concrete. Neutral paper so they recolor |
+| Wall materials, seamless tiles | 4 | Brick, white cyc, wood slat, concrete. Each in one color, which the game recolors |
 | Floor materials, seamless tiles | 4 | Concrete, wood plank, checker tile, white cyc floor |
-| Flats with openings | 3 | Window flat, door flat, half-height flat. Neutral. The window gets a separate glass and glow layer |
+| Flats with openings | 4 | Window flat with its glass and glow layer, door flat, half-height flat. Each in one color |
 | Pattern overlays for any flat | 3 | Stripes, tile grid, wallpaper print. Transparent, laid over a recolored flat |
-| Ceiling alternates | 2 | Wood beams, skylight |
+| Ceiling alternate | 1 | Wood beams. A skylight comes later |
 
 ### Hero surfaces and backdrops (about 9 drawings, as levels need them)
 
@@ -91,7 +89,7 @@ Large overhead softbox, LED tube, bounce board, diffusion frame, fan, haze machi
 
 ### Furniture kit (about 12 drawings, for Four rooms and lifestyle sets)
 
-Sofa, armchair, bed, dining table, chair, floor lamp, rug, shelf, three framed pictures, curtain. Upholstery and wood as separate files so both recolor.
+Sofa, armchair, bed, dining table, chair, floor lamp, rug, shelf, three framed pictures, curtain. Upholstery and wood in clearly different colors, so each recolors on its own.
 
 ### Per-level packs
 
@@ -155,7 +153,7 @@ Overcooked keeps a few verbs constant (assign, carry, prep, deliver) and gives e
 - Company move mid-level
 - A product or prop didn't arrive
 
-Food stylist, art department and wardrobe stylist share one role family, so the same crew logic covers food, product and wardrobe jobs. Models and talent come from the same component kit as crew, so a fashion level needs wardrobe pieces and no new people.
+Food stylist, art department and wardrobe stylist share one role family, so the same crew logic covers food, product and wardrobe jobs. Models and talent come from the same crew kit as crew, so a fashion level needs wardrobe pieces and no new people.
 
 ### Suggested first four after the burger
 
@@ -163,77 +161,84 @@ Food stylist, art department and wardrobe stylist share one role family, so the 
 | --- | --- | --- |
 | 1 | Beverage | Cheapest to make. Same stage, one new rule |
 | 2 | E-comm flat lay | A different pace: volume instead of three hero shots |
-| 3 | Fashion lookbook | Adds talent and wardrobe, which reuse the crew component kit |
+| 3 | Fashion lookbook | Adds talent and wardrobe, which reuse the crew kit |
 | 4 | Rooftop | First location kit, proves the library outside the studio |
 
 Not locked. Tomás picks.
 
-## Characters: the component kit
+## Characters: the crew kit
 
-People are assembled from components and colored by the game. Hair color, skin tone and clothing color are data, so they cost no drawings.
+### Where it stands
 
-The engine already has the start of this: a generic puppet whose head takes a skin tone, whose torso takes a color, and whose hair, hats and face extras are swappable. It was built before Ro arrived and never got art. The kit below feeds it and extends it.
+Eight hand-designed characters are in the game: Ro, Mika, Dani and Lu as crew, the Client and Agency in video village, the Receptionist in the lobby, and Theo. Details in Art-Batch-8-Validation.md.
 
-### Layers, back to front
+`docs/kit/mix-proof.png` shows twelve new people built from those parts alone: a head from one character on the outfit of another, with a new skin tone, hair color and clothing colors. Nobody drew them. That is the system working on what is already delivered.
 
-| Layer | Options to draw | Colored by |
+### What the delivered art cannot do
+
+| Limit | What fixes it |
+| --- | --- |
+| Hair and hats are painted into every head, so a head always has the same hair | Bald base heads, with hair, hats, beards and glasses as separate layers |
+| Only four outfits share one scale (Ro, Agency, Receptionist, Theo). Mika, Dani, Lu and the Client were drawn at other proportions, so their bodies do not mix | New tops and bottoms drawn on one mannequin |
+| Every outfit is long trousers with a shirt or jacket | More shapes: tee, hoodie, apron, shorts, skirt |
+
+### How the kit is built
+
+Kit pieces use the same seven-part rig as the characters, so the engine needs no new body system.
+
+| Kit piece | Files | Recolored by the game |
 | --- | --- | --- |
-| Hair, back piece | For long hair and ponytails | Hair color |
-| Bottoms: pelvis and two legs | Pants, shorts, work pants | Clothing color |
-| Shoes | Boots, sneakers | Fixed |
-| Arms | One pair | Skin tone |
-| Sleeves | Short, long, rolled | Clothing color |
-| Top | Tee, long sleeve, button-up, hoodie, work shirt, tank | Clothing color, with a fixed detail layer for buttons and collars |
-| Over layer | Apron, vest, tool belt, suit jacket, cardigan | Its own color |
-| Head | Two shapes | Skin tone |
-| Face | Eyes, nose, mouth, brows | Fixed ink. Brows take hair color |
-| Facial hair | Beard, mustache, stubble | Hair color |
-| Hair | Buzz, short, short curly, medium, long straight, long curly, bun, ponytail | Hair color |
-| Hat | Cap, beanie, beret, bandana, bucket hat | Its own color |
-| Accessories | Two glasses, earrings, headset, lanyard, watch | Fixed |
+| Base head | 1 (bald, with face, ear, neck stub) | Skin |
+| Hair | 1, or 2 when long hair needs a back piece | Hair color |
+| Hat | 1 | Its own color |
+| Beard, mustache | 1 | Hair color |
+| Glasses, earrings | 1 | Nothing |
+| Top | 3: torso and two arms. The sleeve and the hand are on the arm, as now | Top color, skin |
+| Bottoms | 3: pelvis and two legs, with the shoe on the leg | Bottoms color, skin on bare legs |
 
-About 65 drawings for the full kit. Palettes from data: about 8 skin tones, 7 hair colors, 10 clothing colors.
+All head layers for one base head share one canvas and are cut from one drawing, so they stack exactly. Pieces are drawn in the normal style in four agreed key colors (skin, hair, top, bottoms), which is how the game finds each area.
 
-**Yield:** what reads at phone size is the hair or hat shape, skin tone, facial hair, glasses and top color. That alone is over a thousand clearly different people, before bottoms and accessories.
+The template is in `docs/kit/`: the mannequin with its joints, each slot's canvas and pivot, the head canvas, the key colors, and guides at master scale.
 
-### Rules for the art
+### Test batch first: Crew Kit 01 (15 drawings)
 
-1. **One template.** Claude makes a template sheet from Ro's rig: the canvas, outline and joint for every part. Every component is drawn on its part's canvas, so hair sits on the head canvas and sleeves on the arm canvas, and nothing needs hand placement.
-2. **One material per file,** in light neutral paper with grain and inner shadows. Fixed-color details in their own file.
-3. **Overlaps kept:** neck stub, round sleeve cap, rounded leg top, hem over waistband, as on Ro.
-4. **Looks never drive stats.** Appearance is separate from department, skill and rate.
+Two bald base heads with the same skull and different faces, three hair styles (short, curly, long with its back piece), a cap, a beard, glasses, a tee (torso and two arms) and shorts (pelvis and two legs). The full ask is Crew-Kit-01-Request.md.
 
-### Test batch first (about 16 drawings)
+When it arrives Claude checks that head layers stack, recolors every piece in five skin tones, hair colors and clothing colors, and shows a lineup of twelve kit people next to Ro for approval.
 
-One head, the arm pair, one set of eyes, nose and mouth, three hair styles (short, medium, long with its back piece), a tee with short sleeves, a long sleeve top with long sleeves, pants, boots. Claude assembles a lineup of 12 people from it in several skin tones and colors, next to Ro. If the layers line up and they look like they belong in Ro's world, the rest of the kit follows.
+### Full kit, after the test batch (about 45 more drawings)
+
+| Group | Pieces |
+| --- | --- |
+| Base heads | 2 more, with other head shapes |
+| Hair | 5 more: buzz, medium, bun, ponytail, long curly |
+| Hats | 4 more: beanie, beret, bandana, bucket hat |
+| Face | Mustache, stubble, second glasses, earrings |
+| Tops, 3 files each | Long sleeve, button-up, hoodie, work shirt, tank, plus an apron and a tool belt as over layers |
+| Bottoms, 3 files each | Trousers, work pants, skirt |
+
+**Yield:** what reads at phone size is the hair or hat shape, skin tone, facial hair, glasses and top color. With the full kit that is well over a thousand clearly different people, and the delivered eight add their own heads and outfits to the mix.
 
 ### Risks
 
 | Risk | Plan |
 | --- | --- |
-| Layers drawn by an image model do not line up | The template sheet and the small test batch. Claude audits registration before anything is wired |
-| Everyone looks like the same person in a different wig | Two head shapes, face variants, facial hair, small height differences, a second body build later |
-| Kit people look plainer than Ro | Expected. The four hand-designed characters stay as named crew. More can be commissioned any time on the same rig |
-| Bad combinations (a hat over big hair) | Exclusion rules in data. Only approved combinations are generated |
-| Tinting many layers slows phones | Each person is flattened once when they are created, not recolored every frame |
+| Layers drawn by an image model do not line up | Head layers are cut from one drawing on one canvas. Every piece comes with a picture of the mannequin wearing it, and Claude fits against that picture |
+| Everyone looks like the same person in a different wig | Base heads with different faces and head shapes, facial hair, glasses, small height differences |
+| Kit people look plainer than Ro | The eight hand-designed characters stay as named people. More can be commissioned any time on the same rig |
+| Bad combinations (a cap over big hair) | Exclusion rules in data. Only approved combinations are generated |
+| Recoloring slows phones | Each person is recolored and flattened once when created, not every frame |
+| A recolor bleeds into the wrong area | The key colors, and the rule that areas in one piece are not similar colors |
 
-### Who is built how
+Looks never drive stats. Appearance is separate from department, skill and rate.
 
-| Who | How |
-| --- | --- |
-| Ro, Mika, Dani, Lu | Hand-designed, as delivered |
-| Every other crew member, models and talent | Component kit |
-| Client, Agency, Receptionist | Proposed: component kit plus a few signature pieces (suit jacket and tie, beret and latte, cardigan). For Tomás to confirm |
+### Engine work
 
-If confirmed, no more hand-drawn characters are needed, and the 14-character list in Art-Handoff-Nov5.md and the manifest roster is retired.
-
-### Engine work (from the character brief)
-
-More slots on the generic puppet (sleeves, bottoms, over layer, hats apart from hair, hair back piece), appearance recipes as data, a seeded generator, identity that is saved and never rerolled, a character viewer with a lineup at game size.
+Head layers on the puppet (hair back piece, beard, hair, glasses, hat), area recoloring in the game, appearance recipes as data, a seeded generator, identity that is saved and never rerolled, and a character viewer with a lineup at game size. This follows the character brief.
 
 ## HQ growth
 
-The HQ is the landscape cutaway diorama: two floors of four bays, with the Production Office and Lounge, Lobby, Art Dept, Edit, Gear, Garage and one boarded expansion slot. All of its non-character art is delivered and wired, including room levels 1 to 3. The bottom nav has seven tabs. HQ, Jobs, Crew and Gear are live. Locations, Research and Reputation show as "Soon".
+The HQ is the landscape cutaway diorama: two floors of four bays, with the Production Office and Lounge, Lobby, Art Dept, Edit, Gear, Garage and one boarded expansion slot. All of its non-character art is delivered and wired, including room levels 1 to 3. The bottom nav has seven tabs. HQ, Jobs and Gear are live. Crew, Locations, Research and Reputation show as "Soon". The Receptionist is at the lobby desk.
 
 | Idea | How it works | Where it lives |
 | --- | --- | --- |
@@ -261,20 +266,21 @@ To try on the first expansion room: deliver the bare cavity plus furniture as se
 
 | Work | Needs | When |
 | --- | --- | --- |
-| Recolor test | Nothing | Done |
+| Recolor tests | Nothing | Done |
+| Client, Agency, Receptionist, Theo in the game | Batch 8 | Done |
+| Crew kit template and the Crew Kit 01 request | Nothing | Done, ready to send |
 | Code audit (Phase A of the world brief): renderer, loader, coordinates, save format, asset inventory | Nothing | Any time |
 | Manifest becomes a catalog the game reads, burger set becomes the first scene recipe, no visible change | Audit | Any time |
-| Crew template sheet and the component test batch request for ChatGPT | Tomás's go | Next art ask |
-| Lineup of 12 kit people next to Ro | Test batch delivered | After the test batch |
-| Full component kit, appearance recipes, saved identity, character viewer | Test batch approved | After the lineup |
-| Studio shell kit request | Tomás's go | With or after the character test batch |
+| Lineup of twelve kit people next to Ro | Crew Kit 01 delivered | After the test batch |
+| Full crew kit, head layers and recoloring in the game, saved identity, character viewer | Test batch approved | After the lineup |
+| Studio shell kit | Sizes are in Art-Handoff-Nov5.md | Send with or after the crew test batch |
 | Scene recipes with routes, footprints and reach checks, three burger layouts | Walking (Milestone B step 3) | After walking |
 | Second hero product pack (beverage) | Task split and failure (Milestone B steps 5 and 6) | After Milestone B |
-| Per-kit art packs loaded on demand | The page carries about 5 MB of art with one kit | Before the second kit ships |
+| Per-kit art packs loaded on demand | Packed art is 5.5 MB with one kit and eight characters. The build warns at 6 | Before the second kit ships |
 | First location kit | Second tabletop job proven | Later |
 
 ## Open calls for Tomás
 
-1. Go on the component test batch, and Client, Agency and Receptionist from the kit or hand-drawn.
-2. Confirm or change the first four levels.
-3. Look at the recolor sheet and say if the colors read as the same paper world.
+1. Confirm or change the first four levels.
+2. Look at `docs/kit/mix-proof.png` and say if recolored people read as the same paper world.
+3. Play the published build and look at the Client, Agency and Receptionist in place.
