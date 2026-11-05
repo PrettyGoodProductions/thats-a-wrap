@@ -60,7 +60,7 @@ Task prompts pop up on the set: a "?" over anyone waiting for orders, bouncing o
 - in-world pop-ups and small station markers
 - the soft, lens-anchored lights and the walk with the pelvis
 
-On an upright phone the shoot is turned sideways for you, and the pause menu has a Flip button if it comes out upside down. HQ, hiring and the office stay portrait. A full shoot with Ro hired passes held sideways and upright, the Lab bot passes portrait, landscape and tablet, and 95 tests pass.
+On an upright phone the shoot is turned sideways for you, and the pause menu has a Flip button if it comes out upside down. HQ, hiring and the office were portrait at this point (HQ went landscape on Nov 5). A full shoot with Ro hired passes held sideways and upright, the Lab bot passes portrait, landscape and tablet, and 95 tests pass.
 
 **Branches folded in or superseded.** This branch has everything from the landscape and art work on Nov 3:
 - **`feature/landscape-shoot-layout`:** the layout adopted from the ChatGPT prototype review. It is superseded by the wide set and pop-up HUD here. Its open ideas are in the backlog below.
