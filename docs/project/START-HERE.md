@@ -28,7 +28,7 @@ A single-player mobile game about running a small video production company, made
 
 ## Milestone B (in progress, Nov 3)
 
-- **Playable link (Milestone B build, version 14, Nov 5: landscape HQ and the batch 8 characters):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
+- **Playable link (Milestone B build, version 15, Nov 5: landscape HQ and the batch 8 characters, engine ready for kit crew):** https://claude.ai/artifact/RGUa3UpsSninEw3HBngVRE. Start a shoot from the office and it plays in landscape. Hold the phone sideways, or upright and the game turns the shoot for you
 - **Branch:** `milestone-b-lab` holds all Milestone B work, including the landscape layout, the art loader, Ro and the walk. `master` is still Milestone A. Clone with `-b milestone-b-lab` to work on Milestone B
 - **Engine:** crew autonomy 0, 1 and 2, Assist Mode, and the `canAssign`, `stationTasks` and `idleWork` queries. The default is 2, so the normal game plays exactly as before.
 - **Layout Lab:** office screen, "Layout lab" button. The same seeded shoot with everyone waiting for orders, played in portrait or landscape, with interaction metrics saved side by side. Phones locked to portrait get the shoot turned sideways automatically.
