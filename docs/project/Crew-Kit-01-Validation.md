@@ -11,7 +11,7 @@ The main build is unchanged. Kit crew are in a separate kit test build so the lo
 | Picture | What it shows |
 | --- | --- |
 | `docs/kit/lineup-12.png` | Twelve kit people next to Ro and Theo, at one scale |
-| `docs/kit/before-after.png` | The kit as delivered on template A, and after fit A2, next to Ro and Dani |
+| `docs/kit/before-after.png` | The kit as delivered on template A, and after fit A2, next to Ro and Dani (made before the 2 percent size trim) |
 | `docs/kit/head-layers.png` | Every hair, hat, beard and glasses combination on both heads |
 | `docs/kit/recolor-sheet.png` | Every piece across the skin, hair and clothing palettes |
 | `docs/qa/kit01/` | Kit crew in the game: the shoot on a phone and a tablet, the hire cards, a walk strip and a work strip |
@@ -97,8 +97,10 @@ The ten were given kit looks close to the game's descriptions of them, with tees
 | Test | Result |
 | --- | --- |
 | Unit tests | 101 pass (2 new) |
-| Kit test build in a browser, phone and tablet | Hire cards show all ten with head crops that fit. Lee, Inés and Chuy hired, on set, walking and working next to Lu, the Client and the Agency. No page errors |
-| Art bench, first run | Inés 26 of 28 and Bo 25 of 28. The misses were the turn-around reading as a pop (a measuring fault, fixed below), Bo standing 53.6 units tall in his cap against a limit of 53 (fixed by the 0.98 size), and the control puppet sharing a name with a kit person. A rerun on the final build is in progress |
+| Kit test build in a browser, phone and tablet | Hire cards show the kit crew offered for the job (Inés, Sam, Bo, Lee, Max, Chuy and Vera) with head crops that fit. Lee, Inés and Chuy hired, on set, walking and working next to Lu, the Client and the Agency. No page errors |
+| Art bench on the final kit build | Bo, Inés and Chuy each pass 28 of 28: feet on the mark, heights 50.2 to 52.5 units (the crew range is 44 to 53), the working arm reaches 13.1 units, the head crop fits the hire card, the walk starts and stops cleanly |
+| Art bench, first run | Inés 26 of 28 and Bo 25 of 28. The misses were a measuring fault at the turn-around (fixed, below), Bo standing 53.6 units tall in his cap (fixed by the 0.98 size), and the control puppet sharing a name with a kit person (fixed, below) |
+| Regression | Ro 28 of 28. Theo 27 of 28: his walk start is clean now, his stop scores 0.976 against a bar of 0.98, the same near miss as in batch 8, in his own art |
 
 Two fixes to the bench came out of this run. The walk check compared the standing frame with the first walking frame even when the person had just turned around, which scored any one-sided silhouette (long hair, a cap's brim) as a pop. It now compares against the mirrored frame as well. The control puppet was named Paz, who is now a kit person in the test build, so it has a name that is not on the roster.
 

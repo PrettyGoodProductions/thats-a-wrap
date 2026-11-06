@@ -49,7 +49,7 @@ Two small additions to the engine made this data-driven: a character's settings 
 | Full shoot in a browser, phone landscape, crew hired | Pass. New check: Client and Agency are on the delivered rig and the Agency holds her latte |
 | Art bench, Agency | 28 of 28 |
 | Art bench, Receptionist | 28 of 28 |
-| Art bench, Theo | 27 of 28. Walk start scored 0.96 against a bar of 0.98 for "no pop". By eye the walk is clean (`docs/qa/batch8/theo-walk-strip.webp`) |
+| Art bench, Theo | 27 of 28. Walk start scored 0.96 against a bar of 0.98 for "no pop". By eye the walk is clean (`docs/qa/batch8/theo-walk-strip.webp`). Later the same day the bench was fixed to allow for the turn-around at the start of a trip (Crew-Kit-01-Validation.md). Theo's start then passes and his stop scores 0.976, still a near miss |
 | Art bench, Client | 27 of 28. Her working reach is 4.5 units against a bar of 6, because her near arm is the one that reaches. She never works on set |
 | Art bench, Ro (regression) | 28 of 28 |
 
