@@ -108,10 +108,16 @@ Batch 8 (Client, Agency, Receptionist, Theo) shows the path for a delivery that 
 | Command | What it does |
 | --- | --- |
 | `python3 tools/recolor_area.py art/crew.theo.head@8x.png` | Lists a piece's main color areas. `recolor_areas()` moves chosen areas (skin, hair, a garment) to new colors and leaves the rest |
-| `python3 tools/kit_mix.py art docs/kit/mix-proof.png` | New people from delivered parts: a head on another character's outfit, recolored. A proof, not in the game yet |
-| `python3 tools/make_kit_template.py art docs/kit` | The crew kit template sheet, its data file and the per-slot guides |
+| `python3 tools/kit_mix.py art docs/kit/mix-proof.png` | New people from delivered parts: a head on another character's outfit, recolored. A proof, not in the game |
+| `python3 tools/fit_kit01.py <Crew Kit 01 delivery> art/_kit` | Fits the kit delivery to the rig and writes the catalog `art/_kit/kit.json`. Head layers as delivered, body refitted from the masters |
+| `python3 tools/kit_person.py art/_kit lineup out.png --with ro,theo` | Twelve test people built from the kit, next to delivered characters |
+| `python3 tools/kit_person.py art/_kit sheet out.png` | Every kit piece across the skin, hair and clothing palettes |
+| `python3 tools/kit_person.py art/_kit bake <art folder> roster` | Bakes the ten roster members with no hand-drawn art into normal characters (`crew.bo.*` and so on) |
+| `python3 tools/make_kit_template.py art/_kit docs/kit` | The crew kit template sheet (A2), its data file and the per-slot guides, from the fitted kit |
 
-`recolor_area.py` and `kit_mix.py` need scikit-image.
+`art/_kit/` is parked: the packer skips folders that start with `_`, so kit pieces do not ship. A kit person reaches the game by being baked into a character. The roster names are registered in `CHARACTERS`, so baked files for them are drop-in, and without files they keep the code-drawn puppet. Long hair bakes one extra part, `hair-back`, which hangs from the neck and draws behind the torso and arms. Bake into a copy of `art/` for a test build, not into `art/` itself, until kit crew are approved: ten baked people add 1.4 MB.
+
+`recolor_area.py`, `kit_mix.py` and `kit_person.py` need scikit-image.
 
 ## Checking a batch
 

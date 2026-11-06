@@ -1,6 +1,6 @@
 # That's a Wrap! Art status and next asks (handoff)
 
-Nov 5, 2026 · revision 2 · goes with Asset Manifest revision 14, Content-Roadmap.md, Crew-Kit-01-Request.md and the Crew Kit Template zip. Replaces revision 1, whose list of 14 hand-drawn characters is retired.
+Nov 5, 2026 · revision 3 · goes with Asset Manifest revision 15, Content-Roadmap.md, Crew-Kit-01-Validation.md, Crew-Kit-02-Request.md and the Crew Kit A2 zip. Revision 3: Crew Kit 01 is delivered and tested, and Ask 1 is now Crew Kit 02.
 
 ## Where things stand
 
@@ -10,7 +10,7 @@ Nov 5, 2026 · revision 2 · goes with Asset Manifest revision 14, Content-Roadm
 | HUD | Delivered and in the game |
 | HQ, the landscape diorama | Delivered and in the game: shell, every room at levels 1 to 3, exterior, UI |
 | Hand-designed characters | Eight delivered and in the game: Ro, Mika, Dani, Lu, Client, Agency, Receptionist, Theo |
-| The rest of the crew | Not hand-drawn. Built by the game from a crew kit |
+| The rest of the crew | Not hand-drawn. Built from the crew kit. Crew Kit 01 (15 pieces) is delivered and works: ten kit crew play in a test build |
 
 ## What changed in the plan
 
@@ -18,11 +18,13 @@ Nov 5, 2026 · revision 2 · goes with Asset Manifest revision 14, Content-Roadm
 2. **Recoloring is done in code.** Skin, hair and each garment can change color on its own. Art does not need grey versions or masks. It needs flat, clearly different colors per area.
 3. **Levels get their own look from a set kit.** The delivered flats already take any color. New wall and floor materials, flats with openings and pattern overlays make two levels look like different rooms.
 
-## Ask 1: Crew Kit 01, the test batch (15 drawings)
+## Ask 1: Crew Kit 02 (39 drawings)
 
-Everything is in **Crew-Kit-01-Request.md**, with `crew-kit-template.png`, `crew-kit-template.json` and the `guides/` folder. In short: two bald base heads, three hair styles, a cap, a beard, glasses, a tee and shorts, drawn on one mannequin in four key colors, each with a picture of the mannequin wearing it.
+Everything is in **Crew-Kit-02-Request.md**, with template A2 (`crew-kit-template.png`, `crew-kit-template.json`, `guides/`) and the fitted Kit 01 pieces to draw against. In short: four more faces on the same skull, four hair styles, a beanie and a beret, jeans, work pants, bare legs, a skirt, three shoes as their own layer, and four tops.
 
-This comes first. The full kit (about 45 more drawings) follows once the test batch fits.
+Read Crew-Kit-01-Validation.md first. The body template changed from A to A2 after the Kit 01 test, and six rules came out of it.
+
+Send this once Tomás has approved the Kit 01 lineup.
 
 ## Ask 2: Studio shell kit (16 drawings)
 
@@ -72,7 +74,10 @@ A skylight strip and the hero surfaces (café table, bar top, counter, plinth, f
 
 ## What to give ChatGPT
 
+The Crew Kit A2 zip holds all of it:
+
 1. This page.
-2. Crew-Kit-01-Request.md.
-3. The Crew Kit Template zip (template sheet, data, guides, the lineup of delivered characters and the mix proof).
-4. Content-Roadmap.md, for the plan behind the asks.
+2. Crew-Kit-01-Validation.md, then Crew-Kit-02-Request.md.
+3. Template A2: the sheet, its data and the guides.
+4. The fitted Kit 01 pieces, and pictures of the lineup, the before and after of the fit, the head layers and the recolors.
+5. Content-Roadmap.md, for the plan behind the asks.

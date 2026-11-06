@@ -1,0 +1,281 @@
+{
+  "name": "Crew Kit 01",
+  "fit": "A2",
+  "px_per_unit": 8,
+  "stature": 0.98,
+  "note": "Built by tools/fit_kit01.py. Head layers as delivered, body refitted from the 27 px masters. An area marked * is the whole piece.",
+  "joints": {
+    "hips": [
+      0,
+      -20.52
+    ],
+    "neck": [
+      0,
+      -34.78
+    ],
+    "shoulderFront": [
+      5.8,
+      -31.9
+    ],
+    "shoulderBack": [
+      -5.8,
+      -31.9
+    ],
+    "pelvis": [
+      0,
+      -17.46
+    ],
+    "hipFront": [
+      3.5,
+      -17.46
+    ],
+    "hipBack": [
+      -3.5,
+      -17.28
+    ]
+  },
+  "slots": {
+    "head": {
+      "canvas": [
+        28,
+        32
+      ],
+      "pivot": [
+        14,
+        26
+      ],
+      "joint": "neck"
+    },
+    "torso": {
+      "canvas": [
+        20,
+        21
+      ],
+      "pivot": [
+        10,
+        19.5
+      ],
+      "joint": "hips"
+    },
+    "pelvis": {
+      "canvas": [
+        18,
+        14
+      ],
+      "pivot": [
+        9,
+        6.5
+      ],
+      "joint": "pelvis"
+    },
+    "arm-front": {
+      "canvas": [
+        12,
+        22
+      ],
+      "pivot": [
+        6,
+        4
+      ],
+      "joint": "shoulderFront"
+    },
+    "arm-back": {
+      "canvas": [
+        12,
+        22
+      ],
+      "pivot": [
+        6,
+        4
+      ],
+      "joint": "shoulderBack"
+    },
+    "leg-front": {
+      "canvas": [
+        14,
+        24
+      ],
+      "pivot": [
+        6,
+        4.6
+      ],
+      "joint": "hipFront"
+    },
+    "leg-back": {
+      "canvas": [
+        14,
+        24
+      ],
+      "pivot": [
+        6,
+        4.6
+      ],
+      "joint": "hipBack"
+    }
+  },
+  "layers": [
+    "hair-back",
+    "leg-back",
+    "leg-front",
+    "pelvis",
+    "torso",
+    "arm-back",
+    "head",
+    "beard",
+    "hair",
+    "glasses",
+    "hat",
+    "arm-front"
+  ],
+  "key_colors": {
+    "skin": "#F0A56C",
+    "hair": "#7A4A2E",
+    "top": "#8E9B6B",
+    "bottoms": "#5F6470"
+  },
+  "bundles": {
+    "kit.top.tee": {
+      "kind": "top",
+      "label": "Tee"
+    },
+    "kit.bottoms.shorts": {
+      "kind": "bottoms",
+      "label": "Shorts"
+    }
+  },
+  "exclude": [
+    [
+      "kit.hat.cap",
+      "kit.hair.curly"
+    ],
+    [
+      "kit.hat.cap",
+      "kit.hair.long"
+    ]
+  ],
+  "pieces": {
+    "kit.head.a": {
+      "slot": "head",
+      "layer": "head",
+      "areas": [
+        "skin"
+      ],
+      "label": "Head A"
+    },
+    "kit.head.b": {
+      "slot": "head",
+      "layer": "head",
+      "areas": [
+        "skin"
+      ],
+      "label": "Head B"
+    },
+    "kit.hair.short": {
+      "slot": "head",
+      "layer": "hair",
+      "areas": [
+        "hair*"
+      ],
+      "label": "Short hair"
+    },
+    "kit.hair.curly": {
+      "slot": "head",
+      "layer": "hair",
+      "areas": [
+        "hair*"
+      ],
+      "label": "Curly hair"
+    },
+    "kit.hair.long": {
+      "slot": "head",
+      "layer": "hair",
+      "areas": [
+        "hair*"
+      ],
+      "label": "Long hair",
+      "with_back": "kit.hair.long.back"
+    },
+    "kit.hair.long.back": {
+      "slot": "head",
+      "layer": "hair-back",
+      "areas": [
+        "hair*"
+      ],
+      "label": "Long hair, back piece"
+    },
+    "kit.hat.cap": {
+      "slot": "head",
+      "layer": "hat",
+      "areas": [
+        "hat*"
+      ],
+      "label": "Cap"
+    },
+    "kit.face.beard": {
+      "slot": "head",
+      "layer": "beard",
+      "areas": [
+        "hair*"
+      ],
+      "label": "Beard"
+    },
+    "kit.face.glasses": {
+      "slot": "head",
+      "layer": "glasses",
+      "areas": [],
+      "label": "Glasses"
+    },
+    "kit.top.tee.torso": {
+      "slot": "torso",
+      "layer": "torso",
+      "areas": [
+        "top"
+      ],
+      "bundle": "kit.top.tee"
+    },
+    "kit.top.tee.arm-front": {
+      "slot": "arm-front",
+      "layer": "arm-front",
+      "areas": [
+        "skin",
+        "top"
+      ],
+      "bundle": "kit.top.tee"
+    },
+    "kit.top.tee.arm-back": {
+      "slot": "arm-back",
+      "layer": "arm-back",
+      "areas": [
+        "skin",
+        "top"
+      ],
+      "bundle": "kit.top.tee"
+    },
+    "kit.bottoms.shorts.pelvis": {
+      "slot": "pelvis",
+      "layer": "pelvis",
+      "areas": [
+        "bottoms"
+      ],
+      "bundle": "kit.bottoms.shorts"
+    },
+    "kit.bottoms.shorts.leg-front": {
+      "slot": "leg-front",
+      "layer": "leg-front",
+      "areas": [
+        "skin",
+        "bottoms"
+      ],
+      "bundle": "kit.bottoms.shorts"
+    },
+    "kit.bottoms.shorts.leg-back": {
+      "slot": "leg-back",
+      "layer": "leg-back",
+      "areas": [
+        "skin",
+        "bottoms"
+      ],
+      "bundle": "kit.bottoms.shorts"
+    }
+  }
+}

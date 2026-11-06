@@ -26,8 +26,11 @@ def _launch(p):
 dist, out = sys.argv[1], sys.argv[2]
 # --char ro|mika|dani|lu|theo|client|agency|receptionist picks which delivered character the puppet checks run on (default ro). Run once per character
 CH = sys.argv[sys.argv.index('--char') + 1] if '--char' in sys.argv else 'ro'
-NAME = {'ro': 'Ro', 'mika': 'Mika', 'dani': 'Dani', 'lu': 'Lu', 'theo': 'Theo', 'client': 'Client', 'agency': 'Agency', 'receptionist': 'Receptionist'}[CH]
-DEPT = {'ro': 'lighting', 'mika': 'camera', 'dani': 'grip', 'lu': 'art', 'theo': 'art', 'client': 'art', 'agency': 'art', 'receptionist': 'art'}[CH]
+# The roster names take people baked from the crew kit (tools/kit_person.py bake), when their files are in the art folder
+ROSTER_DEPT = {'bo': 'lighting', 'lee': 'lighting', 'ines': 'camera', 'sam': 'camera', 'max': 'grip', 'chuy': 'grip', 'vera': 'art', 'paz': 'art', 'kit': 'art', 'jules': 'art'}
+NAME = {'ro': 'Ro', 'mika': 'Mika', 'dani': 'Dani', 'lu': 'Lu', 'theo': 'Theo', 'client': 'Client', 'agency': 'Agency', 'receptionist': 'Receptionist',
+        'ines': 'Inés', **{k: k.capitalize() for k in ROSTER_DEPT if k != 'ines'}}[CH]
+DEPT = {'ro': 'lighting', 'mika': 'camera', 'dani': 'grip', 'lu': 'art', 'theo': 'art', 'client': 'art', 'agency': 'art', 'receptionist': 'art', **ROSTER_DEPT}[CH]
 PUP = f"'{CH}',{{name:'{NAME}',dept:'{DEPT}'}}"
 os.makedirs(out, exist_ok=True)
 LAB = 'file://' + os.path.abspath(os.path.join(dist, 'lab.html'))
@@ -239,7 +242,8 @@ with sync_playwright() as p:
     e.mount('transparent'); e.js("lab.iso('puppet')")
     X, Y = 184, 330
     e.js(f"lab.addPuppet({PUP},{X},{Y},false)")
-    e.js(f"lab.addPuppet('paz',{{name:'Paz',dept:'art',look:{{skin:'#C99070',hair:'#7A2E1E',top:'bun'}}}},300,{Y},false)")
+    # A second, code-drawn crew member as a control. The name is not on the roster, so no art can ever attach to it
+    e.js(f"lab.addPuppet('casey',{{name:'Casey',dept:'art',look:{{skin:'#C99070',hair:'#7A2E1E',top:'bun'}}}},300,{Y},false)")
     # Count the bench's own puppets only: the Client and Agency in video village are fixed characters too (batch 8)
     n_rig = e.js("document.querySelectorAll('#labCrew .wl-rig[data-character]').length")
     # The delivered floor shadow (crew.shadow, wired in batch 7) is solid enough to read as part of the puppet, which
@@ -339,6 +343,16 @@ with sync_playwright() as p:
             m1 = mask(f1[0])
             return float((m0 & m1).sum() / (m0 | m1).sum())
         seq = [iou_shift(fr[i], fr[i + 1]) for i in range(len(fr) - 1)]
+        # The puppet starts each trip facing right. When the trip goes left, the first frame also turns it around, and a
+        # one-sided silhouette (long hair, a cap's brim) then scores as a pop. Compare the first frame with the standing
+        # frame mirrored about the puppet as well, and keep the better match
+        def iou_turned(f0, f1):
+            cx = e.px(f0[1]['x'], f0[1]['y'])[0]
+            Mf = np.float32([[-1, 0, 2 * cx + (f1[1]['x'] - f0[1]['x']) * e.k], [0, 1, (f1[1]['y'] - f0[1]['y']) * e.k]])
+            m0 = cv2.warpAffine(mask(f0[0]).astype(np.uint8), Mf, (f0[0].width, f0[0].height)) > 0
+            m1 = mask(f1[0])
+            return float((m0 & m1).sum() / (m0 | m1).sum())
+        seq[0] = max(seq[0], iou_turned(fr[0], fr[1]))
         pops.append((seq[0], seq[-1], float(np.percentile(seq[1:-1], 10))))
         print(f'   trip {a} -> {b}: {D:.0f} units in {len(fr) - 1} frames, {len(by_step)} planted phases')
     step_len = 10

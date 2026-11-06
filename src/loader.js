@@ -302,7 +302,8 @@
   // the generic puppet (or the code-drawn one) is used.
   function characterFor(c) {
     if (!c) return null;
-    const key = String(c.character || c.name || '').toLowerCase();
+    // The name without accents, so Inés finds crew.ines.*
+    const key = String(c.character || c.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     return CHARACTERS[key] && characterReady(key) ? key : null;
   }
 
@@ -342,7 +343,7 @@
     return floorShadow() +
       `<g class="bodyg wl-rig" data-character="${ch}" data-leg="${f(-jointOf(ch, 'hipFront').y)}">` +
       RIG_ORDER.legs.map(part).join('') +
-      `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + upper.map(part).join('') + `</g>` +
+      `<g class="wl-upper" style="transform-origin:${f(hips.x)}px ${f(hips.y)}px">` + part('hair-back') + upper.map(part).join('') + `</g>` +
       `</g>`;
   }
 

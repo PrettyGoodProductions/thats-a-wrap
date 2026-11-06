@@ -483,6 +483,37 @@ test('batch 8: the default upper body order is unchanged, and a bad order or hol
   assert.ok(r.errors.some(e => /crew\.ro\.json: holds must be/.test(e)));
 });
 
+test('crew kit: a baked person can carry a hair-back part, drawn first in the upper body', () => {
+  // Long hair has a piece that hangs behind the neck and shoulders. It hangs from the neck and sits behind the torso and arms
+  const d = roDir({ char: { fixed: true, joints: { neck: [0, -34.8], hips: [0, -20.5] }, order: { upper: ['torso', 'arm-back', 'head', 'arm-front'] } } });
+  fs.copyFileSync(path.join(FIXTURES, 'crew', 'crew.head@3x.png'), path.join(d, 'crew.ro.hair-back@3x.png'));
+  const r = load(d);
+  assert.deepEqual(r.errors, []);
+  const m = A.puppet(RO);
+  const at = (part) => m.indexOf(`data-part="crew.ro.${part}"`);
+  assert.ok(at('hair-back') > m.indexOf('class="wl-upper"'), 'hair-back leans with the upper body');
+  assert.ok(at('hair-back') < at('torso') && at('hair-back') < at('arm-back'), 'hair-back is behind the torso and both arms');
+  assert.match(m, /data-part="crew\.ro\.hair-back" style="transform-origin:0px -34\.8px"/, 'it hangs from the neck');
+  // a character without the part is unchanged
+  load(roDir());
+  assert.doesNotMatch(A.puppet(RO), /hair-back/);
+});
+
+test('crew kit: roster names take baked art, and a name with an accent finds its files', () => {
+  const d = tmp();
+  for (const part of ['head', 'torso', 'arm-front', 'arm-back', 'leg-front', 'leg-back']) {
+    fs.copyFileSync(path.join(FIXTURES, 'crew', `crew.${part}@3x.png`), path.join(d, `crew.ines.${part}@3x.png`));
+  }
+  fs.writeFileSync(path.join(d, 'crew.ines.json'), JSON.stringify({ fixed: true, joints: { neck: [0, -34.8] } }));
+  const r = load(d);
+  assert.deepEqual(r.errors, []);
+  assert.equal(Loader.characterFor({ name: 'Inés', dept: 'camera' }), 'ines');
+  assert.match(A.puppet({ name: 'Inés', dept: 'camera', look: {} }), /data-character="ines"/);
+  // roster names with no art keep the code-drawn puppet, with no warning about a missing character
+  assert.equal(Loader.characterFor({ name: 'Bo', dept: 'lighting' }), null);
+  assert.ok(!r.warnings.some(w => /character bo/.test(w)));
+});
+
 test('flip mirrors a piece about its pivot, and per-state offsets still apply', () => {
   const d = copyFixtures();
   fs.writeFileSync(path.join(d, 'elec.keylight-head.json'), JSON.stringify({ pivot: 'center', flip: true, states: { dead: { offset: [-0.3, 0] } } }));

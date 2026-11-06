@@ -230,6 +230,10 @@
     agency: { name: 'Agency' },
     receptionist: { name: 'Receptionist' },
     theo: { name: 'Theo' },
+    // The rest of the roster has no hand-drawn art. Each name is ready for a person baked from the crew kit
+    // (tools/kit_person.py bake). With no files in art/ they keep the code-drawn puppet, as before
+    bo: { name: 'Bo' }, lee: { name: 'Lee' }, ines: { name: 'Inés' }, sam: { name: 'Sam' }, max: { name: 'Max' },
+    chuy: { name: 'Chuy' }, vera: { name: 'Vera' }, paz: { name: 'Paz' }, kit: { name: 'Kit' }, jules: { name: 'Jules' },
   };
   // One entry per part of the shared rig: the joint it hangs from and its default pivot inside the image
   const ROLES = {
@@ -241,6 +245,9 @@
     'leg-back': { joint: 'hipBack', pivot: 'top-center', size: [11, 24] },
     // Optional: shorts that cover the tops of the legs, so the legs hinge inside the pelvis instead of under the shirt
     pelvis: { joint: 'pelvis', pivot: 'center', size: [15, 9] },
+    // Optional: the part of long hair that hangs behind the neck and shoulders. It hangs from the neck like the
+    // head and always draws first in the upper body, behind the torso and both arms
+    'hair-back': { joint: 'neck', pivot: 'bottom-center', size: [17, 20] },
   };
   // Back to front. The upper body (everything but the legs) leans as one when the character works.
   const RIG_ORDER = { legs: ['leg-back', 'leg-front', 'pelvis'], upper: ['arm-back', 'torso', 'head', 'arm-front'] };

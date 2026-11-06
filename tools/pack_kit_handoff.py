@@ -1,41 +1,50 @@
-"""Zip up what ChatGPT needs for the crew kit test batch.
+"""Zip up what ChatGPT needs for the next crew kit batch.
 
   python3 tools/pack_kit_handoff.py <out.zip>
 
-Run tools/make_kit_template.py and tools/kit_mix.py first if the art changed. The zip holds the request, the art
-handoff, the roadmap, the template sheet with its data and guides, and reference pictures made from the game files.
+Run tools/make_kit_template.py and tools/kit_person.py (lineup, sheet) first if the kit changed. The zip holds the
+Kit 01 validation, the Kit 02 request, the art handoff, the roadmap, template A2 with its data and guides, the
+fitted Kit 01 pieces to draw against, and reference pictures made from the game files.
 """
 import os, sys, zipfile
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 out = sys.argv[1]
-TOP = 'Thats-A-Wrap-Crew-Kit-Template/'
+TOP = 'Thats-A-Wrap-Crew-Kit-A2/'
 files = {
-    'docs/project/Crew-Kit-01-Request.md': 'Crew-Kit-01-Request.md',
     'docs/project/Art-Handoff-Nov5.md': 'Art-Handoff-Nov5.md',
+    'docs/project/Crew-Kit-01-Validation.md': 'Crew-Kit-01-Validation.md',
+    'docs/project/Crew-Kit-02-Request.md': 'Crew-Kit-02-Request.md',
     'docs/project/Content-Roadmap.md': 'Content-Roadmap.md',
     'docs/kit/crew-kit-template.png': 'crew-kit-template.png',
     'docs/kit/crew-kit-template.json': 'crew-kit-template.json',
+    'docs/kit/lineup-12.png': 'reference/lineup-12.png',
+    'docs/kit/before-after.png': 'reference/before-after.png',
+    'docs/kit/head-layers.png': 'reference/head-layers.png',
+    'docs/kit/recolor-sheet.png': 'reference/recolor-sheet.png',
     'docs/kit/lineup-delivered.png': 'reference/lineup-delivered.png',
-    'docs/kit/mix-proof.png': 'reference/mix-proof.png',
-    'docs/qa/tint-test/recolor-test.png': 'reference/recolor-test-flats.png',
+    'docs/qa/kit01/shoot-tablet.webp': 'reference/in-game-shoot.webp',
+    'docs/qa/kit01/hire-cards.webp': 'reference/in-game-hire-cards.webp',
 }
 for f in sorted(os.listdir(os.path.join(root, 'docs/kit/guides'))):
     files['docs/kit/guides/' + f] = 'guides/' + f
-# Theo's parts as fitted in the game: the body the guides are drawn from, with the refitted pelvis
-for part in ['head', 'torso', 'pelvis', 'arm-front', 'arm-back', 'leg-front', 'leg-back']:
-    files[f'art/crew.theo.{part}@8x.png'] = f'reference/body-example-theo/crew.theo.{part}@8x.png'
-README = """That's a Wrap! Crew Kit Template
+for f in sorted(os.listdir(os.path.join(root, 'art/_kit'))):
+    files['art/_kit/' + f] = 'kit01-fitted/' + f
+README = """That's a Wrap! Crew Kit A2
 
-Start with Art-Handoff-Nov5.md, then Crew-Kit-01-Request.md.
+Start with Art-Handoff-Nov5.md, then Crew-Kit-01-Validation.md, then Crew-Kit-02-Request.md.
 
-crew-kit-template.png    the mannequin, each slot's canvas and pivot, the head canvas, the key colors
+crew-kit-template.png    template A2: the mannequin, each slot's canvas and pivot, the shoe zone, the key colors
 crew-kit-template.json   the same numbers as data
 guides/                  one guide per slot at 27 px per unit, transparent
-reference/lineup-delivered.png      the eight delivered characters as the game assembles them
-reference/mix-proof.png             twelve new people made from delivered parts, recolored in code
-reference/recolor-test-flats.png    delivered flats recolored in code
-reference/body-example-theo/        Theo's seven parts as fitted in the game (8 px per unit). The pelvis is the
-                                    corrected one: as wide as the legs, no dark leg openings
+kit01-fitted/            the 15 Kit 01 pieces as the game uses them (8 px per unit, A2 canvases) and their catalog.
+                         The tee and shorts are the body to draw new pieces against. kit.head.a is the skull every
+                         new face and hair has to fit
+reference/lineup-12.png          twelve people built from Kit 01, next to Ro and Theo
+reference/before-after.png       Kit 01 as delivered on template A, and after the A2 fit
+reference/head-layers.png        every head layer combination on both heads
+reference/recolor-sheet.png      every piece across the skin, hair and clothing palettes
+reference/lineup-delivered.png   the eight hand-designed characters as the game assembles them
+reference/in-game-*.webp         kit crew in the game: on set, and on the hire cards
 Content-Roadmap.md       the plan behind the asks
 """
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
